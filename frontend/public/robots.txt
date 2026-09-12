@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /my-reviews
+Disallow: /my-questions
+Disallow: /saved-colleges
+Disallow: /notifications
+Disallow: /settings
+Disallow: /organization
+Disallow: /admin
+Disallow: /write-review
+Disallow: /claim
+
+Sitemap: /sitemap.xml

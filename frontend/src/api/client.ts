@@ -1,0 +1,73 @@
+import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
+  withCredentials: true, // send the httpOnly refresh cookie
+});
+
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().accessToken;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const res = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {}, { withCredentials: true });
+    const token = res.data?.data?.accessToken as string | undefined;
+    if (token) {
+      useAuthStore.getState().setAccessToken(token, res.data.data.user);
+      return token;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config;
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      refreshPromise ??= refreshAccessToken().finally(() => {
+        refreshPromise = null;
+      });
+      const newToken = await refreshPromise;
+      if (newToken) {
+        original.headers.Authorization = `Bearer ${newToken}`;
+        return api(original);
+      }
+      useAuthStore.getState().clear();
+    }
+    return Promise.reject(error);
+  },
+);
+
+export interface ApiSuccess<T> {
+  success: true;
+  data: T;
+  meta?: { total?: number; page?: number; pageSize?: number };
+}
+
+export interface ApiFailure {
+  success: false;
+  message: string;
+  details?: unknown;
+}
+
+export function unwrap<T>(promise: Promise<{ data: ApiSuccess<T> }>): Promise<T> {
+  return promise.then((res) => res.data.data);
+}
+
+export function apiErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as ApiFailure | undefined;
+    return data?.message ?? 'Something went wrong. Please try again.';
+  }
+  return 'Something went wrong. Please try again.';
+}

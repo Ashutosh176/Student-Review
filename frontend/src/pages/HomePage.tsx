@@ -1,0 +1,130 @@
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
+import { institutionsApi } from '@/api/institutions.api';
+import { reviewsApi } from '@/api/reviews.api';
+import { CollegeCard } from '@/components/CollegeCard';
+import { ReviewCard } from '@/components/ReviewCard';
+import { SearchBar } from '@/components/SearchBar';
+import { CardSkeletonGrid, EmptyState } from '@/components/LoadingSkeleton';
+import { useScrollOutProgress } from '@/hooks/useScrollOutProgress';
+import { useHeroVisibilityStore } from '@/store/heroVisibilityStore';
+import { HEADER_HEIGHT_PX } from '@/components/SiteHeader';
+
+export function HomePage() {
+  const statsQuery = useQuery({ queryKey: ['institutions', 'stats'], queryFn: institutionsApi.stats, staleTime: 5 * 60 * 1000 });
+
+  const trendingQuery = useQuery({
+    queryKey: ['institutions', 'trending'],
+    queryFn: () => institutionsApi.list({ sort: 'reviews', pageSize: 4 }),
+  });
+  const topRatedQuery = useQuery({
+    queryKey: ['institutions', 'top-rated'],
+    queryFn: () => institutionsApi.list({ sort: 'rating', pageSize: 4 }),
+  });
+  const latestReviewsQuery = useQuery({ queryKey: ['reviews', 'latest'], queryFn: () => reviewsApi.latest(3) });
+
+  // The header's nav/search transition tracks this continuously (0 = hero
+  // fully visible, 1 = hero fully scrolled out from under the sticky
+  // header) rather than a boolean — see SiteHeader. The `-HEADER_HEIGHT_PXpx`
+  // top margin shrinks the observed region so progress tracks what's
+  // actually visible beneath the sticky header, not the raw viewport.
+  const { ref: heroRef, progress: heroProgress } = useScrollOutProgress<HTMLElement>(`-${HEADER_HEIGHT_PX}px 0px 0px 0px`);
+  const setHeroProgress = useHeroVisibilityStore((s) => s.setHeroProgress);
+  const clearHero = useHeroVisibilityStore((s) => s.clearHero);
+
+  useEffect(() => {
+    setHeroProgress(heroProgress);
+  }, [heroProgress, setHeroProgress]);
+
+  useEffect(() => clearHero, [clearHero]);
+
+  return (
+    <>
+      <Helmet>
+        <title>StudentReview — Know what students really think</title>
+        <meta
+          name="description"
+          content="Explore honest student experiences, ratings and reviews of colleges and universities across India."
+        />
+      </Helmet>
+
+      <section ref={heroRef} className="bg-brand px-4 py-14 text-center text-white sm:px-6 sm:py-16">
+        <h1 className="mx-auto mb-3 max-w-2xl text-3xl leading-tight sm:text-[38px]">Know what students really think.</h1>
+        <p className="mx-auto mb-6 max-w-lg text-[15px] text-white/85">
+          Explore honest student experiences, ratings and reviews of colleges and universities across India.
+        </p>
+        <SearchBar variant="hero" />
+      </section>
+
+      <section className="px-4 py-9 sm:px-7">
+        <h3 className="mb-4 text-lg">Trending this week</h3>
+        {trendingQuery.isLoading && <CardSkeletonGrid />}
+        {trendingQuery.data && trendingQuery.data.items.length === 0 && (
+          <EmptyState title="No trending colleges yet" description="Check back once more reviews come in." />
+        )}
+        {trendingQuery.data && trendingQuery.data.items.length > 0 && (
+          <div className="mb-9 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+            {trendingQuery.data.items.map((inst) => (
+              <CollegeCard key={inst.id} institution={inst} trending />
+            ))}
+          </div>
+        )}
+
+        <h3 className="mb-4 text-lg">Top rated colleges</h3>
+        {topRatedQuery.isLoading && <CardSkeletonGrid />}
+        {topRatedQuery.data && topRatedQuery.data.items.length === 0 && (
+          <EmptyState title="No colleges available yet" description="Check back once colleges and reviews are added." />
+        )}
+        {topRatedQuery.data && topRatedQuery.data.items.length > 0 && (
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+            {topRatedQuery.data.items.map((inst) => (
+              <CollegeCard key={inst.id} institution={inst} />
+            ))}
+          </div>
+        )}
+
+        {latestReviewsQuery.data && latestReviewsQuery.data.length > 0 && (
+          <>
+            <h3 className="mb-4 mt-9 text-lg">Latest student reviews</h3>
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+              {latestReviewsQuery.data.map((r) => (
+                <ReviewCard key={r.id} review={r} institutionName={r.institution.name} />
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="bg-surface px-4 py-9 sm:px-7">
+        <h3 className="mb-6 text-center text-lg">How StudentReview works</h3>
+        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
+          {[
+            [
+              '🔍',
+              'Find your college',
+              statsQuery.data ? `Search ${statsQuery.data.institutionCount}+ Indian colleges and universities.` : 'Search Indian colleges and universities.',
+            ],
+            ['📖', 'Read real experiences', 'Anonymous, verified reviews across placements, faculty, hostel life and more.'],
+            ['✍️', 'Share your experience anonymously', 'Help other students by sharing your honest take.'],
+          ].map(([icon, title, desc]) => (
+            <div key={title} className="text-center">
+              <div className="mb-2 text-3xl">{icon}</div>
+              <h4 className="mb-1 text-sm">{title}</h4>
+              <p className="text-xs text-sub">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-4 py-12 text-center sm:px-7">
+        <h3 className="mb-2 text-lg">For Colleges</h3>
+        <p className="mx-auto mb-5 max-w-md text-sm text-sub">Claim your official profile to respond to reviews and access reputation analytics.</p>
+        <Link to="/colleges" className="btn btn-primary">
+          Claim Your Profile
+        </Link>
+      </section>
+    </>
+  );
+}

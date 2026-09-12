@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CampusTruth — Figma Screens</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --indigo:#2A3B7C;
+  --indigo-dark:#1B2757;
+  --indigo-deep:#161B33;
+  --indigo-light:#EEF0FA;
+  --ink:#14161F;
+  --sub:#6B7078;
+  --line:#E3E5EC;
+  --bg:#F6F7F8;
+  --green:#187A52;
+  --green-bg:#E7F5EE;
+  --amber:#A9660A;
+  --amber-bg:#FCF1DE;
+  --red:#B23A34;
+  --red-bg:#FBEAE8;
+  --info:#2F5FD1;
+  --info-bg:#EAF0FD;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(16,24,32,.06), 0 1px 1px rgba(16,24,32,.04);
+  --frame-w:1440px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif; color:var(--ink); background:#EDEEF0; -webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{font-family:'Manrope',sans-serif; font-weight:700; letter-spacing:-.01em; margin:0;}
+a{color:inherit; text-decoration:none;}
+.app{display:flex; height:100vh; overflow:hidden;}
+
+/* ===== Left panel: Figma-style page list ===== */
+.panel{width:250px; min-width:250px; background:#22262C; color:#D7D9DC; display:flex; flex-direction:column; border-right:1px solid #1B1D20;}
+.panel-head{padding:16px 16px 10px; border-bottom:1px solid #383C42;}
+.panel-head .brandrow{display:flex; align-items:center; gap:8px;}
+.panel-head .mark{width:24px; height:24px; border-radius:6px; background:var(--indigo); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Manrope'; font-weight:800; font-size:11px;}
+.panel-head .ttl{font-size:12.5px; font-weight:700; color:#fff; letter-spacing:.2px;}
+.panel-head .sub{font-size:11px; color:#9AA0A6; margin-top:4px;}
+.panel-scroll{flex:1; overflow-y:auto; padding:8px 8px 20px;}
+.group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#83898F; padding:14px 10px 6px;}
+.page-item{display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:7px; cursor:pointer; font-size:12.8px; color:#C7CBCF; margin:1px 0;}
+.page-item .num{width:18px; height:18px; border-radius:4px; background:#3E4247; color:#9AA0A6; font-size:9.5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700;}
+.page-item:hover{background:#2E3238; color:#fff;}
+.page-item.active{background:var(--indigo-dark); color:#fff;}
+.page-item.active .num{background:var(--indigo); color:#fff;}
+.panel-foot{padding:12px 16px; border-top:1px solid #383C42; font-size:10.8px; color:#83898F; line-height:1.5;}
+.panel-foot b{color:#C7CBCF;}
+
+/* ===== Canvas ===== */
+.canvas{flex:1; overflow:auto; background:radial-gradient(#DCDEE1 1px, transparent 1px) 0 0/16px 16px, #E7E9EB; padding:40px;}
+.frame-wrap{max-width:var(--frame-w); margin:0 auto;}
+.frame-label{font-size:12.5px; font-weight:700; color:#4A4E53; margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+.frame-label .dot{width:7px; height:7px; border-radius:50%; background:var(--indigo);}
+.frame{width:var(--frame-w); background:#fff; box-shadow:0 1px 30px rgba(0,0,0,.12); border-radius:4px; overflow:hidden;}
+
+/* ===== Shared: trust strip ===== */
+.topstrip{background:var(--indigo-deep); color:#C9CDD0; font-size:11.5px; display:flex; align-items:center; justify-content:space-between; padding:7px 28px;}
+.topstrip .left{display:flex; gap:20px;}
+.topstrip .left span{display:flex; align-items:center; gap:6px;}
+.topstrip .left span::before{content:'✓'; color:#7C8CE0; font-size:10px; font-weight:800;}
+.topstrip .right{display:flex; gap:18px;}
+
+/* ===== Public header ===== */
+.site-header{background:#fff; border-bottom:1px solid var(--line);}
+.header-row{display:flex; align-items:center; gap:24px; padding:14px 28px;}
+.logo{display:flex; align-items:center; gap:8px; font-family:'Manrope'; font-weight:800; font-size:17px; flex:none;}
+.logo .mark{width:26px; height:26px; border-radius:7px; background:var(--indigo); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px;}
+.main-nav{display:flex; gap:24px; font-size:13.5px; font-weight:600; color:#33373A;}
+.header-search{flex:1; max-width:420px; display:flex;}
+.header-search input{flex:1; border:1px solid var(--line); border-right:none; padding:9px 12px; border-radius:7px 0 0 7px; font-size:12.5px; font-family:inherit;}
+.header-search button{background:var(--indigo); color:#fff; border:none; padding:0 16px; border-radius:0 7px 7px 0; font-weight:600; font-size:12.5px; cursor:pointer;}
+.header-actions{display:flex; align-items:center; gap:10px; flex:none; margin-left:auto;}
+.avatar{width:32px; height:32px; border-radius:50%; background:var(--indigo-light); color:var(--indigo); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; font-family:'Manrope';}
+
+/* ===== Buttons ===== */
+.btn{font-family:inherit; font-weight:600; font-size:13px; border-radius:7px; border:1px solid var(--line); padding:9px 16px; cursor:pointer; background:#fff; display:inline-flex; align-items:center; gap:6px;}
+.btn-primary{background:var(--indigo); color:#fff; border-color:var(--indigo);}
+.btn-ghost{background:transparent; border-color:var(--line);}
+.btn-danger{color:var(--red); border-color:var(--red);}
+.btn-sm{padding:6px 12px; font-size:12px;}
+
+/* ===== Badges ===== */
+.badge{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:3px 10px; border-radius:999px;}
+.badge-verified{background:var(--green-bg); color:var(--green);}
+.badge-org{background:var(--info-bg); color:var(--info);}
+.badge-official{background:var(--indigo-light); color:var(--indigo);}
+.badge-pending{background:var(--amber-bg); color:var(--amber);}
+.badge-flagged{background:var(--red-bg); color:var(--red);}
+.badge-trending{background:#FDEFE6; color:#B8541C;}
+
+/* ===== Cards ===== */
+.card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow);}
+.college-card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:16px;}
+.college-card .toprow{display:flex; gap:10px; align-items:flex-start;}
+.clogo{width:40px; height:40px; border-radius:9px; background:var(--indigo-light); color:var(--indigo); font-weight:800; font-family:'Manrope'; display:flex; align-items:center; justify-content:center; font-size:13px; flex:none;}
+.college-card h4{font-size:14px; margin-bottom:2px;}
+.college-card .city{font-size:12px; color:var(--sub);}
+.stars{color:var(--indigo); font-size:14px; letter-spacing:1px;}
+.badges-row{display:flex; gap:6px; margin-top:9px;}
+.rating-row{display:flex; align-items:center; gap:6px; margin-top:10px; font-size:13px;}
+.rating-row .count{color:var(--sub); font-size:12px;}
+
+.review-card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:16px;}
+.reviewer-row{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; margin-bottom:6px;}
+.reviewer-row .meta{font-weight:400; color:var(--sub);}
+.review-text{font-size:13.5px; line-height:1.6; margin:8px 0 10px;}
+.review-footer{display:flex; justify-content:space-between; font-size:12px; color:var(--sub);}
+.official-response{background:var(--indigo-light); border-radius:7px; padding:10px 12px; margin-top:8px; font-size:12.5px;}
+.official-response .lbl{font-weight:700; color:var(--indigo); display:block; margin-bottom:3px; font-size:11.5px;}
+
+.rbar-row{display:flex; align-items:center; gap:10px; font-size:12.5px; margin-bottom:8px;}
+.rbar-row .cat{width:120px; flex:none; color:var(--sub);}
+.rbar-track{flex:1; height:6px; background:var(--line); border-radius:999px; overflow:hidden;}
+.rbar-fill{height:100%; background:var(--indigo); border-radius:999px;}
+.rbar-val{width:28px; text-align:right; font-weight:600;}
+
+/* ===== Tabs ===== */
+.tabs{display:flex; gap:4px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:4px;}
+.tab{flex:1; text-align:center; padding:9px 12px; font-size:12.5px; font-weight:600; color:var(--sub); border-radius:7px;}
+.tab.active{background:var(--indigo); color:#fff;}
+
+/* ===== Footer ===== */
+.site-footer{background:#fff; border-top:1px solid var(--line); padding:36px 28px 24px;}
+.footer-grid{display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:20px; font-size:12.5px;}
+.footer-grid h5{font-size:11.5px; color:var(--sub); margin-bottom:10px; font-weight:600;}
+.footer-grid a{display:block; color:#4B4F5E; margin-bottom:7px;}
+
+/* ===== Dashboard shell (student/org/admin) ===== */
+.dashwrap{display:flex; min-height:820px;}
+.dsidebar{width:220px; flex:none; background:var(--indigo-deep); color:#fff; padding:18px 12px;}
+.dsidebar .brand{display:flex; align-items:center; gap:8px; font-family:'Manrope'; font-weight:800; font-size:14px; padding:0 8px 18px;}
+.dsidebar .brand .mark{width:22px; height:22px; border-radius:6px; background:#fff; color:var(--indigo); display:flex; align-items:center; justify-content:center; font-size:11px;}
+.dsidebar a{display:flex; align-items:center; gap:9px; color:rgba(255,255,255,.6); font-size:12.8px; font-weight:500; padding:9px 11px; border-radius:8px; margin-bottom:2px;}
+.dsidebar a.active{background:rgba(255,255,255,.1); color:#fff;}
+.dsidebar .slabel{font-size:10.5px; color:rgba(255,255,255,.32); padding:14px 11px 5px; text-transform:uppercase; letter-spacing:.06em;}
+.dmain{flex:1; background:var(--bg); padding:22px 26px;}
+.dtopbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+.dtopbar .crumb{font-size:12px; color:var(--sub); margin-bottom:3px;}
+.dtopbar h1{font-size:20px;}
+.kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px;}
+.kpi-card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px;}
+.kpi-card .lbl{font-size:12px; color:var(--sub); margin-bottom:7px;}
+.kpi-card .val{font-family:'Manrope'; font-weight:800; font-size:23px; margin-bottom:3px;}
+.kpi-card .trend{font-size:11.5px; font-weight:600;}
+.trend-up{color:var(--green);}
+.trend-down{color:var(--red);}
+.trend-warn{color:var(--amber);}
+
+table.dt{width:100%; border-collapse:collapse; font-size:12.5px;}
+table.dt th{text-align:left; color:var(--sub); font-weight:600; padding:9px 8px; border-bottom:1px solid var(--line); font-size:11.5px;}
+table.dt td{padding:11px 8px; border-bottom:1px solid var(--line); vertical-align:top;}
+.flag-tag{display:inline-block; font-size:10.5px; padding:2px 8px; border-radius:6px; background:var(--red-bg); color:var(--red); margin-right:4px; margin-bottom:3px;}
+.filters-row{display:flex; gap:8px; margin-bottom:14px;}
+.filters-row input,.filters-row select{font-family:inherit; font-size:12.5px; padding:8px 11px; border-radius:7px; border:1px solid var(--line);}
+
+/* ===== Auth ===== */
+.authwrap{min-height:820px; display:flex; align-items:center; justify-content:center; background:var(--bg);}
+.authcard{width:380px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:32px; box-shadow:var(--shadow);}
+.authcard .logo{justify-content:center; margin-bottom:22px;}
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.field label{font-size:12.5px; font-weight:600;}
+.field input,.field select,.field textarea{font-family:inherit; font-size:13.5px; padding:10px 12px; border-radius:7px; border:1px solid var(--line);}
+
+/* ===== Wizard ===== */
+.wizwrap{background:var(--bg); min-height:820px; display:flex; flex-direction:column; align-items:center; padding:36px 0 60px;}
+.progress-track{width:480px; height:6px; background:var(--line); border-radius:999px; overflow:hidden; margin-bottom:8px;}
+.progress-fill{height:100%; background:var(--indigo); border-radius:999px;}
+.progress-label{width:480px; display:flex; justify-content:space-between; font-size:12px; color:var(--sub); margin-bottom:26px;}
+.wizcard{width:480px;}
+.option-card{border:1.5px solid var(--line); border-radius:10px; padding:15px; font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:space-between; background:#fff; margin-bottom:9px;}
+.option-card.selected{border-color:var(--indigo); background:var(--indigo-light); color:var(--indigo);}
+.check-dot{width:17px; height:17px; border-radius:50%; border:1.5px solid var(--line); flex:none;}
+.option-card.selected .check-dot{background:var(--indigo); border-color:var(--indigo);}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="brandrow"><span class="mark">CT</span><span class="ttl">CampusTruth</span></div>
+      <div class="sub">Figma-ready screen set · 47 frames</div>
+    </div>
+    <div class="panel-scroll" id="pageList"></div>
+    <div class="panel-foot"><b>Frame width</b> 1440px desktop.<br>Click a page to preview.</div>
+  </div>
+  <div class="canvas" id="canvas">
+    <div class="frame-wrap" id="frameWrap"></div>
+  </div>
+</div>
+
+<script>
+const PAGES = [];
+
+/* ---------- shared helpers ---------- */
+function badge(kind, text){
+  const map = {verified:'badge-verified', org:'badge-org', official:'badge-official', pending:'badge-pending', flagged:'badge-flagged', trending:'badge-trending'};
+  return `<span class="badge ${map[kind]}">${text}</span>`;
+}
+function trustStrip(){
+  return `<div class="topstrip"><div class="left"><span>12,400+ verified reviews</span><span>850+ colleges</span><span>100% anonymous</span></div><div class="right"><span>Help</span><span>For Colleges</span></div></div>`;
+}
+function siteHeader(loggedIn){
+  return `<div class="site-header"><div class="header-row">
+    <div class="logo"><span class="mark">CT</span>CampusTruth</div>
+    <nav class="main-nav"><a>Colleges</a><a>Rankings</a><a>Compare</a></nav>
+    <div class="header-search"><input placeholder="Search for a college or university..."><button>Search</button></div>
+    <div class="header-actions">
+      ${loggedIn ? `<span style="font-size:16px;">🔔</span><span style="font-size:16px;">☆</span><div class="avatar">RS</div>` : `<button class="btn btn-ghost btn-sm">Log in</button><button class="btn btn-primary btn-sm">Sign up</button>`}
+    </div>
+  </div></div>`;
+}
+function siteFooter(){
+  return `<div class="site-footer"><div class="footer-grid">
+    <div><div class="logo" style="margin-bottom:8px;"><span class="mark">CT</span>CampusTruth</div><p style="color:var(--sub); font-size:12px; max-width:200px;">Honest, anonymous college reviews for students across India.</p></div>
+    <div><h5>Company</h5><a>About</a><a>Contact</a></div>
+    <div><h5>Legal</h5><a>Privacy</a><a>Terms</a><a>Community Guidelines</a></div>
+    <div><h5>Trust &amp; Safety</h5><a>Report Content</a><a>Review Guidelines</a><a>Org Response Policy</a></div>
+    <div><h5>Follow</h5><a>Instagram</a><a>LinkedIn</a></div>
+  </div></div>`;
+}
+function collegeCard(logo,name,city,rating,count,badges){
+  return `<div class="college-card">
+    <div class="toprow"><div class="clogo">${logo}</div><div><h4>${name}</h4><div class="city">${city}</div></div></div>
+    <div class="badges-row">${badges.map(b=>badge(b[0],b[1])).join('')}</div>
+    <div class="rating-row"><span class="stars">${stars(rating)}</span><span>${rating.toFixed(1)}</span><span class="count">· ${count} reviews</span></div>
+  </div>`;
+}
+function stars(n){
+  const full = Math.round(n);
+  return '★★★★★'.slice(0,full) + '☆☆☆☆☆'.slice(0, 5-full);
+}
+function reviewCard(o){
+  return `<div class="review-card">
+    <div class="reviewer-row">${o.verified ? badge('verified','Verified Student') : 'Anonymous Student'}<span class="meta">${o.meta}</span></div>
+    <div class="stars">${stars(o.rating)}</div>
+    <p class="review-text">"${o.text}"</p>
+    ${o.response ? `<div class="official-response"><span class="lbl">Official Response — ${o.responseFrom}</span>${o.response}</div>` : ''}
+    <div class="review-footer"><span>${o.date}</span><span>👍 Helpful (${o.helpful}) · Share · Report</span></div>
+  </div>`;
+}
+function rbar(cat,val,pct){
+  return `<div class="rbar-row"><span class="cat">${cat}</span><div class="rbar-track"><div class="rbar-fill" style="width:${pct}%"></div></div><span class="rbar-val">${val}</span></div>`;
+}
+function kpi(label,val,trend,cls){
+  return `<div class="kpi-card"><div class="lbl">${label}</div><div class="val">${val}</div><div class="trend ${cls}">${trend}</div></div>`;
+}
+function collegeTabs(active){
+  const tabs=['Overview','Reviews','Questions','Placements','Courses','Jobs'];
+  return `<div class="tabs">${tabs.map(t=>`<div class="tab ${t===active?'active':''}">${t}</div>`).join('')}</div>`;
+}
+function profileHeader(){
+  return `<div style="padding:16px 28px 0;"><div style="font-size:12px; color:var(--sub); margin-bottom:10px;">Colleges / Delhi / IIT Delhi</div>
+  <div class="card" style="display:flex; justify-content:space-between; margin-bottom:16px;">
+    <div style="display:flex; gap:16px;">
+      <div class="clogo" style="width:60px; height:60px; font-size:18px; border-radius:13px;">IIT</div>
+      <div><div style="display:flex; align-items:center; gap:10px;"><h1 style="font-size:22px;">Indian Institute of Technology Delhi</h1>${badge('verified','✓ Verified')}</div>
+      <div style="display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--sub);"><span>📍 Hauz Khas, New Delhi</span><span>🌐 iitd.ac.in</span><span>🏛 Est. 1961</span></div></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+      <div style="display:flex; gap:8px;"><button class="btn btn-ghost btn-sm">☆ Save</button><button class="btn btn-ghost btn-sm">Share</button></div>
+      <button class="btn btn-primary btn-sm">Write a review</button>
+    </div>
+  </div>
+  <div class="card" style="display:flex; gap:32px; margin-bottom:16px;">
+    <div><div style="font-family:'Manrope'; font-weight:800; font-size:34px;">4.6</div><div class="stars" style="font-size:14px;">★★★★★</div><div style="font-size:12px; color:var(--sub); margin-top:3px;">1,204 reviews · 640 verified</div></div>
+    <div style="flex:1; max-width:400px;">
+      ${rbar('Placement','4.4',88)}${rbar('Faculty','4.6',92)}${rbar('Infrastructure','4.3',86)}${rbar('Administration','3.2',64)}
+    </div>
+  </div></div>`;
+}
+function dashSidebar(kind, active){
+  const items = kind==='student' ? [
+    ['📊','Dashboard','dashboard'],['💬','My Reviews','reviews'],['❓','My Questions','questions'],['🔖','Saved Colleges','saved'],['🔔','Notifications','notif'],['⚙️','Settings','settings']
+  ] : kind==='org' ? [
+    ['📊','Dashboard','dashboard'],['🏛','Profile','profile'],['💬','Reviews','reviews'],['❓','Questions','questions'],['📈','Analytics','analytics'],['😊','Sentiment','sentiment'],['💼','Jobs','jobs'],['👥','Team','team'],['⚙️','Settings','settings']
+  ] : [
+    ['📊','Dashboard','dashboard'],['👤','Users','users'],['🏛','Colleges','colleges'],['💬','Reviews','reviews'],['🚩','Reports','reports'],['🏢','Organizations','orgs'],['✅','Verifications','verif'],['💳','Payments','payments'],['📈','Analytics','analytics'],['⚙️','Settings','settings']
+  ];
+  const brand = kind==='student' ? 'CampusTruth' : kind==='org' ? 'IIT Delhi · Org' : 'CampusTruth Admin';
+  return `<div class="dsidebar"><div class="brand"><span class="mark">CT</span>${brand}</div>
+    ${items.map(i=>`<a class="${i[2]===active?'active':''}">${i[0]} ${i[1]}</a>`).join('')}
+  </div>`;
+}
+function dtopbar(crumb,title,right){
+  return `<div class="dtopbar"><div><div class="crumb">${crumb}</div><h1>${title}</h1></div><div>${right||''}</div></div>`;
+}
+
+/* ================= PUBLIC ================= */
+PAGES.push({id:1, group:'Public — Discovery', label:'Homepage', render:()=>`
+${trustStrip()}${siteHeader(false)}
+<div style="background:var(--indigo); color:#fff; padding:56px 24px 48px; text-align:center;">
+  <h1 style="font-size:38px; max-width:620px; margin:0 auto 12px; line-height:1.15;">Know what students really think.</h1>
+  <p style="color:rgba(255,255,255,.82); max-width:520px; margin:0 auto 26px; font-size:15px;">Explore honest student experiences, ratings and reviews of colleges and universities across India.</p>
+  <div style="background:#fff; border-radius:14px; padding:7px; display:flex; gap:8px; max-width:540px; margin:0 auto; box-shadow:0 8px 24px rgba(0,0,0,.18);">
+    <input style="flex:1; border:none; outline:none; padding:10px 12px; font-size:14px; font-family:inherit;" placeholder="Search for a college or university...">
+    <button class="btn btn-primary">Search</button>
+  </div>
+  <div style="margin-top:16px; font-size:12.5px; color:rgba(255,255,255,.75);">Popular: <b>IIT Delhi</b> · <b>Delhi University</b> · <b>Amity University</b> · <b>Chandigarh University</b></div>
+</div>
+<div style="padding:36px 28px;">
+  <h3 style="margin-bottom:16px;">Trending this week</h3>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:32px;">
+    ${collegeCard('IIT','IIT Delhi','New Delhi',4.6,'1,204',[['verified','Verified'],['trending','Trending']])}
+    ${collegeCard('DU','Delhi University','New Delhi',4.1,'3,860',[['verified','Verified']])}
+    ${collegeCard('AU','Amity University','Noida',3.4,'2,145',[['trending','Trending']])}
+    ${collegeCard('CU','Chandigarh University','Mohali',3.9,'987',[['verified','Verified']])}
+  </div>
+  <h3 style="margin-bottom:16px;">Latest student reviews</h3>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+    ${reviewCard({verified:true, meta:'· Economics, DU', rating:4, text:"Faculty are engaged, but hostel maintenance requests take a while.", date:'2 days ago', helpful:34})}
+    ${reviewCard({verified:false, meta:'· B.Tech CSE, Amity', rating:3, text:"Placement support varies a lot by department.", date:'3 days ago', helpful:19})}
+    ${reviewCard({verified:true, meta:'· M.Tech, IIT Delhi', rating:5, text:"Research infrastructure is excellent, workload is intense first year.", date:'5 days ago', helpful:51})}
+  </div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:2, group:'Public — Discovery', label:'Search Results', render:()=>`
+${siteHeader(false)}
+<div style="padding:20px 28px;">
+  <div style="background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px; display:flex; gap:10px; margin-bottom:20px;">
+    <input style="flex:1; border:none; outline:none; font-size:14px;" value="engineering colleges in Delhi">
+    <button class="btn btn-primary btn-sm">Search</button>
+  </div>
+  <div style="display:grid; grid-template-columns:220px 1fr; gap:20px;">
+    <div class="card">
+      <h4 style="font-size:13px; margin-bottom:12px;">Filters</h4>
+      ${['State','City','Course','Category','Institution Type','Rating','Verified presence'].map(f=>`<div style="font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; color:var(--sub);">${f} <span>▾</span></div>`).join('')}
+    </div>
+    <div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:14px; font-size:12.5px; color:var(--sub);"><span>212 results</span><span>Sort: Most relevant ▾</span></div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        ${collegeCard('IIT','IIT Delhi','New Delhi',4.6,'1,204',[['verified','Verified']])}
+        ${collegeCard('DU','Delhi Technological University','New Delhi',4.2,'1,410',[['verified','Verified']])}
+        ${collegeCard('NS','Netaji Subhas University','New Delhi',3.9,'760',[])}
+      </div>
+    </div>
+  </div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:3, group:'Public — Discovery', label:'Colleges Listing', render:()=>`
+${siteHeader(false)}
+<div style="padding:24px 28px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px;"><div><h2 style="font-size:22px;">All Colleges</h2><p style="color:var(--sub); font-size:13px; margin:4px 0 0;">Browse 850+ institutions across India</p></div><div style="font-size:12.5px; color:var(--sub);">Sort: Most reviewed ▾</div></div>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px;">
+    ${collegeCard('IIT','IIT Bombay','Mumbai',4.7,'940',[['verified','Verified']])}
+    ${collegeCard('BI','BITS Pilani','Pilani',4.5,'1,310',[['verified','Verified']])}
+    ${collegeCard('NL','NLSIU Bangalore','Bengaluru',4.5,'512',[])}
+    ${collegeCard('AI','AIIMS Delhi','New Delhi',4.6,'683',[['verified','Verified']])}
+    ${collegeCard('VI','VIT Vellore','Vellore',4.0,'2,240',[['trending','Trending']])}
+    ${collegeCard('SR','SRM Chennai','Chennai',3.8,'1,890',[])}
+    ${collegeCard('MA','Manipal Institute','Manipal',4.2,'1,050',[['verified','Verified']])}
+    ${collegeCard('JA','Jamia Millia Islamia','New Delhi',4.0,'870',[])}
+  </div>
+  <div style="text-align:center; margin-top:24px; font-size:12.5px; color:var(--sub);">← 1 2 3 … 22 →</div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:4, group:'Public — Discovery', label:'Compare Colleges', render:()=>`
+${siteHeader(false)}
+<div style="padding:28px;">
+  <h2 style="font-size:22px; margin-bottom:4px;">Compare colleges</h2>
+  <p style="color:var(--sub); font-size:13px; margin:0 0 20px;">Comparing up to 3 institutions side by side</p>
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table class="dt" style="width:100%;">
+      <tr><th style="width:180px;"></th><th>IIT Delhi</th><th>Delhi University</th><th>Amity University</th></tr>
+      <tr><td>Overall Rating</td><td><b>4.6</b></td><td>4.1</td><td>3.4</td></tr>
+      <tr><td>Placement</td><td><b>4.4</b></td><td>3.6</td><td>3.1</td></tr>
+      <tr><td>Faculty</td><td><b>4.6</b></td><td>4.0</td><td>3.3</td></tr>
+      <tr><td>Infrastructure</td><td><b>4.3</b></td><td>3.8</td><td>3.9</td></tr>
+      <tr><td>Campus Life</td><td>4.0</td><td>3.9</td><td><b>4.1</b></td></tr>
+      <tr><td>Value for Money</td><td>3.7</td><td><b>4.2</b></td><td>3.3</td></tr>
+      <tr><td>Review Count</td><td><b>1,204</b></td><td>3,860</td><td>2,145</td></tr>
+      <tr><td>Verified Reviews</td><td>640</td><td><b>1,980</b></td><td>812</td></tr>
+    </table>
+  </div>
+  <button class="btn btn-ghost" style="margin-top:14px;">Share comparison</button>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:5, group:'Public — Discovery', label:'Rankings', render:()=>`
+${siteHeader(false)}
+<div style="padding:28px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:6px;"><h2 style="font-size:22px;">Top Rated Colleges — India</h2><a style="font-size:12.5px; color:var(--indigo);">How rankings work →</a></div>
+  <p style="color:var(--sub); font-size:13px; margin:0 0 18px;">Weighted by verified-review volume and recency, not a raw average</p>
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th style="width:40px;">#</th><th>College</th><th>Location</th><th>Score</th><th>Rating</th><th>Reviews</th><th>Trend</th></tr>
+      ${[[1,'IIT Bombay','Mumbai','96.2','4.7','940','↑'],[2,'IIT Delhi','New Delhi','95.8','4.6','1,204','—'],[3,'BITS Pilani','Pilani','94.1','4.5','1,310','↑'],[4,'AIIMS Delhi','New Delhi','93.6','4.6','683','↑'],[5,'NLSIU Bangalore','Bengaluru','92.9','4.5','512','↓']]
+      .map(r=>`<tr><td><b>${r[0]}</b></td><td style="display:flex; gap:8px; align-items:center;"><div class="clogo" style="width:28px; height:28px; font-size:10px;">${r[1].split(' ')[0].slice(0,2).toUpperCase()}</div>${r[1]}</td><td>${r[2]}</td><td><b>${r[3]}</b></td><td>${stars(Math.round(r[4]))} ${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td></tr>`).join('')}
+    </table>
+  </div>
+</div>
+${siteFooter()}
+`});
+
+/* ================= COLLEGE PROFILE ================= */
+PAGES.push({id:6, group:'College Profile', label:'Overview', render:()=>`
+${siteHeader(false)}
+${profileHeader()}
+<div style="padding:0 28px 32px; display:grid; grid-template-columns:1fr 300px; gap:20px;">
+  <div>
+    ${collegeTabs('Overview')}
+    <div class="card" style="margin-top:16px;"><h4 style="margin-bottom:8px;">About</h4><p style="font-size:13.5px; color:var(--sub); line-height:1.6;">IIT Delhi is one of India's premier public engineering institutions, known for research output, faculty quality and competitive admissions.</p></div>
+    <div class="card" style="margin-top:12px;"><h4 style="margin-bottom:10px;">Popular review</h4>${reviewCard({verified:true, meta:'· M.Tech CSE, 2024', rating:5, text:"Research infrastructure is excellent and most professors are approachable, though the workload is intense in the first year.", date:'2 days ago', helpful:34})}</div>
+  </div>
+  <div>
+    <div class="card" style="background:var(--indigo-deep); color:#fff; margin-bottom:12px;"><h4 style="color:rgba(255,255,255,.6); font-size:12px;">Is this your institution?</h4><p style="font-size:12.5px; color:rgba(255,255,255,.75); margin:6px 0 12px;">Claim this profile to respond to reviews.</p><button class="btn" style="background:#fff; width:100%; justify-content:center;">Claim your profile</button></div>
+    <div class="card"><h4 style="font-size:12px; color:var(--sub);">Key information</h4>
+      <div style="font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between;"><span>Type</span><span>Public</span></div>
+      <div style="font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between;"><span>Established</span><span>1961</span></div>
+      <div style="font-size:12.5px; padding:7px 0; display:flex; justify-content:space-between;"><span>Website</span><span>iitd.ac.in</span></div>
+    </div>
+  </div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:7, group:'College Profile', label:'Reviews', render:()=>`
+${siteHeader(false)}
+${profileHeader()}
+<div style="padding:0 28px 32px;">
+  ${collegeTabs('Reviews')}
+  <div style="display:flex; justify-content:space-between; margin:16px 0;">
+    <div style="display:flex; gap:8px;"><button class="btn btn-primary btn-sm">Most recent</button><button class="btn btn-ghost btn-sm">Most helpful</button><button class="btn btn-ghost btn-sm">Highest rated</button><button class="btn btn-ghost btn-sm">Verified only</button></div>
+    <button class="btn btn-primary btn-sm">Write a review</button>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    ${reviewCard({verified:true, meta:'· B.Tech Mechanical, 2025', rating:4, text:"Placement support was excellent for core branches this year, though the process felt rushed. Faculty mentorship made a real difference.", date:'2 days ago', helpful:34, response:"Thank you for the detailed feedback — we're reviewing the placement timeline based on inputs like this.", responseFrom:'IIT Delhi'})}
+    ${reviewCard({verified:false, meta:'· M.Sc Physics, current', rating:3, text:"Academics are rigorous and rewarding. Administration can be slow with paperwork and hostel maintenance requests take a while.", date:'5 days ago', helpful:12})}
+  </div>
+  <div class="review-card" style="opacity:.55; margin-top:12px;">
+    <div class="reviewer-row">Anonymous Student ${badge('pending','Under review')}</div>
+    <p class="review-text" style="filter:blur(2px);">This review has been reported and is being checked against community guidelines.</p>
+  </div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:8, group:'College Profile', label:'Questions', render:()=>`
+${siteHeader(false)}
+${profileHeader()}
+<div style="padding:0 28px 32px;">
+  ${collegeTabs('Questions')}
+  <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0;"><h4>Questions &amp; Answers</h4><button class="btn btn-primary btn-sm">Ask a question</button></div>
+  <div class="card" style="margin-bottom:10px;"><h4 style="font-size:14px;">Is hostel accommodation guaranteed for M.Tech students?</h4><div style="font-size:12px; color:var(--sub); margin-top:6px;">Anonymous · 4 answers · 62 upvotes · 3 days ago</div></div>
+  <div class="card"><h4 style="font-size:14px;">How competitive is the CSE branch change process after 1st year?</h4><div style="font-size:12px; color:var(--sub); margin-top:6px;">${badge('verified','Verified')} · 2 answers · 29 upvotes · 1 week ago</div></div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:9, group:'College Profile', label:'Placements', render:()=>`
+${siteHeader(false)}
+${profileHeader()}
+<div style="padding:0 28px 32px;">
+  ${collegeTabs('Placements')}
+  <div class="card" style="margin:16px 0;"><h4 style="margin-bottom:10px;">Placement sentiment</h4>${rbar('Placement rating','4.4',88)}<p style="font-size:13px; color:var(--sub); margin-top:10px;">Based on 640 verified reviews mentioning placements. "Excellent support for core engineering branches" is the most common theme.</p></div>
+  <div class="card" style="text-align:center; padding:40px; color:var(--sub); font-size:13px;">📊 Detailed placement statistics (recruiters, salary ranges, branch-wise data) aren't available yet — they'll appear here once submitted and verified.</div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:10, group:'College Profile', label:'Courses', render:()=>`
+${siteHeader(false)}
+${profileHeader()}
+<div style="padding:0 28px 32px;">
+  ${collegeTabs('Courses')}
+  <div style="margin:16px 0;"><input placeholder="Search courses..." style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font-family:inherit;"></div>
+  <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><div><h4 style="font-size:14px;">B.Tech Computer Science &amp; Engineering</h4><div style="font-size:12px; color:var(--sub); margin-top:4px;">4 years · Department of Computer Science</div></div>${badge('verified','Popular')}</div>
+  <div class="card"><h4 style="font-size:14px;">M.Tech Mechanical Engineering</h4><div style="font-size:12px; color:var(--sub); margin-top:4px;">2 years · Department of Mechanical Engineering</div></div>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:11, group:'College Profile', label:'Jobs', render:()=>`
+${siteHeader(false)}
+${profileHeader()}
+<div style="padding:0 28px 32px;">
+  ${collegeTabs('Jobs')}
+  <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 10px;"><div><h4 style="font-size:14px;">Software Engineer Intern</h4><div style="font-size:12px; color:var(--sub); margin-top:4px;">Campus Placement Cell · On-site · Closes Oct 15</div></div><button class="btn btn-primary btn-sm">Apply</button></div>
+  <div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><h4 style="font-size:14px;">Research Assistant — Robotics Lab</h4><div style="font-size:12px; color:var(--sub); margin-top:4px;">Department Posting · On-site · Closes Oct 30</div></div><button class="btn btn-primary btn-sm">Apply</button></div>
+</div>
+${siteFooter()}
+`});
+
+/* ================= AUTH ================= */
+PAGES.push({id:12, group:'Auth', label:'Login', render:()=>`
+<div class="authwrap"><div class="authcard">
+  <div class="logo"><span class="mark">CT</span>CampusTruth</div>
+  <div class="field"><label>Email</label><input placeholder="you@example.com"></div>
+  <div class="field"><label>Password</label><input type="password" value="••••••••"></div>
+  <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:16px;"><span><input type="checkbox"> Remember me</span><a style="color:var(--indigo);">Forgot password?</a></div>
+  <button class="btn btn-primary" style="width:100%; justify-content:center;">Log in</button>
+  <div style="text-align:center; font-size:12.5px; color:var(--sub); margin-top:16px;">New here? <a style="color:var(--indigo); font-weight:600;">Sign up</a></div>
+</div></div>
+`});
+
+PAGES.push({id:13, group:'Auth', label:'Register', render:()=>`
+<div class="authwrap"><div class="authcard">
+  <div class="logo"><span class="mark">CT</span>CampusTruth</div>
+  <div class="field"><label>Username</label><input placeholder="Choose a username"></div>
+  <div class="field"><label>Email</label><input placeholder="you@example.com"></div>
+  <div class="field"><label>Password</label><input type="password" value="••••••••"><span style="font-size:11.5px; color:var(--green);">Strong password ✓</span></div>
+  <div style="font-size:12px; color:var(--sub); margin-bottom:16px;"><input type="checkbox" checked> I agree to the Terms and Community Guidelines</div>
+  <button class="btn btn-primary" style="width:100%; justify-content:center;">Create account</button>
+  <div style="text-align:center; font-size:12.5px; color:var(--sub); margin-top:16px;">Already have an account? <a style="color:var(--indigo); font-weight:600;">Log in</a></div>
+</div></div>
+`});
+
+/* ================= REVIEW WIZARD ================= */
+function wizShell(step,total,label,inner){
+  return `<div class="wizwrap">
+    <div class="progress-track"><div class="progress-fill" style="width:${(step/total)*100}%"></div></div>
+    <div class="progress-label" style="width:480px;"><span>Step ${step} of ${total}</span><span>${label}</span></div>
+    <div class="wizcard">${inner}</div>
+  </div>`;
+}
+PAGES.push({id:14, group:'Review &amp; Q&amp;A Flow', label:'Write Review — Relationship', render:()=>wizShell(2,10,"Your relationship",`
+  <h2 style="font-size:22px; margin-bottom:8px;">What's your relationship to this college?</h2>
+  <p style="color:var(--sub); font-size:13.5px; margin-bottom:20px;">This helps other students weigh your perspective.</p>
+  <div class="option-card selected">Current Student<span class="check-dot" style="background:var(--indigo); border-color:var(--indigo);"></span></div>
+  <div class="option-card">Alumni<span class="check-dot"></span></div>
+  <div class="option-card">Former Student<span class="check-dot"></span></div>
+  <div style="display:flex; justify-content:space-between; margin-top:26px;"><button class="btn btn-ghost">Back</button><button class="btn btn-primary">Continue</button></div>
+`)});
+
+PAGES.push({id:15, group:'Review &amp; Q&amp;A Flow', label:'Write Review — Ratings', render:()=>wizShell(5,10,"Ratings",`
+  <h2 style="font-size:22px; margin-bottom:8px;">Rate your experience</h2>
+  <p style="color:var(--sub); font-size:13.5px; margin-bottom:20px;">Tap to rate each category out of 5.</p>
+  ${[['Overall',4],['Placement',4],['Faculty',5],['Infrastructure',4],['Administration',3],['Campus Life',4],['Value for Money',3],['Hostel',3]].map(r=>`<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;"><span style="font-size:14px; font-weight:600;">${r[0]}</span><span style="font-size:20px; color:var(--indigo); letter-spacing:2px;">${stars(r[1])}</span></div>`).join('')}
+  <div style="display:flex; justify-content:space-between; margin-top:14px;"><button class="btn btn-ghost">Back</button><button class="btn btn-primary">Continue</button></div>
+`)});
+
+PAGES.push({id:16, group:'Review &amp; Q&amp;A Flow', label:'Write Review — Preview', render:()=>wizShell(10,10,"Preview",`
+  <h2 style="font-size:22px; margin-bottom:8px;">Preview your review</h2>
+  <p style="color:var(--sub); font-size:13.5px; margin-bottom:20px;">This is exactly how it will appear publicly.</p>
+  <div class="card">
+    ${badge('verified','Verified Student')}
+    <div style="font-size:12.5px; color:var(--sub); margin:8px 0;">IIT Delhi · M.Tech CSE · 2024</div>
+    <div class="stars" style="font-size:16px;">★★★★☆</div>
+    <p style="font-size:14px; line-height:1.6; margin-top:8px;">"Research infrastructure is excellent and most professors are approachable, though the workload is intense in the first year. Placement support for CSE was strong."</p>
+  </div>
+  <div style="display:flex; justify-content:space-between; margin-top:20px;"><button class="btn btn-ghost">Back</button><button class="btn btn-primary">Submit review</button></div>
+`)});
+
+PAGES.push({id:17, group:'Review &amp; Q&amp;A Flow', label:'Write Review — Success', render:()=>`
+<div class="wizwrap" style="justify-content:center;">
+  <div style="text-align:center;">
+    <div style="width:60px; height:60px; border-radius:50%; background:var(--green-bg); color:var(--green); font-size:26px; display:flex; align-items:center; justify-content:center; margin:0 auto 18px;">✓</div>
+    <h2 style="font-size:22px; margin-bottom:8px;">Review submitted</h2>
+    <p style="color:var(--sub); font-size:13.5px; max-width:340px; margin:0 auto;">Thanks for helping other students. Your review is in the moderation queue and will publish shortly.</p>
+    <button class="btn btn-primary" style="margin-top:22px;">Back to IIT Delhi</button>
+  </div>
+</div>
+`});
+
+/* ================= STUDENT ================= */
+PAGES.push({id:18, group:'Student Account', label:'Student Dashboard', render:()=>`
+<div class="dashwrap">${dashSidebar('student','dashboard')}
+<div class="dmain">
+  ${dtopbar('Account','Welcome back, Rahul','')}
+  <div class="kpi-row">
+    ${kpi('My Reviews','3','1 pending','trend-warn')}
+    ${kpi('My Questions','2','1 answered','trend-up')}
+    ${kpi('Saved Colleges','7','2 added this week','trend-up')}
+    ${kpi('Notifications','4','unread','trend-warn')}
+  </div>
+  <div class="card"><h4 style="margin-bottom:12px;">Recent activity</h4>
+    <div style="font-size:12.5px; padding:9px 0; border-bottom:1px solid var(--line);">Your review of <b>IIT Delhi</b> was approved</div>
+    <div style="font-size:12.5px; padding:9px 0; border-bottom:1px solid var(--line);"><b>Delhi University</b> responded to your review</div>
+    <div style="font-size:12.5px; padding:9px 0;">Your question received a new answer</div>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:19, group:'Student Account', label:'My Reviews', render:()=>`
+<div class="dashwrap">${dashSidebar('student','reviews')}
+<div class="dmain">
+  ${dtopbar('Account','My Reviews','<button class="btn btn-primary btn-sm">Write a review</button>')}
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>College</th><th>Rating</th><th>Submitted</th><th>Status</th><th>Actions</th></tr>
+      <tr><td>IIT Delhi</td><td>${stars(4)}</td><td>Sep 3</td><td>${badge('verified','Approved')}</td><td>Edit · Delete</td></tr>
+      <tr><td>Amity University</td><td>${stars(3)}</td><td>Aug 28</td><td>${badge('pending','Pending')}</td><td>Edit</td></tr>
+      <tr><td>Delhi University</td><td>${stars(2)}</td><td>Aug 10</td><td>${badge('flagged','Flagged')}</td><td>Why?</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:20, group:'Student Account', label:'Notifications', render:()=>`
+<div class="dashwrap">${dashSidebar('student','notif')}
+<div class="dmain">
+  ${dtopbar('Account','Notifications','<button class="btn btn-ghost btn-sm">Mark all read</button>')}
+  <div class="card">
+    <div style="display:flex; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); background:var(--indigo-light); margin:-18px -18px 0; padding:14px 18px;"><span style="width:8px; height:8px; border-radius:50%; background:var(--indigo); margin-top:5px;"></span><div><b style="font-size:13px;">Your review was approved</b><div style="font-size:12px; color:var(--sub);">IIT Delhi · 2 hours ago</div></div></div>
+    <div style="display:flex; gap:10px; padding:14px 0; border-bottom:1px solid var(--line);"><span style="width:8px; height:8px;"></span><div><b style="font-size:13px; font-weight:500;">Amity University responded to your review</b><div style="font-size:12px; color:var(--sub);">1 day ago</div></div></div>
+    <div style="display:flex; gap:10px; padding:14px 0;"><span style="width:8px; height:8px;"></span><div><b style="font-size:13px; font-weight:500;">Your question received a new answer</b><div style="font-size:12px; color:var(--sub);">3 days ago</div></div></div>
+  </div>
+</div></div>
+`});
+
+/* ================= ORGANIZATION ================= */
+PAGES.push({id:21, group:'Organization Dashboard', label:'Org Dashboard', render:()=>`
+<div class="dashwrap">${dashSidebar('org','dashboard')}
+<div class="dmain">
+  ${dtopbar('Organization','Dashboard','<span style="font-size:12.5px; color:var(--sub); border:1px solid var(--line); border-radius:7px; padding:8px 14px; background:#fff;">Last 30 days ▾</span>')}
+  <div class="kpi-row">
+    ${kpi('Total Reviews','1,204','↑ 8.2% vs last month','trend-up')}
+    ${kpi('Average Rating','4.6','↑ 0.1 vs last month','trend-up')}
+    ${kpi('Response Rate','72%','↓ 3% vs last month','trend-down')}
+    ${kpi('Unanswered Reviews','18','Needs attention','trend-warn')}
+  </div>
+  <div class="card"><h4 style="margin-bottom:12px;">Reviews awaiting response</h4>
+    <table class="dt">
+      <tr><th>Review</th><th>Course</th><th>Rating</th><th></th></tr>
+      <tr><td style="max-width:280px;">"Placement support was inconsistent across departments."</td><td>B.Tech ECE</td><td>${stars(3)}</td><td><button class="btn btn-primary btn-sm">Respond</button></td></tr>
+      <tr><td style="max-width:280px;">"Hostel food quality has improved a lot this semester."</td><td>M.Tech CSE</td><td>${stars(5)}</td><td><button class="btn btn-primary btn-sm">Respond</button></td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:22, group:'Organization Dashboard', label:'Org Reviews — Respond', render:()=>`
+<div class="dashwrap">${dashSidebar('org','reviews')}
+<div class="dmain">
+  ${dtopbar('Organization','Reviews','')}
+  ${reviewCard({verified:true, meta:'· B.Tech ECE, current', rating:3, text:"Placement support was inconsistent across departments this year — CSE gets much more attention.", date:'Sep 3', helpful:9})}
+  <div class="card" style="margin-top:14px;">
+    <h4 style="font-size:13px; margin-bottom:10px;">Write an official response</h4>
+    <textarea style="width:100%; min-height:100px; border:1px solid var(--line); border-radius:8px; padding:12px; font-family:inherit; font-size:13.5px;">Thank you for the detailed feedback — we're reviewing placement support consistency across departments for next year.</textarea>
+    <div style="display:flex; gap:8px; margin-top:12px;"><button class="btn btn-primary btn-sm">Submit response</button><button class="btn btn-ghost btn-sm">Preview</button></div>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:23, group:'Organization Dashboard', label:'Org Analytics', render:()=>`
+<div class="dashwrap">${dashSidebar('org','analytics')}
+<div class="dmain">
+  ${dtopbar('Organization','Analytics','')}
+  <div class="kpi-row">
+    ${kpi('Reviews this month','96','↑ 12%','trend-up')}
+    ${kpi('Sentiment (positive)','64%','↑ 4pts','trend-up')}
+    ${kpi('Avg. rating trend','+0.5','vs 6 months ago','trend-up')}
+    ${kpi('Response rate','72%','↓ 3%','trend-down')}
+  </div>
+  <div style="display:grid; grid-template-columns:1.6fr 1fr; gap:16px;">
+    <div class="card"><h4 style="margin-bottom:12px;">Rating over time</h4>
+      <svg viewBox="0 0 480 130" style="width:100%; height:130px;"><polyline points="0,90 80,84 160,88 240,70 320,58 400,40 480,32" fill="none" stroke="#2A3B7C" stroke-width="3"/></svg>
+      <p style="font-size:12px; color:var(--sub); margin-top:8px;">Your placement rating increased from 3.1 to 3.6 over the last 6 months.</p>
+    </div>
+    <div class="card"><h4 style="margin-bottom:12px;">Sentiment</h4>
+      <div style="display:flex; height:10px; border-radius:999px; overflow:hidden; margin-bottom:10px;"><div style="width:64%; background:var(--green);"></div><div style="width:22%; background:var(--line);"></div><div style="width:14%; background:var(--red);"></div></div>
+      <div style="font-size:12px; color:var(--sub);">Positive 64% · Neutral 22% · Negative 14%</div>
+    </div>
+  </div>
+</div></div>
+`});
+
+/* ================= ADMIN ================= */
+PAGES.push({id:24, group:'Admin Dashboard', label:'Admin Dashboard', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','dashboard')}
+<div class="dmain">
+  ${dtopbar('Admin','Platform Dashboard','')}
+  <div class="kpi-row">
+    ${kpi('Total Users','482,110','↑ 3.1% this week','trend-up')}
+    ${kpi('Total Reviews','1.2M','↑ 8,204 today','trend-up')}
+    ${kpi('Pending Moderation','42','Needs review','trend-warn')}
+    ${kpi('Reports (24h)','9','↑ 2 vs yesterday','trend-down')}
+  </div>
+  <div style="display:grid; grid-template-columns:1.6fr 1fr; gap:16px;">
+    <div class="card"><h4 style="margin-bottom:12px;">Reviews submitted — last 7 days</h4>
+      <svg viewBox="0 0 480 130" style="width:100%; height:130px;"><polyline points="0,70 80,60 160,64 240,40 320,50 400,30 480,20" fill="none" stroke="#2A3B7C" stroke-width="3"/></svg>
+    </div>
+    <div class="card"><h4 style="margin-bottom:12px;">Top institutions</h4>
+      <div style="font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between;"><span>IIT Bombay</span><b>940</b></div>
+      <div style="font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between;"><span>IIT Delhi</span><b>1,204</b></div>
+      <div style="font-size:12.5px; padding:8px 0; display:flex; justify-content:space-between;"><span>Delhi University</span><b>3,860</b></div>
+    </div>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:25, group:'Admin Dashboard', label:'Review Moderation', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','reviews')}
+<div class="dmain">
+  ${dtopbar('Admin','Review Moderation','')}
+  <div class="filters-row"><input placeholder="Search reviews, users, institutions..." style="flex:1;"><select><option>All flags</option></select><select><option>Sort: Risk score</option></select></div>
+  <div class="card" style="padding:0; margin-bottom:16px;">
+    <table class="dt">
+      <tr><th>Review</th><th>Institution</th><th>Flags</th><th>Reports</th><th>Risk</th><th>Actions</th></tr>
+      <tr><td style="max-width:240px;">"This college is a scam and the director should be in jail."</td><td>Amity University</td><td><span class="flag-tag">Abusive</span><span class="flag-tag">Unsupported claim</span></td><td>4</td><td>${badge('flagged','High')}</td><td><button class="btn btn-sm">Review</button> <button class="btn btn-sm btn-danger">Hide</button></td></tr>
+      <tr><td style="max-width:240px;">"Faculty were unhelpful, admin ignored my complaints."</td><td>Chandigarh University</td><td><span class="flag-tag">Spam pattern</span></td><td>1</td><td>${badge('pending','Medium')}</td><td><button class="btn btn-sm">Review</button> <button class="btn btn-sm btn-primary">Approve</button></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4 style="margin-bottom:10px;">Moderation detail</h4>
+    <p style="font-size:13px; color:var(--sub); line-height:1.6;">"This college is a scam and the director should be in jail." — submitted by an unverified account with 3 reviews posted in 10 minutes.</p>
+    <div style="margin:12px 0;"><span class="flag-tag">Abusive language</span><span class="flag-tag">Unsupported allegation</span><span class="flag-tag">Rapid submission</span></div>
+    <p style="font-size:11.5px; color:var(--sub); margin-bottom:14px;">Note: legitimate criticism is protected — this flag reflects tone and unverifiable claims, not negative sentiment.</p>
+    <div style="display:flex; gap:8px;"><button class="btn btn-primary btn-sm">Approve</button><button class="btn btn-sm">Request clarification</button><button class="btn btn-danger btn-sm">Hide</button><button class="btn btn-danger btn-sm">Remove</button></div>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:26, group:'Admin Dashboard', label:'Verifications Queue', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','verif')}
+<div class="dmain">
+  ${dtopbar('Admin','Verification Queue','')}
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>Applicant</th><th>Institution</th><th>Type</th><th>Submitted</th><th>Status</th><th>Actions</th></tr>
+      <tr><td>priya.sharma@iitd.ac.in</td><td>IIT Delhi</td><td>Organization</td><td>Sep 2</td><td>${badge('pending','Pending')}</td><td><button class="btn btn-primary btn-sm">Approve</button> <button class="btn btn-sm btn-danger">Reject</button></td></tr>
+      <tr><td>rahul.k@students.du.ac.in</td><td>Delhi University</td><td>Student</td><td>Sep 1</td><td>${badge('pending','Pending')}</td><td><button class="btn btn-primary btn-sm">Approve</button> <button class="btn btn-sm btn-danger">Reject</button></td></tr>
+      <tr><td>admin@amity.edu</td><td>Amity University</td><td>Organization</td><td>Aug 29</td><td>${badge('verified','Approved')}</td><td>View</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+/* ================= STUDENT (more) ================= */
+PAGES.push({id:27, group:'Student Account', label:'Saved Colleges', render:()=>`
+<div class="dashwrap">${dashSidebar('student','saved')}
+<div class="dmain">
+  ${dtopbar('Account','Saved Colleges','<button class="btn btn-ghost btn-sm">Compare saved</button>')}
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+    ${collegeCard('IIT','IIT Delhi','New Delhi',4.6,'1,204',[['verified','Verified']])}
+    ${collegeCard('DU','Delhi University','New Delhi',4.1,'3,860',[['verified','Verified']])}
+    ${collegeCard('BI','BITS Pilani','Pilani',4.5,'1,310',[['verified','Verified']])}
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:28, group:'Student Account', label:'Settings', render:()=>`
+<div class="dashwrap">${dashSidebar('student','settings')}
+<div class="dmain">
+  ${dtopbar('Account','Settings','')}
+  <div style="display:grid; grid-template-columns:180px 1fr; gap:20px;">
+    <div style="font-size:12.5px; color:var(--sub); display:flex; flex-direction:column; gap:4px;">
+      <a style="color:var(--indigo); font-weight:600;">Account</a><a>Privacy</a><a>Security</a><a>Notifications</a><a>Verification</a><a style="color:var(--red);">Danger Zone</a>
+    </div>
+    <div class="card">
+      <div class="field"><label>Username</label><input value="rahul_s"></div>
+      <div class="field"><label>Email</label><input value="rahul@students.iitd.ac.in"></div>
+      <div class="field"><label>Public profile</label><select><option>Private (default)</option><option>Public</option></select></div>
+      <button class="btn btn-primary btn-sm">Save changes</button>
+    </div>
+  </div>
+</div></div>
+`});
+
+/* ================= COLLEGE CLAIM FLOW ================= */
+PAGES.push({id:29, group:'College Claim Flow', label:'Claim Form', render:()=>`
+<div class="authwrap"><div class="authcard" style="width:440px;">
+  <h2 style="font-size:19px; margin-bottom:4px;">Claim this profile</h2>
+  <p style="font-size:12.5px; color:var(--sub); margin-bottom:18px;">Verify your affiliation with IIT Delhi to manage its official presence.</p>
+  <div class="field"><label>Organization name</label><input value="IIT Delhi"></div>
+  <div class="field"><label>Official email</label><input placeholder="you@iitd.ac.in"></div>
+  <div class="field"><label>Website</label><input value="iitd.ac.in"></div>
+  <div class="field"><label>Your designation</label><input placeholder="e.g. Dean of Student Affairs"></div>
+  <div class="field"><label>Supporting document (optional)</label><div style="border:1.5px dashed var(--line); border-radius:8px; padding:16px; text-align:center; font-size:12.5px; color:var(--sub);">⬆ Drag a file or click to upload</div></div>
+  <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:6px;">Submit claim</button>
+</div></div>
+`});
+
+PAGES.push({id:30, group:'College Claim Flow', label:'Pending Verification', render:()=>`
+<div class="authwrap"><div class="authcard" style="text-align:center;">
+  <div style="width:56px; height:56px; border-radius:50%; background:var(--amber-bg); color:var(--amber); font-size:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">⏳</div>
+  <h2 style="font-size:19px; margin-bottom:8px;">Verification submitted</h2>
+  <p style="font-size:13px; color:var(--sub); margin-bottom:18px;">We typically respond within 3–5 business days. The public profile is unchanged until verification completes.</p>
+  ${badge('pending','Pending Verification')}
+</div></div>
+`});
+
+PAGES.push({id:31, group:'College Claim Flow', label:'Approved — Org Access', render:()=>`
+<div class="authwrap"><div class="authcard" style="text-align:center;">
+  <div style="width:56px; height:56px; border-radius:50%; background:var(--green-bg); color:var(--green); font-size:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">✓</div>
+  <h2 style="font-size:19px; margin-bottom:8px;">Claim approved</h2>
+  <p style="font-size:13px; color:var(--sub); margin-bottom:18px;">IIT Delhi is now a Verified Organization. You have access to the organization dashboard.</p>
+  ${badge('org','Verified Organization')}
+  <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:18px;">Go to organization dashboard</button>
+</div></div>
+`});
+
+/* ================= ORGANIZATION (more) ================= */
+PAGES.push({id:32, group:'Organization Dashboard', label:'Org Profile', render:()=>`
+<div class="dashwrap">${dashSidebar('org','profile')}
+<div class="dmain">
+  ${dtopbar('Organization','Profile','<button class="btn btn-primary btn-sm">Save changes</button>')}
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div class="card">
+      <h4 style="font-size:13px; margin-bottom:12px;">Edit information</h4>
+      <div class="field"><label>Description <span style="color:var(--sub); font-weight:400;">— Public</span></label><textarea style="min-height:70px;">IIT Delhi is one of India's premier public engineering institutions...</textarea></div>
+      <div class="field"><label>Contact email <span style="color:var(--sub); font-weight:400;">— Private</span></label><input value="admissions@iitd.ac.in"></div>
+      <div class="field"><label>Website <span style="color:var(--sub); font-weight:400;">— Public</span></label><input value="iitd.ac.in"></div>
+    </div>
+    <div class="card">
+      <h4 style="font-size:13px; margin-bottom:12px;">Public preview</h4>
+      <div style="display:flex; gap:10px; margin-bottom:10px;"><div class="clogo" style="width:48px; height:48px;">IIT</div><div><h4 style="font-size:15px;">IIT Delhi</h4>${badge('verified','✓ Verified')}</div></div>
+      <p style="font-size:12.5px; color:var(--sub);">IIT Delhi is one of India's premier public engineering institutions...</p>
+    </div>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:33, group:'Organization Dashboard', label:'Org Jobs', render:()=>`
+<div class="dashwrap">${dashSidebar('org','jobs')}
+<div class="dmain">
+  ${dtopbar('Organization','Jobs &amp; Internships','<button class="btn btn-primary btn-sm">+ Post a job</button>')}
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>Title</th><th>Type</th><th>Location</th><th>Deadline</th><th>Status</th><th>Actions</th></tr>
+      <tr><td>Software Engineer Intern</td><td>Internship</td><td>On-site</td><td>Oct 15</td><td>${badge('verified','Published')}</td><td>Edit</td></tr>
+      <tr><td>Research Assistant — Robotics</td><td>Job</td><td>On-site</td><td>Oct 30</td><td>${badge('verified','Published')}</td><td>Edit</td></tr>
+      <tr><td>Data Analyst — Admissions Office</td><td>Job</td><td>Hybrid</td><td>—</td><td>${badge('pending','Draft')}</td><td>Edit · Publish</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:34, group:'Organization Dashboard', label:'Org Team', render:()=>`
+<div class="dashwrap">${dashSidebar('org','team')}
+<div class="dmain">
+  ${dtopbar('Organization','Team','<button class="btn btn-primary btn-sm">+ Invite member</button>')}
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>Member</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+      <tr><td>Priya Sharma</td><td>Admin</td><td>${badge('verified','Active')}</td><td>Manage</td></tr>
+      <tr><td>Arjun Mehta</td><td>Editor</td><td>${badge('verified','Active')}</td><td>Manage · Remove</td></tr>
+      <tr><td>neha.k@iitd.ac.in</td><td>Editor</td><td>${badge('pending','Invitation sent')}</td><td>Resend · Cancel</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:35, group:'Organization Dashboard', label:'Org Settings — Plan', render:()=>`
+<div class="dashwrap">${dashSidebar('org','settings')}
+<div class="dmain">
+  ${dtopbar('Organization','Settings — Subscription','')}
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+    <div class="card"><h4 style="font-size:14px; margin-bottom:6px;">Free</h4><div style="font-family:'Manrope'; font-weight:800; font-size:20px; margin-bottom:10px;">₹0</div><p style="font-size:12px; color:var(--sub);">Claim profile · Basic management · Official responses</p></div>
+    <div class="card" style="border-color:var(--indigo); box-shadow:0 0 0 2px var(--indigo-light);"><h4 style="font-size:14px; margin-bottom:6px;">Pro <span style="font-size:10.5px; color:var(--indigo);">Current plan</span></h4><div style="font-family:'Manrope'; font-weight:800; font-size:20px; margin-bottom:10px;">₹4,999<span style="font-size:11px; color:var(--sub);">/mo</span></div><p style="font-size:12px; color:var(--sub);">+ Advanced analytics · Sentiment analysis · Competitor comparison</p></div>
+    <div class="card"><h4 style="font-size:14px; margin-bottom:6px;">Business</h4><div style="font-family:'Manrope'; font-weight:800; font-size:20px; margin-bottom:10px;">₹12,999<span style="font-size:11px; color:var(--sub);">/mo</span></div><p style="font-size:12px; color:var(--sub);">+ Job &amp; internship listings · Featured placement</p></div>
+  </div>
+  <p style="font-size:11.5px; color:var(--sub); margin-top:14px;">No plan can remove or hide legitimate reviews. Moderation is only for policy violations.</p>
+</div></div>
+`});
+
+/* ================= ADMIN (more) ================= */
+PAGES.push({id:36, group:'Admin Dashboard', label:'Users', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','users')}
+<div class="dmain">
+  ${dtopbar('Admin','Users','')}
+  <div class="filters-row"><input placeholder="Search users..." style="flex:1;"><select><option>All roles</option></select><select><option>All status</option></select></div>
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>User</th><th>Role</th><th>Verification</th><th>Reviews</th><th>Status</th><th>Actions</th></tr>
+      <tr><td>rahul_s</td><td>Student</td><td>${badge('verified','Verified')}</td><td>3</td><td>${badge('verified','Active')}</td><td>View · Suspend</td></tr>
+      <tr><td>anon_9f21</td><td>Student</td><td>—</td><td>1</td><td>${badge('verified','Active')}</td><td>View · Suspend</td></tr>
+      <tr><td>priya.sharma</td><td>Organization</td><td>${badge('org','Verified Org')}</td><td>—</td><td>${badge('verified','Active')}</td><td>View</td></tr>
+      <tr><td>user_dk221</td><td>Student</td><td>—</td><td>7</td><td>${badge('flagged','Suspended')}</td><td>Restore</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:37, group:'Admin Dashboard', label:'Colleges', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','colleges')}
+<div class="dmain">
+  ${dtopbar('Admin','Colleges','<button class="btn btn-primary btn-sm">+ Add college</button>')}
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>College</th><th>Location</th><th>Category</th><th>Verification</th><th>Reviews</th><th>Actions</th></tr>
+      <tr><td>IIT Delhi</td><td>New Delhi</td><td>Engineering</td><td>${badge('verified','Verified')}</td><td>1,204</td><td>View · Edit · Feature</td></tr>
+      <tr><td>Amity University</td><td>Noida</td><td>Multidisciplinary</td><td>${badge('pending','Unclaimed')}</td><td>2,145</td><td>View · Verify</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:38, group:'Admin Dashboard', label:'Organizations', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','orgs')}
+<div class="dmain">
+  ${dtopbar('Admin','Organizations','')}
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>Organization</th><th>Institution</th><th>Members</th><th>Status</th><th>Subscription</th><th>Actions</th></tr>
+      <tr><td>IIT Delhi Admin</td><td>IIT Delhi</td><td>2</td><td>${badge('verified','Approved')}</td><td>Pro</td><td>View</td></tr>
+      <tr><td>Amity Marketing Cell</td><td>Amity University</td><td>1</td><td>${badge('pending','Pending')}</td><td>Free</td><td>Approve · Reject</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:39, group:'Admin Dashboard', label:'Reports', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','reports')}
+<div class="dmain">
+  ${dtopbar('Admin','Reports','')}
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>Content</th><th>Reason</th><th>Reporter</th><th>Status</th><th>Assigned</th><th>Actions</th></tr>
+      <tr><td style="max-width:220px;">Review on Amity University</td><td>Fake review</td><td>Anonymous</td><td>${badge('pending','Investigating')}</td><td>M. Iyer</td><td>Dismiss · Remove</td></tr>
+      <tr><td style="max-width:220px;">Question on IIT Delhi</td><td>Harassment</td><td>Anonymous</td><td>${badge('flagged','Open')}</td><td>Unassigned</td><td>Investigate</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:40, group:'Admin Dashboard', label:'Payments', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','payments')}
+<div class="dmain">
+  ${dtopbar('Admin','Payments','')}
+  <div class="card" style="background:var(--amber-bg); color:var(--amber); margin-bottom:14px; font-size:12.5px;">⚠ Demo data — payments are not yet live on the platform.</div>
+  <div class="card" style="padding:0;">
+    <table class="dt">
+      <tr><th>Transaction</th><th>Organization</th><th>Plan</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+      <tr><td>TXN-88213</td><td>IIT Delhi</td><td>Pro</td><td>₹4,999</td><td>${badge('verified','Paid')}</td><td>Sep 1</td></tr>
+      <tr><td>TXN-88190</td><td>BITS Pilani</td><td>Business</td><td>₹12,999</td><td>${badge('verified','Paid')}</td><td>Aug 28</td></tr>
+    </table>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:41, group:'Admin Dashboard', label:'Platform Analytics', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','analytics')}
+<div class="dmain">
+  ${dtopbar('Admin','Platform Analytics','')}
+  <div class="kpi-row">
+    ${kpi('Daily Active Users','48,210','↑ 4.2%','trend-up')}
+    ${kpi('New Users','1,840','↑ 6.1%','trend-up')}
+    ${kpi('Reviews Approved','12,904','↑ 3.4%','trend-up')}
+    ${kpi('Reviews Rejected','318','2.4% of submissions','trend-warn')}
+  </div>
+  <div class="card"><h4 style="margin-bottom:12px;">Search volume — last 7 days</h4>
+    <svg viewBox="0 0 480 130" style="width:100%; height:130px;"><polyline points="0,80 80,70 160,72 240,50 320,55 400,30 480,25" fill="none" stroke="#2A3B7C" stroke-width="3"/></svg>
+  </div>
+</div></div>
+`});
+
+PAGES.push({id:42, group:'Admin Dashboard', label:'Platform Settings', render:()=>`
+<div class="dashwrap">${dashSidebar('admin','settings')}
+<div class="dmain">
+  ${dtopbar('Admin','Platform Settings','')}
+  <div style="display:grid; grid-template-columns:180px 1fr; gap:20px;">
+    <div style="font-size:12.5px; color:var(--sub); display:flex; flex-direction:column; gap:4px;">
+      <a style="color:var(--indigo); font-weight:600;">Moderation</a><a>Categories</a><a>Rankings</a><a>Content &amp; FAQs</a><a>Roles &amp; Permissions</a><a>Security</a>
+    </div>
+    <div class="card">
+      <h4 style="font-size:13px; margin-bottom:12px;">Moderation thresholds</h4>
+      <div class="field"><label>Auto-flag after N reports</label><input value="3"></div>
+      <div class="field"><label>Rapid-submission window</label><input value="10 minutes"></div>
+      <button class="btn btn-primary btn-sm">Save changes</button>
+    </div>
+  </div>
+</div></div>
+`});
+
+/* ================= LEGAL & TRUST ================= */
+PAGES.push({id:43, group:'Legal &amp; Trust', label:'About', render:()=>`
+${siteHeader(false)}
+<div style="padding:40px 28px; max-width:680px; margin:0 auto;">
+  <h1 style="font-size:26px; margin-bottom:14px;">About CampusTruth</h1>
+  <p style="font-size:14px; color:var(--sub); line-height:1.7; margin-bottom:14px;">CampusTruth exists so students can hear from students before choosing where to study. Every review is anonymous by default — "Verified Student" is the only identity signal we ever show publicly.</p>
+  <p style="font-size:14px; color:var(--sub); line-height:1.7;">Institutions can claim and manage their profile, respond publicly to reviews, and see how students actually experience their campus — but they can never pay to remove a legitimate negative review.</p>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:44, group:'Legal &amp; Trust', label:'Contact', render:()=>`
+${siteHeader(false)}
+<div style="padding:40px 28px; max-width:480px; margin:0 auto;">
+  <h1 style="font-size:24px; margin-bottom:18px;">Contact us</h1>
+  <div class="field"><label>Name</label><input placeholder="Your name"></div>
+  <div class="field"><label>Email</label><input placeholder="you@example.com"></div>
+  <div class="field"><label>Subject</label><select><option>General question</option><option>Report a problem</option><option>Institution inquiry</option></select></div>
+  <div class="field"><label>Message</label><textarea style="min-height:100px;"></textarea></div>
+  <button class="btn btn-primary" style="width:100%; justify-content:center;">Send message</button>
+</div>
+${siteFooter()}
+`});
+
+PAGES.push({id:45, group:'Legal &amp; Trust', label:'Community Guidelines', render:()=>`
+${siteHeader(false)}
+<div style="padding:40px 28px; max-width:680px; margin:0 auto;">
+  <h1 style="font-size:24px; margin-bottom:16px;">Community Guidelines</h1>
+  <div style="font-size:13.5px; color:var(--sub); line-height:1.8;">
+    <p>✓ Reviews should reflect your genuine, first-hand experience.</p>
+    <p>✓ Avoid sharing anyone's personal information, including your own.</p>
+    <p>✓ Specific, constructive feedback is more useful than general statements.</p>
+    <p>✓ Legitimate criticism is always allowed — moderation targets policy violations, not negative sentiment.</p>
+  </div>
+</div>
+${siteFooter()}
+`});
+
+/* ================= TRUST & SAFETY ================= */
+PAGES.push({id:46, group:'Legal &amp; Trust', label:'Report Content — Modal', render:()=>`
+<div class="authwrap"><div class="authcard" style="width:420px; text-align:left;">
+  <h2 style="font-size:17px; margin-bottom:4px;">Report this content</h2>
+  <p style="font-size:12.5px; color:var(--sub); margin-bottom:14px;">Help us understand what's wrong.</p>
+  ${['Spam','Fake review','Personal information','Harassment','Hate / abuse','Irrelevant','Impersonation','Other'].map((r,i)=>`<div class="option-card ${i===2?'selected':''}" style="padding:11px 14px; font-size:13px;">${r}<span class="check-dot" style="${i===2?'background:var(--indigo);border-color:var(--indigo);':''}"></span></div>`).join('')}
+  <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:8px;">Submit report</button>
+</div></div>
+`});
+
+PAGES.push({id:47, group:'Legal &amp; Trust', label:'Report Submitted', render:()=>`
+<div class="authwrap"><div class="authcard" style="text-align:center;">
+  <div style="width:52px; height:52px; border-radius:50%; background:var(--green-bg); color:var(--green); font-size:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">✓</div>
+  <h2 style="font-size:17px; margin-bottom:6px;">Report submitted</h2>
+  <p style="font-size:12.5px; color:var(--sub);">Our team will review this within 48 hours.</p>
+</div></div>
+`});
+
+/* ---------- render engine ---------- */
+const list = document.getElementById('pageList');
+const wrap = document.getElementById('frameWrap');
+let groups = {};
+PAGES.forEach(p=>{ (groups[p.group] = groups[p.group]||[]).push(p); });
+let html='';
+Object.keys(groups).forEach(g=>{
+  html += `<div class="group-label">${g}</div>`;
+  groups[g].forEach(p=>{
+    html += `<div class="page-item" data-id="${p.id}"><span class="num">${p.id}</span>${p.label}</div>`;
+  });
+});
+list.innerHTML = html;
+
+function renderPage(id){
+  const p = PAGES.find(x=>x.id===id);
+  document.querySelectorAll('.page-item').forEach(el=>el.classList.toggle('active', el.dataset.id==id));
+  wrap.innerHTML = `<div class="frame-label"><span class="dot"></span>${String(id).padStart(2,'0')}. ${p.label}</div><div class="frame">${p.render()}</div>`;
+  document.getElementById('canvas').scrollTop = 0;
+}
+list.addEventListener('click', e=>{
+  const item = e.target.closest('.page-item');
+  if(item) renderPage(Number(item.dataset.id));
+});
+renderPage(1);
+</script>
+</body>
+</html>

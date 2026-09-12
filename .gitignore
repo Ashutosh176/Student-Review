@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+# Stray tsc-compiled duplicates of vite.config.ts (config files should stay .ts)
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# Prisma
+backend/prisma/dev.db
+
+# Uploads (local dev)
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test/coverage
+coverage/
+
+# Claude Code local tool state (session-specific, not project source)
+.claude/

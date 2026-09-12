@@ -1,0 +1,836 @@
+// StudentReview — Prisma schema
+// PostgreSQL, normalized relational schema per product spec §27.
+// Anonymous-identity rule: reviews/questions/answers only ever expose
+// `verifiedStudent` + createdAt-derived metadata publicly. No route or
+// serializer in this codebase should join back to User.email/phone for
+// public responses — see backend/src/utils/serializers.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum RoleName {
+  STUDENT
+  ORGANIZATION
+  MODERATOR
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DEACTIVATED
+}
+
+enum InstitutionType {
+  IIT
+  NIT
+  IIIT
+  PRIVATE_UNIVERSITY
+  STATE_UNIVERSITY
+  DEEMED_UNIVERSITY
+  ENGINEERING_COLLEGE
+  MANAGEMENT_INSTITUTE
+  MEDICAL_COLLEGE
+  LAW_SCHOOL
+  ARTS_SCIENCE_COLLEGE
+  OTHER
+}
+
+enum RelationshipType {
+  CURRENT_STUDENT
+  ALUMNI
+  FORMER_STUDENT
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  FLAGGED
+  REJECTED
+  REMOVED
+}
+
+enum RatingCategory {
+  OVERALL
+  PLACEMENT
+  FACULTY
+  INFRASTRUCTURE
+  ADMINISTRATION
+  CAMPUS_LIFE
+  VALUE_FOR_MONEY
+  HOSTEL
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum ReportReason {
+  SPAM
+  FAKE_REVIEW
+  PERSONAL_INFORMATION
+  HARASSMENT
+  HATE_ABUSE
+  IRRELEVANT
+  IMPERSONATION
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  INVESTIGATING
+  DISMISSED
+  ACTIONED
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrgMemberRole {
+  OWNER
+  ADMIN
+  EDITOR
+}
+
+enum OrgMemberStatus {
+  ACTIVE
+  INVITED
+  REMOVED
+}
+
+enum NotificationType {
+  REVIEW_APPROVED
+  REVIEW_REJECTED
+  REVIEW_REPORTED
+  ORG_RESPONSE
+  QUESTION_ANSWERED
+  ANSWER_UPVOTED
+  CLAIM_APPROVED
+  CLAIM_REJECTED
+  INSTITUTION_APPROVED
+  INSTITUTION_REJECTED
+  VERIFICATION_APPROVED
+  VERIFICATION_REJECTED
+  VERIFICATION_REVOKED
+  SYSTEM
+}
+
+enum InstitutionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ListingType {
+  JOB
+  INTERNSHIP
+}
+
+enum LocationType {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum AdminActionType {
+  APPROVE
+  REJECT
+  HIDE
+  REMOVE
+  WARN
+  SUSPEND
+  BAN
+  DISMISS
+  REQUEST_CLARIFICATION
+  REVOKE
+}
+
+enum RankingMetric {
+  OVERALL
+  PLACEMENT
+  FACULTY
+  INFRASTRUCTURE
+  CAMPUS_LIFE
+  VALUE_FOR_MONEY
+  MOST_REVIEWED
+  TRENDING
+}
+
+// ───────────────────────── Identity & auth ─────────────────────────
+
+model User {
+  id                      String        @id @default(uuid())
+  // Internal identifier shown nowhere publicly except as an opaque handle
+  // if the user opts into a public profile. Reviews never expose this.
+  username                String        @unique
+  email                   String        @unique
+  passwordHash            String
+  status                  AccountStatus @default(ACTIVE)
+  emailVerifiedAt         DateTime?
+  publicProfileOptIn      Boolean       @default(false)
+  // Gate which notification categories notify() is allowed to create for this
+  // user — turning one off actually stops those rows from being written, not
+  // just from being displayed.
+  notifyReviewActivity    Boolean       @default(true)
+  notifyCommunityActivity Boolean       @default(true)
+  notifySubmissionUpdates Boolean       @default(true)
+  notifySystem            Boolean       @default(true)
+  lastLoginAt             DateTime?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  roles                   UserRole[]
+  reviews                 Review[]
+  reviewReports           ReviewReport[]           @relation("Reporter")
+  reviewVotes             ReviewVote[]
+  questions               Question[]
+  answers                 Answer[]
+  answerVotes             AnswerVote[]
+  savedInstitutions       SavedInstitution[]
+  notifications           Notification[]
+  organizationMembers     OrganizationMember[]
+  organizationClaims      OrganizationClaim[]
+  studentVerifications    StudentVerification[]
+  refreshTokens           RefreshToken[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  auditLogsAsActor        AuditLog[]
+  adminActions            AdminAction[]            @relation("AdminActor")
+  submittedInstitutions   Institution[]            @relation("InstitutionSubmitter")
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        RoleName @unique
+  description String?
+
+  users UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_verification_tokens")
+}
+
+// ───────────────────────── Platform settings ─────────────────────────
+
+// Single-row table (id is always the literal "singleton") holding the
+// moderation/ranking thresholds admins can tune from Settings → Moderation.
+model PlatformSettings {
+  id                           String   @id @default("singleton")
+  reportAutoFlagThreshold      Int      @default(3)
+  rapidSubmissionWindowMinutes Int      @default(10)
+  rapidSubmissionCount         Int      @default(3)
+  minReviewsForRanking         Int      @default(5)
+  updatedAt                    DateTime @updatedAt
+
+  @@map("platform_settings")
+}
+
+// ───────────────────────── Content ─────────────────────────
+
+model Faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, order])
+  @@map("faqs")
+}
+
+// ───────────────────────── Institutions ─────────────────────────
+
+model InstitutionCategory {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  institutions Institution[]
+
+  @@map("institution_categories")
+}
+
+model Institution {
+  id                String            @id @default(uuid())
+  slug              String            @unique
+  name              String
+  type              InstitutionType
+  categoryId        String?
+  establishedYear   Int?
+  website           String?
+  description       String?
+  logoUrl           String?
+  verified          Boolean           @default(false)
+  claimed           Boolean           @default(false)
+  featured          Boolean           @default(false)
+  status            InstitutionStatus @default(APPROVED)
+  submittedByUserId String?
+  rejectionReason   String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  category             InstitutionCategory?      @relation(fields: [categoryId], references: [id])
+  submittedBy          User?                     @relation("InstitutionSubmitter", fields: [submittedByUserId], references: [id])
+  locations            InstitutionLocation[]
+  courses              Course[]
+  reviews              Review[]
+  questions            Question[]
+  savedBy              SavedInstitution[]
+  organizationProfile  OrganizationProfile?
+  organizationClaims   OrganizationClaim[]
+  jobs                 Job[]
+  rankingScores        InstitutionRankingScore[]
+  emailDomains         InstitutionEmailDomain[]
+  studentVerifications StudentVerification[]
+
+  @@index([type])
+  @@index([verified])
+  @@index([status])
+  @@map("institutions")
+}
+
+model InstitutionLocation {
+  id            String  @id @default(uuid())
+  institutionId String
+  addressLine   String?
+  city          String
+  state         String
+  country       String  @default("India")
+  pincode       String?
+  latitude      Float?
+  longitude     Float?
+  isPrimary     Boolean @default(true)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@index([city])
+  @@index([state])
+  @@map("institution_locations")
+}
+
+model Course {
+  id            String   @id @default(uuid())
+  institutionId String
+  name          String
+  level         String // UG | PG | DOCTORATE | DIPLOMA
+  department    String?
+  durationYears Float?
+  createdAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  reviews     Review[]
+
+  @@index([institutionId])
+  @@map("courses")
+}
+
+// ───────────────────────── Reviews ─────────────────────────
+
+model Review {
+  id              String           @id @default(uuid())
+  userId          String
+  institutionId   String
+  courseId        String?
+  relationship    RelationshipType
+  batchYear       Int
+  title           String?
+  body            String
+  recommend       Boolean
+  verifiedStudent Boolean          @default(false)
+  status          ReviewStatus     @default(PENDING)
+  moderationNotes String?
+  riskScore       Int              @default(0)
+  sentiment       Sentiment?
+  sentimentTopics String[]         @default([])
+  helpfulCount    Int              @default(0)
+  editedAt        DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id])
+  institution Institution     @relation(fields: [institutionId], references: [id])
+  course      Course?         @relation(fields: [courseId], references: [id])
+  ratings     ReviewRating[]
+  reports     ReviewReport[]
+  votes       ReviewVote[]
+  response    ReviewResponse?
+
+  @@index([institutionId, status])
+  @@index([userId])
+  @@index([status, createdAt])
+  @@map("reviews")
+}
+
+model ReviewRating {
+  id       String         @id @default(uuid())
+  reviewId String
+  category RatingCategory
+  value    Int
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, category])
+  @@map("review_ratings")
+}
+
+model ReviewReport {
+  id              String       @id @default(uuid())
+  reviewId        String
+  reporterUserId  String
+  reason          ReportReason
+  details         String?
+  status          ReportStatus @default(OPEN)
+  assignedAdminId String?
+  resolvedAt      DateTime?
+  createdAt       DateTime     @default(now())
+
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reporter User   @relation("Reporter", fields: [reporterUserId], references: [id])
+
+  @@index([status])
+  @@map("review_reports")
+}
+
+model ReviewResponse {
+  id                   String   @id @default(uuid())
+  reviewId             String   @unique
+  organizationMemberId String
+  body                 String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  review             Review             @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  organizationMember OrganizationMember @relation(fields: [organizationMemberId], references: [id])
+
+  @@map("review_responses")
+}
+
+model ReviewVote {
+  id        String   @id @default(uuid())
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@map("review_votes")
+}
+
+// ───────────────────────── Q&A ─────────────────────────
+
+model Question {
+  id            String       @id @default(uuid())
+  userId        String
+  institutionId String
+  title         String
+  body          String?
+  status        ReviewStatus @default(APPROVED)
+  createdAt     DateTime     @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
+  answers     Answer[]
+
+  @@index([institutionId])
+  @@map("questions")
+}
+
+model Answer {
+  id              String       @id @default(uuid())
+  questionId      String
+  userId          String
+  body            String
+  verifiedStudent Boolean      @default(false)
+  upvoteCount     Int          @default(0)
+  status          ReviewStatus @default(APPROVED)
+  createdAt       DateTime     @default(now())
+
+  question Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User         @relation(fields: [userId], references: [id])
+  votes    AnswerVote[]
+
+  @@index([questionId])
+  @@map("answers")
+}
+
+model AnswerVote {
+  id        String   @id @default(uuid())
+  answerId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  answer Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([answerId, userId])
+  @@map("answer_votes")
+}
+
+// ───────────────────────── Organizations ─────────────────────────
+
+model OrganizationProfile {
+  id            String           @id @default(uuid())
+  institutionId String           @unique
+  contactEmail  String?
+  plan          SubscriptionPlan @default(FREE)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  institution   Institution          @relation(fields: [institutionId], references: [id])
+  members       OrganizationMember[]
+  jobs          Job[]
+  subscriptions Subscription[]
+
+  @@map("organization_profiles")
+}
+
+model OrganizationClaim {
+  id                String      @id @default(uuid())
+  institutionId     String
+  userId            String
+  organizationName  String
+  officialEmail     String
+  website           String?
+  designation       String?
+  documentUrl       String?
+  status            ClaimStatus @default(PENDING)
+  reviewedByAdminId String?
+  reviewedAt        DateTime?
+  createdAt         DateTime    @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([status])
+  @@map("organization_claims")
+}
+
+model OrganizationMember {
+  id                    String          @id @default(uuid())
+  organizationProfileId String
+  // Null until the invitee has an account and accepts the invite — see
+  // inviteTokenHash below for the not-yet-registered invite flow.
+  userId                String?
+  role                  OrgMemberRole   @default(EDITOR)
+  status                OrgMemberStatus @default(INVITED)
+  invitedEmail          String?
+  inviteTokenHash       String?         @unique
+  inviteTokenExpiresAt  DateTime?
+  createdAt             DateTime        @default(now())
+
+  organizationProfile OrganizationProfile @relation(fields: [organizationProfileId], references: [id], onDelete: Cascade)
+  user                User?               @relation(fields: [userId], references: [id])
+  responses           ReviewResponse[]
+
+  @@unique([organizationProfileId, userId])
+  @@map("organization_members")
+}
+
+model InstitutionEmailDomain {
+  id            String   @id @default(uuid())
+  institutionId String
+  domain        String   @unique // global-unique by design: one domain can't map to two institutions
+  createdAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId])
+  @@map("institution_email_domains")
+}
+
+enum StudentVerificationMethod {
+  EMAIL_OTP
+  DOCUMENT_UPLOAD
+}
+
+enum StudentVerificationStatus {
+  PENDING // OTP sent-unconfirmed, OR document awaiting admin review
+  VERIFIED
+  REJECTED // admin rejected a document submission
+  EXPIRED // OTP window lapsed with no resend
+  REVOKED // admin revoked a previously-verified record
+}
+
+// No unique constraint on (userId, institutionId) — every attempt is a
+// permanent history row, so a rejected document's audit trail survives a
+// later retry via the other method. "Currently verified?" is a status
+// query (see verification.service.ts), not a row lookup.
+model StudentVerification {
+  id            String                    @id @default(uuid())
+  userId        String
+  institutionId String
+  relationship  RelationshipType
+  method        StudentVerificationMethod
+  status        StudentVerificationStatus @default(PENDING)
+
+  // EMAIL_OTP fields
+  universityEmail String?
+  domain          String?
+
+  // DOCUMENT_UPLOAD fields
+  documentUrl       String?
+  documentNote      String?
+  reviewedByAdminId String?
+  reviewedAt        DateTime?
+  rejectionReason   String?
+
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution Institution       @relation(fields: [institutionId], references: [id])
+  otps        VerificationOtp[]
+
+  @@index([userId, institutionId])
+  @@index([status])
+  @@map("student_verifications")
+}
+
+model VerificationOtp {
+  id                    String    @id @default(uuid())
+  studentVerificationId String
+  codeHash              String
+  expiresAt             DateTime
+  attempts              Int       @default(0)
+  consumedAt            DateTime?
+  createdAt             DateTime  @default(now())
+
+  studentVerification StudentVerification @relation(fields: [studentVerificationId], references: [id], onDelete: Cascade)
+
+  @@index([studentVerificationId])
+  @@map("verification_otps")
+}
+
+// ───────────────────────── Engagement ─────────────────────────
+
+model SavedInstitution {
+  id            String   @id @default(uuid())
+  userId        String
+  institutionId String
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, institutionId])
+  @@map("saved_institutions")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ───────────────────────── Monetization ─────────────────────────
+
+model Subscription {
+  id                    String             @id @default(uuid())
+  organizationProfileId String
+  plan                  SubscriptionPlan
+  status                SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd      DateTime?
+  createdAt             DateTime           @default(now())
+
+  organizationProfile OrganizationProfile @relation(fields: [organizationProfileId], references: [id])
+  payments            Payment[]
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  subscriptionId String
+  amount         Int
+  currency       String        @default("INR")
+  status         PaymentStatus @default(PENDING)
+  provider       String        @default("demo")
+  providerRef    String?
+  createdAt      DateTime      @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@map("payments")
+}
+
+// ───────────────────────── Jobs ─────────────────────────
+
+model Job {
+  id                    String        @id @default(uuid())
+  organizationProfileId String
+  institutionId         String
+  title                 String
+  description           String
+  type                  ListingType
+  locationType          LocationType
+  location              String?
+  compensation          String?
+  skills                String[]      @default([])
+  eligibility           String?
+  applicationUrl        String?
+  deadline              DateTime?
+  status                ListingStatus @default(DRAFT)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  organizationProfile OrganizationProfile @relation(fields: [organizationProfileId], references: [id])
+  institution         Institution         @relation(fields: [institutionId], references: [id])
+
+  @@index([institutionId, status])
+  @@map("jobs")
+}
+
+// ───────────────────────── Rankings ─────────────────────────
+
+model InstitutionRankingScore {
+  id            String        @id @default(uuid())
+  institutionId String
+  metric        RankingMetric
+  score         Float
+  rank          Int
+  computedAt    DateTime      @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, metric])
+  @@index([metric, rank])
+  @@map("institution_ranking_scores")
+}
+
+// ───────────────────────── Audit & moderation ─────────────────────────
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?
+  action      String
+  entityType  String
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id])
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model AdminAction {
+  id          String          @id @default(uuid())
+  adminUserId String
+  targetType  String
+  targetId    String
+  action      AdminActionType
+  reason      String?
+  createdAt   DateTime        @default(now())
+
+  admin User @relation("AdminActor", fields: [adminUserId], references: [id])
+
+  @@map("admin_actions")
+}

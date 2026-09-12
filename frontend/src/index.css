@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-surface text-ink font-body;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-brand bg-brand text-white hover:bg-brand-dark;
+  }
+  .btn-ghost {
+    @apply border-line bg-transparent hover:bg-surface;
+  }
+  .btn-danger {
+    @apply border-danger text-danger hover:bg-danger-bg;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .card {
+    @apply rounded-card border border-line bg-white p-4 shadow-card;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .badge-verified {
+    @apply bg-success-bg text-success;
+  }
+  .badge-org {
+    @apply bg-info-bg text-info;
+  }
+  .badge-official {
+    @apply bg-brand-light text-brand;
+  }
+  .badge-pending {
+    @apply bg-warning-bg text-warning;
+  }
+  .badge-flagged {
+    @apply bg-danger-bg text-danger;
+  }
+  .badge-trending {
+    @apply bg-trending-bg text-trending;
+  }
+  .field label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    @apply w-full rounded-md border border-line px-3 py-2.5 text-sm font-body outline-none focus:border-brand focus:ring-1 focus:ring-brand;
+  }
+}
