@@ -65,6 +65,16 @@ export const env = {
   // called, feature just stays off) until this is set.
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
 
+  // The one permanent site-owner admin account. adminBootstrap.service.ts
+  // grants this email the ADMIN role at boot — idempotently, and it never
+  // touches the password on an account that already exists, so changing
+  // the password later via the app is never silently reverted on restart.
+  admin: {
+    email: process.env.ADMIN_EMAIL ?? '',
+    username: process.env.ADMIN_USERNAME ?? 'admin',
+    password: process.env.ADMIN_PASSWORD ?? '',
+  },
+
   upload: {
     dir: process.env.UPLOAD_DIR ?? './uploads',
     maxMb: Number(process.env.MAX_UPLOAD_MB ?? 5),
