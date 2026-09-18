@@ -68,6 +68,10 @@ export const removeMember = asyncHandler(async (req, res) => {
   ok(res, { removed: true });
 });
 
+export const planPrices = asyncHandler(async (_req, res) => {
+  ok(res, await paymentService.planPrices());
+});
+
 export const billing = asyncHandler(async (req, res) => {
   const membership = await orgService.getOrgMembershipForUser(req.user!.id);
   const data = await paymentService.getBillingInfo(membership.organizationProfileId);

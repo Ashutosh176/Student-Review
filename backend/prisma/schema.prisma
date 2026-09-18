@@ -340,6 +340,11 @@ model PlatformSettings {
   rapidSubmissionWindowMinutes Int      @default(10)
   rapidSubmissionCount         Int      @default(3)
   minReviewsForRanking         Int      @default(5)
+  // Whole rupees/month (not paise) — payment.service.ts converts to paise
+  // only at the Razorpay-order boundary; keeping the admin-facing unit as
+  // plain rupees avoids a ×100 mistake in the settings UI.
+  proPlanPriceInr              Int      @default(4999)
+  businessPlanPriceInr         Int      @default(12999)
   updatedAt                    DateTime @updatedAt
 
   @@map("platform_settings")

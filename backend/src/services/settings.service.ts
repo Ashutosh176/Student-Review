@@ -7,6 +7,8 @@ const DEFAULTS = {
   rapidSubmissionWindowMinutes: 10,
   rapidSubmissionCount: 3,
   minReviewsForRanking: 5,
+  proPlanPriceInr: 4999,
+  businessPlanPriceInr: 12999,
 };
 
 export type PlatformSettingsInput = Partial<typeof DEFAULTS>;

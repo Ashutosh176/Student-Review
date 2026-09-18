@@ -9,13 +9,18 @@ import { Toggle } from '@/components/Toggle';
 
 const ROLE_OPTIONS = ['STUDENT', 'ORGANIZATION', 'MODERATOR', 'ADMIN'] as const;
 
-const SECTIONS = ['Moderation', 'Categories', 'Rankings', 'Content & FAQs', 'Roles & Permissions', 'Security'] as const;
+const SECTIONS = ['Moderation', 'Pricing', 'Categories', 'Rankings', 'Content & FAQs', 'Roles & Permissions', 'Security'] as const;
 
 const THRESHOLD_FIELDS: { key: keyof PlatformSettings; label: string; suffix: string; min: number; max: number }[] = [
   { key: 'reportAutoFlagThreshold', label: 'Auto-flag after N reports', suffix: 'reports', min: 1, max: 50 },
   { key: 'rapidSubmissionWindowMinutes', label: 'Rapid-submission window', suffix: 'minutes', min: 1, max: 1440 },
   { key: 'rapidSubmissionCount', label: 'Rapid-submission review count', suffix: 'reviews', min: 1, max: 50 },
   { key: 'minReviewsForRanking', label: 'Minimum reviews to appear in rankings', suffix: 'reviews', min: 1, max: 100 },
+];
+
+const PRICING_FIELDS: { key: keyof PlatformSettings; label: string }[] = [
+  { key: 'proPlanPriceInr', label: 'Pro plan (₹ / month)' },
+  { key: 'businessPlanPriceInr', label: 'Business plan (₹ / month)' },
 ];
 
 function ModerationSection() {
@@ -69,6 +74,59 @@ function ModerationSection() {
         Configured in <code>backend/src/services/settings.service.ts</code>; enforced in{' '}
         <code>moderation.service.ts</code>, <code>review.service.ts</code>, and <code>ranking.service.ts</code>.
       </p>
+    </>
+  );
+}
+
+function PricingSection() {
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: ['admin', 'settings'], queryFn: adminApi.platformSettings });
+  const [form, setForm] = useState<PlatformSettings | null>(null);
+
+  const values = form ?? query.data;
+
+  const mutation = useMutation({
+    mutationFn: (input: Partial<PlatformSettings>) => adminApi.updatePlatformSettings(input),
+    onSuccess: (updated) => {
+      setForm(updated);
+      qc.invalidateQueries({ queryKey: ['admin', 'settings'] });
+    },
+  });
+
+  if (!values) return null;
+
+  return (
+    <>
+      <h4 className="mb-1 text-[13px]">Organization subscription pricing</h4>
+      <p className="mb-3 text-[11.5px] text-sub">
+        Shown on an organization's Settings → Billing page and charged via Razorpay at checkout — both read this same value,
+        so there's never a mismatch between the displayed price and what gets charged. Takes effect immediately for new
+        checkouts; it never changes what an already-active subscription already paid.
+      </p>
+      {PRICING_FIELDS.map((f) => (
+        <div key={f.key} className="flex items-center justify-between border-b border-line py-2 text-[12.5px] last:border-0">
+          <span>{f.label}</span>
+          <span className="flex items-center gap-2">
+            <span className="text-sub">₹</span>
+            <input
+              type="number"
+              min={0}
+              max={1000000}
+              value={values[f.key]}
+              onChange={(e) => setForm({ ...values, [f.key]: Number(e.target.value) })}
+              className="w-24 rounded-md border border-line px-2 py-1 text-right text-[12.5px]"
+            />
+          </span>
+        </div>
+      ))}
+      {mutation.isError && <p className="mt-3 text-xs text-danger">{apiErrorMessage(mutation.error)}</p>}
+      <button
+        className="btn btn-primary btn-sm mt-4"
+        disabled={mutation.isPending}
+        onClick={() => mutation.mutate({ proPlanPriceInr: values.proPlanPriceInr, businessPlanPriceInr: values.businessPlanPriceInr })}
+      >
+        {mutation.isPending ? 'Saving…' : mutation.isSuccess ? 'Saved ✓' : 'Save changes'}
+      </button>
     </>
   );
 }
@@ -400,6 +458,7 @@ export function AdminSettingsPage() {
         </div>
         <div className="card">
           {section === 'Moderation' && <ModerationSection />}
+          {section === 'Pricing' && <PricingSection />}
           {section === 'Categories' && <CategoriesSection />}
           {section === 'Rankings' && <RankingsSection />}
           {section === 'Content & FAQs' && <ContentFaqsSection />}

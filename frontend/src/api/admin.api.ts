@@ -191,6 +191,8 @@ export interface PlatformSettings {
   rapidSubmissionWindowMinutes: number;
   rapidSubmissionCount: number;
   minReviewsForRanking: number;
+  proPlanPriceInr: number;
+  businessPlanPriceInr: number;
 }
 
 export interface AdminFaqRow {

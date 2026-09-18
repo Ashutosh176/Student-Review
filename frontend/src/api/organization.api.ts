@@ -76,6 +76,7 @@ export const organizationApi = {
   },
   createJob: (input: Record<string, unknown>) => unwrap<JobListing>(api.post('/organization/jobs', input)),
   publishJob: (jobId: string) => unwrap<JobListing>(api.post(`/organization/jobs/${jobId}/publish`)),
+  planPrices: () => unwrap<{ pro: number; business: number }>(api.get('/organization/plan-prices')),
   billing: () => unwrap<BillingInfo>(api.get('/organization/billing')),
   checkout: (plan: 'PRO' | 'BUSINESS') => unwrap<CheckoutOrder>(api.post('/organization/billing/checkout', { plan })),
   verifyPayment: (input: { orderId: string; paymentId: string; signature: string }) =>

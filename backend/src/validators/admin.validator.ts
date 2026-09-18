@@ -80,6 +80,8 @@ export const updatePlatformSettingsSchema = z.object({
   rapidSubmissionWindowMinutes: z.coerce.number().int().min(1).max(1440).optional(),
   rapidSubmissionCount: z.coerce.number().int().min(1).max(50).optional(),
   minReviewsForRanking: z.coerce.number().int().min(1).max(100).optional(),
+  proPlanPriceInr: z.coerce.number().int().min(0).max(1_000_000).optional(),
+  businessPlanPriceInr: z.coerce.number().int().min(0).max(1_000_000).optional(),
 });
 
 export const revokeSchema = z.object({

@@ -11,11 +11,26 @@ import { EmptyState } from '@/components/LoadingSkeleton';
 import { timeAgo } from '@/utils/formatDate';
 import { loadRazorpayScript } from '@/utils/razorpay';
 
-const PLANS = [
-  { id: 'FREE' as const, name: 'Free', price: '₹0', features: 'Claim profile · Basic management · Official responses' },
-  { id: 'PRO' as const, name: 'Pro', price: '₹4,999/mo', features: '+ Advanced analytics · Sentiment analysis · Competitor comparison' },
-  { id: 'BUSINESS' as const, name: 'Business', price: '₹12,999/mo', features: '+ Job & internship listings · Featured placement' },
-];
+// Prices come from the server (admin-configurable — AdminSettingsPage →
+// Pricing) rather than being hardcoded here, so what's displayed always
+// matches what Razorpay actually charges at checkout.
+function plansFor(prices?: { pro: number; business: number }) {
+  return [
+    { id: 'FREE' as const, name: 'Free', price: '₹0', features: 'Claim profile · Basic management · Official responses' },
+    {
+      id: 'PRO' as const,
+      name: 'Pro',
+      price: prices ? `₹${prices.pro.toLocaleString('en-IN')}/mo` : '…',
+      features: '+ Advanced analytics · Sentiment analysis · Competitor comparison',
+    },
+    {
+      id: 'BUSINESS' as const,
+      name: 'Business',
+      price: prices ? `₹${prices.business.toLocaleString('en-IN')}/mo` : '…',
+      features: '+ Job & internship listings · Featured placement',
+    },
+  ];
+}
 
 const STATUS_BADGE: Record<string, 'verified' | 'flagged' | 'pending'> = {
   PAID: 'verified',
@@ -32,6 +47,8 @@ export function OrgSettingsPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const billingQuery = useQuery({ queryKey: ['organization', 'billing'], queryFn: organizationApi.billing });
+  const planPricesQuery = useQuery({ queryKey: ['organization', 'plan-prices'], queryFn: organizationApi.planPrices, staleTime: 5 * 60 * 1000 });
+  const PLANS = plansFor(planPricesQuery.data);
 
   const verifyMutation = useMutation({
     mutationFn: organizationApi.verifyPayment,

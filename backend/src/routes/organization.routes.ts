@@ -24,6 +24,7 @@ router.patch('/profile', validate({ body: updateOrgProfileSchema }), orgControll
 router.get('/members', orgController.listMembers);
 router.post('/members', validate({ body: inviteMemberSchema }), orgController.inviteMember);
 router.delete('/members/:memberId', orgController.removeMember);
+router.get('/plan-prices', orgController.planPrices);
 router.get('/billing', orgController.billing);
 router.post('/billing/checkout', validate({ body: checkoutSchema }), orgController.createCheckout);
 router.post('/billing/verify', validate({ body: verifyPaymentSchema }), orgController.verifyCheckout);

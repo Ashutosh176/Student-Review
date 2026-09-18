@@ -5,14 +5,18 @@ import { razorpay, razorpayEnabled } from '../config/razorpay.js';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/AppError.js';
 import { notify } from './notification.service.js';
+import { getPlatformSettings } from './settings.service.js';
 
 type PaidPlan = 'PRO' | 'BUSINESS';
 
-// Amounts in paise (Razorpay's smallest INR unit) — mirrors the tiers shown on OrgSettingsPage.
-const PLAN_AMOUNTS: Record<PaidPlan, number> = {
-  PRO: 499_900,
-  BUSINESS: 1_299_900,
-};
+// Admin-configurable (AdminSettingsPage → Pricing, backed by
+// PlatformSettings.{pro,business}PlanPriceInr — plain rupees). Converted to
+// paise (Razorpay's smallest INR unit) only here, at the order boundary.
+async function planAmountPaise(plan: PaidPlan): Promise<number> {
+  const settings = await getPlatformSettings();
+  const rupees = plan === 'PRO' ? settings.proPlanPriceInr : settings.businessPlanPriceInr;
+  return rupees * 100;
+}
 
 const BILLING_PERIOD_DAYS = 30;
 
@@ -27,7 +31,7 @@ function requireRazorpay() {
 
 export async function createCheckoutOrder(organizationProfileId: string, plan: PaidPlan) {
   const client = requireRazorpay();
-  const amount = PLAN_AMOUNTS[plan];
+  const amount = await planAmountPaise(plan);
 
   const order = await client.orders.create({
     amount,
@@ -56,13 +60,16 @@ function verifySignature(orderId: string, paymentId: string, signature: string):
 // The client tells us which order/payment/signature to check, but never the
 // plan or org — those are read back from the order we created on Razorpay's
 // side (via `notes`), so a tampered request body can't buy a different plan.
-async function readOrderContext(orderId: string): Promise<{ organizationProfileId: string; plan: PaidPlan }> {
+async function readOrderContext(orderId: string): Promise<{ organizationProfileId: string; plan: PaidPlan; amount: number }> {
   const client = requireRazorpay();
   const order = await client.orders.fetch(orderId);
   const organizationProfileId = order.notes?.organizationProfileId as string | undefined;
   const plan = order.notes?.plan as PaidPlan | undefined;
   if (!organizationProfileId || !plan) throw AppError.badRequest('Unrecognized order');
-  return { organizationProfileId, plan };
+  // The order's own amount, not a fresh planAmountPaise() read — the price
+  // may have changed in admin settings between order creation and this
+  // verify call, but what actually got charged on Razorpay's side hasn't.
+  return { organizationProfileId, plan, amount: Number(order.amount) };
 }
 
 async function activateSubscription(organizationProfileId: string, plan: SubscriptionPlan, amount: number, razorpayPaymentId: string) {
@@ -100,8 +107,7 @@ export async function verifyCheckoutPayment(input: { orderId: string; paymentId:
   if (!verifySignature(input.orderId, input.paymentId, input.signature)) {
     throw AppError.badRequest('Payment signature verification failed');
   }
-  const { organizationProfileId, plan } = await readOrderContext(input.orderId);
-  const amount = PLAN_AMOUNTS[plan];
+  const { organizationProfileId, plan, amount } = await readOrderContext(input.orderId);
   const subscription = await activateSubscription(organizationProfileId, plan, amount, input.paymentId);
   return { subscription, plan };
 }
@@ -127,6 +133,14 @@ export async function handleWebhookEvent(rawBody: Buffer, signatureHeader: strin
   const { organizationProfileId, plan } = await readOrderContext(payment.order_id);
   await activateSubscription(organizationProfileId, plan, payment.amount, payment.id);
   return { handled: true };
+}
+
+// Rupees, not paise — for display on OrgSettingsPage's plan cards, so the
+// price shown before checkout always matches what createCheckoutOrder will
+// actually charge (both read the same PlatformSettings row).
+export async function planPrices() {
+  const settings = await getPlatformSettings();
+  return { pro: settings.proPlanPriceInr, business: settings.businessPlanPriceInr };
 }
 
 export async function getBillingInfo(organizationProfileId: string) {
