@@ -2,7 +2,7 @@ import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { moderateReview } from '../modules/moderation/moderation.service.js';
 import { classifySentiment, extractTopics } from '../modules/moderation/sentiment.service.js';
-import { notify } from './notification.service.js';
+import { notify, notifySavedCollegeReviewers } from './notification.service.js';
 import { getPlatformSettings } from './settings.service.js';
 import { isVerified } from './verification.service.js';
 import type { RatingCategory, ReviewStatus } from '@prisma/client';
@@ -83,6 +83,10 @@ export async function createReview(userId: string, input: CreateReviewInput) {
     status === 'REJECTED' ? moderation.notes : undefined,
     `/college/${institution.slug}/reviews`,
   );
+
+  if (status === 'APPROVED') {
+    await notifySavedCollegeReviewers(institution.id, institution.name, institution.slug, userId);
+  }
 
   return updated;
 }

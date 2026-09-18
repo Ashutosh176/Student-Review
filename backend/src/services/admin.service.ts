@@ -1,7 +1,7 @@
 import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { toSlug } from '../utils/slug.js';
-import { notify } from './notification.service.js';
+import { notify, notifySavedCollegeReviewers } from './notification.service.js';
 import { getOrCreateRole } from './role.util.js';
 import { getPlatformSettings, updatePlatformSettings, type PlatformSettingsInput } from './settings.service.js';
 import type { AdminActionType, InstitutionType, ReviewStatus, RoleName } from '@prisma/client';
@@ -95,7 +95,7 @@ export async function moderateReviewAction(
   action: 'APPROVE' | 'HIDE' | 'REMOVE' | 'REQUEST_CLARIFICATION',
   reason?: string,
 ) {
-  const review = await prisma.review.findUnique({ where: { id: reviewId } });
+  const review = await prisma.review.findUnique({ where: { id: reviewId }, include: { institution: { select: { id: true, name: true, slug: true } } } });
   if (!review) throw AppError.notFound('Review not found');
 
   const statusMap: Record<typeof action, ReviewStatus> = {
@@ -117,6 +117,10 @@ export async function moderateReviewAction(
     reason,
     undefined,
   );
+
+  if (action === 'APPROVE' && review.status !== 'APPROVED') {
+    await notifySavedCollegeReviewers(review.institution.id, review.institution.name, review.institution.slug, review.userId);
+  }
 
   return updated;
 }
