@@ -76,6 +76,7 @@ export function ClaimProfilePage() {
           <div className="field">
             <label>Official email</label>
             <input type="email" required value={officialEmail} onChange={(e) => setOfficialEmail(e.target.value)} placeholder="you@institution.ac.in" />
+            <span className="text-[11.5px] text-sub">Must be your institution's own domain — personal providers (Gmail, Yahoo, etc.) aren't accepted.</span>
           </div>
           <div className="field">
             <label>Website</label>
@@ -85,9 +86,15 @@ export function ClaimProfilePage() {
             <label>Your designation</label>
             <input value={designation} onChange={(e) => setDesignation(e.target.value)} placeholder="e.g. Dean of Student Affairs" />
           </div>
-          <FileDropzone file={document} onChange={setDocument} />
+          <FileDropzone
+            file={document}
+            onChange={setDocument}
+            label="Official authorization letter"
+            required
+            hint="A signed letter on institutional letterhead confirming your name, designation, and the official email address above — this is how we verify the email really belongs to the institution."
+          />
           {mutation.isError && <p className="mb-3 text-xs text-danger">{apiErrorMessage(mutation.error)}</p>}
-          <button type="submit" disabled={mutation.isPending} className="btn btn-primary mt-1.5 w-full justify-center">
+          <button type="submit" disabled={mutation.isPending || !document} className="btn btn-primary mt-1.5 w-full justify-center">
             {mutation.isPending ? 'Submitting…' : 'Submit claim'}
           </button>
         </form>

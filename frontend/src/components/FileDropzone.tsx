@@ -5,7 +5,21 @@ const ACCEPT = '.pdf,.png,.jpg,.jpeg';
 const ACCEPT_MIME = new Set(['application/pdf', 'image/png', 'image/jpeg']);
 const MAX_SIZE_MB = 5;
 
-export function FileDropzone({ file, onChange, error }: { file: File | null; onChange: (file: File | null) => void; error?: string | null }) {
+export function FileDropzone({
+  file,
+  onChange,
+  error,
+  label = 'Supporting document',
+  required = false,
+  hint,
+}: {
+  file: File | null;
+  onChange: (file: File | null) => void;
+  error?: string | null;
+  label?: string;
+  required?: boolean;
+  hint?: string;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -27,8 +41,9 @@ export function FileDropzone({ file, onChange, error }: { file: File | null; onC
   return (
     <div className="field">
       <label>
-        Supporting document <span className="font-normal text-sub">(optional)</span>
+        {label} {required ? <span className="font-normal text-danger">(required)</span> : <span className="font-normal text-sub">(optional)</span>}
       </label>
+      {hint && <p className="mb-1.5 text-[11.5px] text-sub">{hint}</p>}
       <div
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {

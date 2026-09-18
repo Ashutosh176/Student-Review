@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { hashToken } from '../utils/jwt.js';
+import { extractEmailDomain, GENERIC_EMAIL_DOMAINS } from '../utils/emailDomain.js';
 import { notify } from './notification.service.js';
 import { sendEmail } from './email.service.js';
 import { getOrCreateRole } from './role.util.js';
@@ -15,6 +16,32 @@ export async function submitClaim(
   const institution = await prisma.institution.findUnique({ where: { id: institutionId } });
   if (!institution) throw AppError.notFound('Institution not found');
   if (institution.claimed) throw AppError.conflict('This institution has already been claimed');
+
+  // A claim hands over control of the institution's public profile — require
+  // proof it's really coming from the institution, not just a claimed email.
+  // Two independent signals, since neither alone is trustworthy: the email
+  // domain (easy to check, but an institution may not have its domains
+  // curated yet) and a human-reviewed authorization letter (spec: document
+  // must show the claimant's name, designation and the official email
+  // address on institutional letterhead — reviewed by an admin, never
+  // auto-approved on domain match alone).
+  if (!input.documentUrl) {
+    throw AppError.badRequest(
+      'An official authorization letter is required — a signed letter on institutional letterhead naming you, your designation, and this official email address',
+    );
+  }
+
+  const domain = extractEmailDomain(input.officialEmail);
+  if (!domain || GENERIC_EMAIL_DOMAINS.has(domain)) {
+    throw AppError.badRequest('Please use your official institution email address, not a personal email provider');
+  }
+  const registeredDomainCount = await prisma.institutionEmailDomain.count({ where: { institutionId } });
+  if (registeredDomainCount > 0) {
+    const match = await prisma.institutionEmailDomain.findUnique({ where: { domain } });
+    if (!match || match.institutionId !== institutionId) {
+      throw AppError.badRequest('This email domain is not recognized as an official email for this institution');
+    }
+  }
 
   const existingPending = await prisma.organizationClaim.findFirst({
     where: { institutionId, userId, status: 'PENDING' },
