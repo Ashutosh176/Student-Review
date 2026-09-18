@@ -158,7 +158,7 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-white">
+    <header className="sticky top-0 z-40 border-b border-line bg-white print:hidden">
       <div className="flex items-center gap-6 px-4 py-2.5 sm:px-7">
         <Logo className="h-14 w-auto flex-none" />
 

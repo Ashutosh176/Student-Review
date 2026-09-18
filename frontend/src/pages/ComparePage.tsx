@@ -41,15 +41,26 @@ export function ComparePage() {
   }
 
   return (
-    <div className="px-4 py-6 sm:px-7">
+    <div className="px-4 py-6 sm:px-7 print:p-0">
       <Helmet>
         <title>Compare Colleges — StudentReview</title>
       </Helmet>
-      <h2 className="mb-1 text-xl">Compare colleges</h2>
-      <p className="mb-5 text-[13px] text-sub">Comparing up to 3 institutions side by side.</p>
+
+      {/* Print-only report header — the live site chrome (nav/search/footer) is hidden via print:hidden, so a printed page needs its own title/context. */}
+      {compareQuery.data && compareQuery.data.length >= 2 && (
+        <div className="hidden print:mb-5 print:block">
+          <h1 className="text-lg font-bold">StudentReview — College Comparison</h1>
+          <p className="text-[12px] text-sub">
+            {compareQuery.data.map((inst) => inst.name).join(' vs. ')} — generated {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+      )}
+
+      <h2 className="mb-1 text-xl print:hidden">Compare colleges</h2>
+      <p className="mb-5 text-[13px] text-sub print:hidden">Comparing up to 3 institutions side by side.</p>
 
       {slugs.length < 3 && (
-        <div className="relative mb-5 max-w-md">
+        <div className="relative mb-5 max-w-md print:hidden">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -74,7 +85,7 @@ export function ComparePage() {
       )}
 
       {slugs.length > 0 && (
-        <div className="mb-5 flex flex-wrap gap-2">
+        <div className="mb-5 flex flex-wrap gap-2 print:hidden">
           {slugs.map((s) => (
             <span key={s} className="badge badge-official">
               {s.replace(/-/g, ' ')}
@@ -90,7 +101,7 @@ export function ComparePage() {
 
       {compareQuery.data && compareQuery.data.length >= 2 && (
         <>
-          <div className="overflow-x-auto rounded-card border border-line bg-white">
+          <div className="overflow-x-auto rounded-card border border-line bg-white print:overflow-visible print:border-0">
             <table className="w-full text-[12.5px]">
               <thead>
                 <tr>
@@ -133,12 +144,43 @@ export function ComparePage() {
                     </td>
                   ))}
                 </tr>
+                <tr>
+                  <td className="px-3 py-2.5 align-top text-sub">Entrance Exams Accepted</td>
+                  {compareQuery.data.map((inst) => (
+                    <td key={inst.id} className="px-3 py-2.5">
+                      {inst.entranceExams.length > 0 ? inst.entranceExams.join(', ') : '—'}
+                    </td>
+                  ))}
+                </tr>
               </tbody>
             </table>
           </div>
-          <button onClick={copyLink} className="btn btn-ghost mt-3.5" type="button">
-            Share comparison
-          </button>
+
+          {compareQuery.data.some((inst) => inst.aiSummary) && (
+            <div className="mt-3.5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 print:grid-cols-1">
+              {compareQuery.data
+                .filter((inst) => inst.aiSummary)
+                .map((inst) => (
+                  <div key={inst.id} className="card border-brand/20 bg-brand-light">
+                    <h4 className="mb-1.5 text-sm">✨ {inst.name} — students say</h4>
+                    <p className="text-[12.5px] leading-relaxed text-ink">{inst.aiSummary}</p>
+                  </div>
+                ))}
+            </div>
+          )}
+          <p className="mt-2 text-[11px] text-sub">
+            {compareQuery.data.some((inst) => inst.aiSummary) && 'AI-summarized from recent verified reviews — not a review itself. '}
+            Read the full reviews on each college's page for the complete picture.
+          </p>
+
+          <div className="mt-3.5 flex gap-2 print:hidden">
+            <button onClick={copyLink} className="btn btn-ghost" type="button">
+              Share comparison
+            </button>
+            <button onClick={() => window.print()} className="btn btn-ghost" type="button">
+              Download / Print PDF
+            </button>
+          </div>
         </>
       )}
     </div>
