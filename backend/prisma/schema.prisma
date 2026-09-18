@@ -49,6 +49,29 @@ enum RelationshipType {
   CURRENT_STUDENT
   ALUMNI
   FORMER_STUDENT
+  // Admission-process reviews only (Review.type = ADMISSION_PROCESS) — never
+  // used by StudentVerification, which only ever verifies an enrolled
+  // relationship.
+  APPLICANT
+}
+
+// EXPERIENCE = the existing "I studied/study here" review, unchanged.
+// ADMISSION_PROCESS = interview/application experience, open to rejected
+// and waitlisted applicants who structurally cannot pass college-email or
+// ID verification — deliberately NOT gated by StudentVerification (see
+// review.service.ts createReview and serializers.ts publicReviewAuthor,
+// which labels these "Anonymous Applicant", never "Verified Student", so
+// the distinction is never blurred for a reader).
+enum ReviewType {
+  EXPERIENCE
+  ADMISSION_PROCESS
+}
+
+enum AdmissionOutcome {
+  ADMITTED
+  REJECTED
+  WAITLISTED
+  WITHDREW
 }
 
 enum ReviewStatus {
@@ -469,17 +492,19 @@ model AdmissionCutoff {
 // ───────────────────────── Reviews ─────────────────────────
 
 model Review {
-  id              String           @id @default(uuid())
-  userId          String
-  institutionId   String
-  courseId        String?
-  relationship    RelationshipType
-  batchYear       Int
-  title           String?
-  body            String
-  recommend       Boolean
-  verifiedStudent Boolean          @default(false)
-  status          ReviewStatus     @default(PENDING)
+  id               String           @id @default(uuid())
+  userId           String
+  institutionId    String
+  courseId         String?
+  type             ReviewType       @default(EXPERIENCE)
+  relationship     RelationshipType
+  admissionOutcome AdmissionOutcome?
+  batchYear        Int
+  title            String?
+  body             String
+  recommend        Boolean
+  verifiedStudent  Boolean          @default(false)
+  status           ReviewStatus     @default(PENDING)
   moderationNotes String?
   riskScore       Int              @default(0)
   sentiment       Sentiment?
@@ -498,6 +523,7 @@ model Review {
   response    ReviewResponse?
 
   @@index([institutionId, status])
+  @@index([institutionId, type, status])
   @@index([userId])
   @@index([status, createdAt])
   @@map("reviews")

@@ -1,10 +1,12 @@
 import { api, unwrap } from './client';
-import type { PublicReview, RatingCategory } from '@/types';
+import type { AdmissionOutcome, PublicReview, RatingCategory, ReviewKind } from '@/types';
 
 export interface CreateReviewInput {
   institutionId: string;
   courseId?: string;
-  relationship: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT';
+  type?: ReviewKind;
+  relationship?: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT';
+  admissionOutcome?: AdmissionOutcome;
   batchYear: number;
   title?: string;
   body: string;

@@ -61,17 +61,21 @@ export async function submitInstitution(
 }
 
 export async function ratingSummaryFor(institutionId: string) {
+  // type: 'EXPERIENCE' — admission-process reviews carry no ratings (they
+  // describe an interview, not placements/faculty/hostel) and shouldn't
+  // count toward "reviewCount" here either, which means "reviews about
+  // actually attending" everywhere else it's shown.
   const grouped = await prisma.reviewRating.groupBy({
     by: ['category'],
-    where: { review: { institutionId, status: 'APPROVED' } },
+    where: { review: { institutionId, status: 'APPROVED', type: 'EXPERIENCE' } },
     _avg: { value: true },
     _count: { _all: true },
   });
   const map = new Map(grouped.map((g) => [g.category, { average: g._avg.value ?? 0, count: g._count._all }]));
 
   const [reviewCount, verifiedCount] = await Promise.all([
-    prisma.review.count({ where: { institutionId, status: 'APPROVED' } }),
-    prisma.review.count({ where: { institutionId, status: 'APPROVED', verifiedStudent: true } }),
+    prisma.review.count({ where: { institutionId, status: 'APPROVED', type: 'EXPERIENCE' } }),
+    prisma.review.count({ where: { institutionId, status: 'APPROVED', verifiedStudent: true, type: 'EXPERIENCE' } }),
   ]);
 
   return {

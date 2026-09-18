@@ -95,9 +95,11 @@ async function scoreByCategory(category: RatingCategory, minReviewsForRanking: n
 }
 
 async function scoreMostReviewed(minReviewsForRanking: number): Promise<InstitutionScore[]> {
+  // type: 'EXPERIENCE' — "most reviewed" means "most reviewed by people who
+  // actually attended", not inflated by admission-process reviews.
   const grouped = await prisma.review.groupBy({
     by: ['institutionId'],
-    where: { status: 'APPROVED' },
+    where: { status: 'APPROVED', type: 'EXPERIENCE' },
     _count: { _all: true },
   });
   return grouped
@@ -111,10 +113,14 @@ async function scoreTrending(): Promise<InstitutionScore[]> {
   const prev60to30 = new Date(now - 60 * 24 * 60 * 60 * 1000);
 
   const [recent, previous] = await Promise.all([
-    prisma.review.groupBy({ by: ['institutionId'], where: { status: 'APPROVED', createdAt: { gte: last30 } }, _count: { _all: true } }),
     prisma.review.groupBy({
       by: ['institutionId'],
-      where: { status: 'APPROVED', createdAt: { gte: prev60to30, lt: last30 } },
+      where: { status: 'APPROVED', type: 'EXPERIENCE', createdAt: { gte: last30 } },
+      _count: { _all: true },
+    }),
+    prisma.review.groupBy({
+      by: ['institutionId'],
+      where: { status: 'APPROVED', type: 'EXPERIENCE', createdAt: { gte: prev60to30, lt: last30 } },
       _count: { _all: true },
     }),
   ]);

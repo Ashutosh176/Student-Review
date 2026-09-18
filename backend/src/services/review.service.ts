@@ -5,12 +5,14 @@ import { classifySentiment, extractTopics } from '../modules/moderation/sentimen
 import { notify, notifySavedCollegeReviewers } from './notification.service.js';
 import { getPlatformSettings } from './settings.service.js';
 import { isVerified } from './verification.service.js';
-import type { RatingCategory, ReviewStatus } from '@prisma/client';
+import type { AdmissionOutcome, RatingCategory, ReviewStatus, ReviewType } from '@prisma/client';
 
 export interface CreateReviewInput {
   institutionId: string;
   courseId?: string;
-  relationship: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT';
+  type?: ReviewType;
+  relationship?: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT';
+  admissionOutcome?: AdmissionOutcome;
   batchYear: number;
   title?: string;
   body: string;
@@ -23,8 +25,20 @@ export async function createReview(userId: string, input: CreateReviewInput) {
   if (!institution) throw AppError.notFound('Institution not found');
   if (institution.status !== 'APPROVED') throw AppError.badRequest('This college is awaiting admin approval and cannot be reviewed yet');
 
-  if (!(await isVerified(userId, input.institutionId))) {
-    throw AppError.forbidden('You need a verified university email or an approved document for this institution before you can submit a review.');
+  const type = input.type ?? 'EXPERIENCE';
+
+  // ADMISSION_PROCESS reviews are deliberately NOT gated by StudentVerification
+  // — a rejected/waitlisted applicant structurally cannot pass a college-email
+  // or ID check, since they never enrolled. They're labeled "Anonymous
+  // Applicant" (serializers.ts publicReviewAuthor), never "Verified Student",
+  // so this never blurs the verified-review trust story for EXPERIENCE
+  // reviews, which keep the exact same gate as before.
+  let verifiedStudent = false;
+  if (type === 'EXPERIENCE') {
+    if (!(await isVerified(userId, input.institutionId))) {
+      throw AppError.forbidden('You need a verified university email or an approved document for this institution before you can submit a review.');
+    }
+    verifiedStudent = true;
   }
 
   const sentiment = classifySentiment(input.body);
@@ -35,12 +49,14 @@ export async function createReview(userId: string, input: CreateReviewInput) {
       userId,
       institutionId: input.institutionId,
       courseId: input.courseId,
-      relationship: input.relationship,
+      type,
+      relationship: type === 'ADMISSION_PROCESS' ? 'APPLICANT' : input.relationship!,
+      admissionOutcome: type === 'ADMISSION_PROCESS' ? input.admissionOutcome : null,
       batchYear: input.batchYear,
       title: input.title,
       body: input.body,
       recommend: input.recommend,
-      verifiedStudent: true,
+      verifiedStudent,
       status: 'PENDING',
       sentiment,
       sentimentTopics: topics,
@@ -102,9 +118,9 @@ export async function getReviewById(id: string) {
 
 export async function listInstitutionReviews(
   institutionId: string,
-  params: { sort: 'recent' | 'helpful' | 'highest' | 'lowest'; verifiedOnly?: boolean; page: number; pageSize: number },
+  params: { sort: 'recent' | 'helpful' | 'highest' | 'lowest'; verifiedOnly?: boolean; type?: ReviewType; page: number; pageSize: number },
 ) {
-  const where: Record<string, unknown> = { institutionId, status: 'APPROVED' };
+  const where: Record<string, unknown> = { institutionId, status: 'APPROVED', type: params.type ?? 'EXPERIENCE' };
   if (params.verifiedOnly) where.verifiedStudent = true;
 
   let orderBy: Record<string, unknown> = { createdAt: 'desc' };
@@ -228,8 +244,11 @@ export async function respondToReview(reviewId: string, organizationMemberId: st
 }
 
 export async function listLatestReviews(limit = 6) {
+  // type: 'EXPERIENCE' — the homepage feed's "verified reviews" framing
+  // doesn't fit ADMISSION_PROCESS reviews, which are never verified by
+  // design; those live on a college's own Reviews tab instead.
   return prisma.review.findMany({
-    where: { status: 'APPROVED' },
+    where: { status: 'APPROVED', type: 'EXPERIENCE' },
     orderBy: { createdAt: 'desc' },
     take: limit,
     include: { ratings: true, response: true, institution: { select: { name: true, slug: true } } },

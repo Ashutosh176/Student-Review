@@ -88,11 +88,16 @@ export interface ReviewAuthor {
   verified: boolean;
 }
 
+export type ReviewKind = 'EXPERIENCE' | 'ADMISSION_PROCESS';
+export type AdmissionOutcome = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'WITHDREW';
+
 export interface PublicReview {
   id: string;
   institutionId: string;
   courseId?: string | null;
-  relationship: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT';
+  type: ReviewKind;
+  relationship: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT' | 'APPLICANT';
+  admissionOutcome?: AdmissionOutcome | null;
   batchYear: number;
   title?: string | null;
   body?: string;

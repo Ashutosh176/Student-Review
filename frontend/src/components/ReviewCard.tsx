@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Badge } from './Badge';
+import { Badge, type BadgeKind } from './Badge';
 import { Stars } from './Stars';
 import { ReportModal } from './ReportModal';
 import { reviewsApi } from '@/api/reviews.api';
 import { useAuthStore } from '@/store/authStore';
-import { timeAgo, relationshipLabel } from '@/utils/formatDate';
-import type { PublicReview } from '@/types';
+import { timeAgo, relationshipLabel, admissionOutcomeLabel } from '@/utils/formatDate';
+import type { AdmissionOutcome, PublicReview } from '@/types';
+
+const OUTCOME_BADGE_KIND: Record<AdmissionOutcome, BadgeKind> = {
+  ADMITTED: 'verified',
+  REJECTED: 'flagged',
+  WAITLISTED: 'pending',
+  WITHDREW: 'org',
+};
 
 export function ReviewCard({ review, institutionName }: { review: PublicReview; institutionName?: string }) {
   const overall = review.ratings.find((r) => r.category === 'OVERALL')?.value ?? 0;
@@ -37,7 +44,7 @@ export function ReviewCard({ review, institutionName }: { review: PublicReview; 
     return (
       <div className="review-card rounded-card border border-line bg-white p-4 opacity-60">
         <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold">
-          Anonymous Student <Badge kind="pending">Under review</Badge>
+          {review.author.label} <Badge kind="pending">Under review</Badge>
         </div>
         <p className="select-none text-sm blur-[2px]">This review has been reported and is being checked against community guidelines.</p>
       </div>
@@ -52,13 +59,16 @@ export function ReviewCard({ review, institutionName }: { review: PublicReview; 
             <Badge kind="verified">Verified Student</Badge>
           </Link>
         ) : (
-          <span title="This student hasn't completed college verification — still a real, moderated account">Anonymous Student</span>
+          <span title={review.type === 'ADMISSION_PROCESS' ? "Admission-process reviews aren't verified — they're open to rejected/waitlisted applicants too" : "This student hasn't completed college verification — still a real, moderated account"}>
+            {review.author.label}
+          </span>
         )}
+        {review.admissionOutcome && <Badge kind={OUTCOME_BADGE_KIND[review.admissionOutcome]}>{admissionOutcomeLabel(review.admissionOutcome)}</Badge>}
         <span className="font-normal text-sub">
           · {relationshipLabel(review.relationship)} · {review.batchYear}
         </span>
       </div>
-      <Stars value={overall} size="text-base" />
+      {review.type === 'EXPERIENCE' && <Stars value={overall} size="text-base" />}
       {review.title && <p className="mt-1.5 text-sm font-semibold">{review.title}</p>}
       <p className="my-2 text-[13.5px] leading-relaxed text-ink">"{review.body}"</p>
 

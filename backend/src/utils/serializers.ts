@@ -2,9 +2,16 @@
 // safe to send to a public API response. Controllers must serialize through
 // these helpers instead of returning raw Prisma rows for review/question/answer
 // authorship — this is the single place that decides what "anonymous" means.
-import type { Review, ReviewRating, ReviewReport, ReviewResponse, User, Answer, Question } from '@prisma/client';
+import type { Review, ReviewRating, ReviewReport, ReviewResponse, User, Answer, Question, ReviewType } from '@prisma/client';
 
-export function publicReviewAuthor(_user: Pick<User, 'id'>, verifiedStudent: boolean) {
+export function publicReviewAuthor(_user: Pick<User, 'id'>, verifiedStudent: boolean, reviewType?: ReviewType) {
+  // ADMISSION_PROCESS reviews are never verified (see review.service.ts
+  // createReview) — labeled distinctly as "Anonymous Applicant" so a reader
+  // never mistakes an interview account for the verified-student promise
+  // EXPERIENCE reviews carry.
+  if (reviewType === 'ADMISSION_PROCESS') {
+    return { label: 'Anonymous Applicant', verified: false };
+  }
   return {
     // Never expose username/email/id here. A stable-but-opaque per-review
     // handle is unnecessary for MVP; "Anonymous Student" / "Verified Student"
@@ -25,13 +32,15 @@ export function serializePublicReview(review: ReviewWithRelations) {
     id: review.id,
     institutionId: review.institutionId,
     courseId: review.courseId,
+    type: review.type,
     relationship: review.relationship,
+    admissionOutcome: review.admissionOutcome,
     batchYear: review.batchYear,
     title: review.title,
     body: review.status === 'FLAGGED' ? undefined : review.body,
     recommend: review.recommend,
     status: review.status,
-    author: publicReviewAuthor({ id: review.userId }, review.verifiedStudent),
+    author: publicReviewAuthor({ id: review.userId }, review.verifiedStudent, review.type),
     ratings: review.ratings?.map((r) => ({ category: r.category, value: r.value })) ?? [],
     sentiment: review.sentiment,
     helpfulCount: review.helpfulCount,

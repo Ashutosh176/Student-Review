@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { InstitutionDetail, InstitutionSummary, JobListing, PublicReview, QuestionSummary } from '@/types';
+import type { InstitutionDetail, InstitutionSummary, JobListing, PublicReview, QuestionSummary, ReviewKind } from '@/types';
 import type { ApiSuccess } from './client';
 import type { CreateInstitutionInput } from './admin.api';
 
@@ -47,7 +47,7 @@ export const institutionsApi = {
     const res = await api.get<ApiSuccess<InstitutionDetail[]>>('/institutions/compare', { params: { slugs: slugs.join(',') } });
     return res.data.data;
   },
-  reviews: async (slug: string, params: { sort?: string; verifiedOnly?: boolean; page?: number; pageSize?: number }) => {
+  reviews: async (slug: string, params: { sort?: string; verifiedOnly?: boolean; type?: ReviewKind; page?: number; pageSize?: number }) => {
     const res = await api.get<ApiSuccess<PublicReview[]>>(`/institutions/${slug}/reviews`, { params });
     return { items: res.data.data, total: res.data.meta?.total ?? 0 };
   },

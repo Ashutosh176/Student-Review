@@ -15,5 +15,9 @@ export function timeAgo(iso: string): string {
 }
 
 export function relationshipLabel(rel: string): string {
-  return { CURRENT_STUDENT: 'Current Student', ALUMNI: 'Alumni', FORMER_STUDENT: 'Former Student' }[rel] ?? rel;
+  return { CURRENT_STUDENT: 'Current Student', ALUMNI: 'Alumni', FORMER_STUDENT: 'Former Student', APPLICANT: 'Applicant' }[rel] ?? rel;
+}
+
+export function admissionOutcomeLabel(outcome: string): string {
+  return { ADMITTED: 'Admitted', REJECTED: 'Rejected', WAITLISTED: 'Waitlisted', WITHDREW: 'Withdrew' }[outcome] ?? outcome;
 }

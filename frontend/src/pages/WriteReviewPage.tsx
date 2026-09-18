@@ -12,10 +12,10 @@ import { Badge } from '@/components/Badge';
 import { categoryLabel } from '@/components/RatingBar';
 import { AddInstitutionModal } from '@/components/AddInstitutionModal';
 import { VerificationGate } from '@/components/VerificationGate';
+import { admissionOutcomeLabel } from '@/utils/formatDate';
 import type { CreateInstitutionInput } from '@/api/admin.api';
-import type { RatingCategory } from '@/types';
+import type { AdmissionOutcome, RatingCategory, ReviewKind } from '@/types';
 
-const TOTAL_STEPS = 9;
 const RATING_CATEGORIES: RatingCategory[] = [
   'OVERALL',
   'PLACEMENT',
@@ -27,18 +27,64 @@ const RATING_CATEGORIES: RatingCategory[] = [
   'HOSTEL',
 ];
 
+const RELATIONSHIP_LABEL: Record<'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT', string> = {
+  CURRENT_STUDENT: 'Current Student',
+  ALUMNI: 'Alumni',
+  FORMER_STUDENT: 'Former Student',
+};
+
+const OUTCOMES: { value: AdmissionOutcome; helper: string }[] = [
+  { value: 'ADMITTED', helper: "You got in — whether or not you enrolled" },
+  { value: 'REJECTED', helper: "Your application wasn't accepted" },
+  { value: 'WAITLISTED', helper: "You're still waiting, or you were eventually let in/out" },
+  { value: 'WITHDREW', helper: 'You pulled out of the process yourself' },
+];
+
+// Step 1 ('kind') is always first — it decides everything downstream
+// (whether verification applies, whether ratings/relationship appear at
+// all). Every other step key is resolved into an ordered list per kind
+// below, rather than skipped via numeric conditionals, so back/next just
+// walk the array.
+type StepKey = 'kind' | 'college' | 'relationship' | 'outcome' | 'course' | 'year' | 'ratings' | 'recommend' | 'body' | 'guidelines' | 'preview';
+
+function stepsFor(kind: ReviewKind): StepKey[] {
+  if (kind === 'ADMISSION_PROCESS') {
+    return ['kind', 'college', 'outcome', 'course', 'year', 'recommend', 'body', 'guidelines', 'preview'];
+  }
+  return ['kind', 'college', 'relationship', 'course', 'year', 'ratings', 'recommend', 'body', 'guidelines', 'preview'];
+}
+
+const STEP_LABELS: Record<StepKey, string> = {
+  kind: 'Review type',
+  college: 'Your college',
+  relationship: 'Your relationship',
+  outcome: 'Outcome',
+  course: 'Course / program',
+  year: 'Year',
+  ratings: 'Ratings',
+  recommend: 'Recommendation',
+  body: 'Your experience',
+  guidelines: 'Guidelines',
+  preview: 'Submit',
+};
+
 export function WriteReviewPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
 
-  const [collegeQuery, setCollegeQuery] = useState('');
+  const [kind, setKind] = useState<ReviewKind>(params.get('type') === 'ADMISSION_PROCESS' ? 'ADMISSION_PROCESS' : 'EXPERIENCE');
+  const [step, setStep] = useState(1);
+  const steps = stepsFor(kind);
+  const currentKey = steps[step - 1];
+
+  const [collegeQuery, setCollegeQuery] = useState(() => params.get('q') ?? '');
   const [addCollegeOpen, setAddCollegeOpen] = useState(false);
   const [submittedCollegeName, setSubmittedCollegeName] = useState<string | null>(null);
   const [institutionId, setInstitutionId] = useState<string | null>(null);
   const [institutionName, setInstitutionName] = useState<string | null>(null);
   const [institutionSlug, setInstitutionSlug] = useState<string | null>(null);
   const [relationship, setRelationship] = useState<'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT' | null>(null);
+  const [admissionOutcome, setAdmissionOutcome] = useState<AdmissionOutcome | null>(null);
   const [courseId, setCourseId] = useState<string | undefined>(undefined);
   const [batchYear, setBatchYear] = useState(new Date().getFullYear());
   const [ratings, setRatings] = useState<Record<RatingCategory, number>>({
@@ -90,7 +136,10 @@ export function WriteReviewPage() {
     },
   });
 
-  const verificationsQuery = useQuery({ queryKey: ['verifications', 'mine'], queryFn: verificationApi.mine });
+  // Admission-process reviews skip verification entirely (see
+  // review.service.ts createReview) — rejected/waitlisted applicants have
+  // no college email or ID to verify with.
+  const verificationsQuery = useQuery({ queryKey: ['verifications', 'mine'], queryFn: verificationApi.mine, enabled: kind === 'EXPERIENCE' });
   const isVerifiedForSelectedInstitution = verificationsQuery.data?.some((v) => v.institutionId === institutionId && v.status === 'VERIFIED') ?? false;
 
   const submitMutation = useMutation({
@@ -98,37 +147,27 @@ export function WriteReviewPage() {
       reviewsApi.create({
         institutionId: institutionId!,
         courseId,
-        relationship: relationship!,
+        type: kind,
+        relationship: kind === 'EXPERIENCE' ? relationship! : undefined,
+        admissionOutcome: kind === 'ADMISSION_PROCESS' ? admissionOutcome! : undefined,
         batchYear,
         body,
         recommend: recommend!,
-        ratings: RATING_CATEGORIES.filter((c) => ratings[c] > 0).map((c) => ({ category: c, value: ratings[c] })),
+        ratings: kind === 'EXPERIENCE' ? RATING_CATEGORIES.filter((c) => ratings[c] > 0).map((c) => ({ category: c, value: ratings[c] })) : [],
         guidelinesAccepted: true,
       }),
   });
 
   function next() {
-    setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+    setStep((s) => Math.min(steps.length, s + 1));
   }
   function back() {
     setStep((s) => Math.max(1, s - 1));
   }
 
-  const stepLabels = [
-    'Your college',
-    'Your relationship',
-    'Course / program',
-    'Year / batch',
-    'Ratings',
-    'Recommendation',
-    'Your experience',
-    'Guidelines',
-    'Submit',
-  ];
-
   if (submitMutation.isSuccess) {
     return (
-      <WizardShell step={TOTAL_STEPS} total={TOTAL_STEPS} label="Done">
+      <WizardShell step={steps.length} total={steps.length} label="Done">
         <div className="text-center">
           <div className="mx-auto mb-4.5 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-success-bg text-2xl text-success">✓</div>
           <h2 className="mb-2 text-xl">Review submitted</h2>
@@ -144,12 +183,38 @@ export function WriteReviewPage() {
   }
 
   return (
-    <WizardShell step={step} total={TOTAL_STEPS} label={stepLabels[step - 1]}>
+    <WizardShell step={step} total={steps.length} label={STEP_LABELS[currentKey]}>
       <Helmet>
         <title>Write a Review — StudentReview</title>
       </Helmet>
 
-      {step === 1 && (
+      {currentKey === 'kind' && (
+        <div>
+          <h2 className="mb-2 text-xl">What kind of review is this?</h2>
+          <p className="mb-5 text-[13.5px] text-sub">These are shown separately, since they answer very different questions for prospective students.</p>
+          <OptionCard selected={kind === 'EXPERIENCE'} onClick={() => setKind('EXPERIENCE')}>
+            <div>
+              <div className="font-semibold">My experience as a student</div>
+              <div className="mt-0.5 text-[12px] font-normal text-sub">Placements, faculty, hostel life and more — requires verifying your college email or ID.</div>
+            </div>
+          </OptionCard>
+          <OptionCard selected={kind === 'ADMISSION_PROCESS'} onClick={() => setKind('ADMISSION_PROCESS')}>
+            <div>
+              <div className="font-semibold">My admission / interview process</div>
+              <div className="mt-0.5 text-[12px] font-normal text-sub">
+                What applying was like — open to everyone who applied, admitted or not. No verification needed.
+              </div>
+            </div>
+          </OptionCard>
+          <div className="mt-6 flex justify-end">
+            <button onClick={next} className="btn btn-primary">
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {currentKey === 'college' && (
         <div>
           <h2 className="mb-2 text-xl">Which college is this review about?</h2>
           <p className="mb-5 text-[13.5px] text-sub">Search for your college or university.</p>
@@ -169,7 +234,7 @@ export function WriteReviewPage() {
               <OptionCard selected onClick={() => {}}>
                 {institutionName}
               </OptionCard>
-              <VerificationGate institutionId={institutionId} institutionName={institutionName} />
+              {kind === 'EXPERIENCE' && <VerificationGate institutionId={institutionId} institutionName={institutionName} />}
             </>
           ) : (
             <>
@@ -198,8 +263,15 @@ export function WriteReviewPage() {
             </>
           )}
           {!submittedCollegeName && (
-            <div className="mt-6 flex justify-end">
-              <button disabled={!institutionId || !isVerifiedForSelectedInstitution} onClick={next} className="btn btn-primary">
+            <div className="mt-6 flex justify-between">
+              <button onClick={back} className="btn btn-ghost">
+                Back
+              </button>
+              <button
+                disabled={!institutionId || (kind === 'EXPERIENCE' && !isVerifiedForSelectedInstitution)}
+                onClick={next}
+                className="btn btn-primary"
+              >
                 Continue
               </button>
             </div>
@@ -217,15 +289,16 @@ export function WriteReviewPage() {
         helperText="It'll be reviewed by an admin before it's listed publicly — you'll be notified once it's approved."
         submitLabel="Submit for approval"
         submittingLabel="Submitting…"
+        initialName={collegeQuery}
       />
 
-      {step === 2 && (
+      {currentKey === 'relationship' && (
         <div>
           <h2 className="mb-2 text-xl">What's your relationship to this college?</h2>
           <p className="mb-5 text-[13.5px] text-sub">This helps other students weigh your perspective.</p>
           {(['CURRENT_STUDENT', 'ALUMNI', 'FORMER_STUDENT'] as const).map((r) => (
             <OptionCard key={r} selected={relationship === r} onClick={() => setRelationship(r)}>
-              {{ CURRENT_STUDENT: 'Current Student', ALUMNI: 'Alumni', FORMER_STUDENT: 'Former Student' }[r]}
+              {RELATIONSHIP_LABEL[r]}
             </OptionCard>
           ))}
           <div className="mt-6 flex justify-between">
@@ -239,10 +312,35 @@ export function WriteReviewPage() {
         </div>
       )}
 
-      {step === 3 && (
+      {currentKey === 'outcome' && (
+        <div>
+          <h2 className="mb-2 text-xl">What was the outcome?</h2>
+          <p className="mb-5 text-[13.5px] text-sub">However it went — every outcome helps future applicants calibrate their own odds.</p>
+          {OUTCOMES.map((o) => (
+            <OptionCard key={o.value} selected={admissionOutcome === o.value} onClick={() => setAdmissionOutcome(o.value)}>
+              <div>
+                <div className="font-semibold">{admissionOutcomeLabel(o.value)}</div>
+                <div className="mt-0.5 text-[12px] font-normal text-sub">{o.helper}</div>
+              </div>
+            </OptionCard>
+          ))}
+          <div className="mt-6 flex justify-between">
+            <button onClick={back} className="btn btn-ghost">
+              Back
+            </button>
+            <button disabled={!admissionOutcome} onClick={next} className="btn btn-primary">
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {currentKey === 'course' && (
         <div>
           <h2 className="mb-2 text-xl">Which course or program?</h2>
-          <p className="mb-5 text-[13.5px] text-sub">Optional, but helps other students filter reviews relevant to them.</p>
+          <p className="mb-5 text-[13.5px] text-sub">
+            {kind === 'ADMISSION_PROCESS' ? 'Which program did you apply to?' : 'Optional, but helps other students filter reviews relevant to them.'}
+          </p>
           {(institutionDetail.data?.courses ?? []).map((c) => (
             <OptionCard key={c.id} selected={courseId === c.id} onClick={() => setCourseId(c.id)}>
               {c.name}
@@ -262,10 +360,12 @@ export function WriteReviewPage() {
         </div>
       )}
 
-      {step === 4 && (
+      {currentKey === 'year' && (
         <div>
-          <h2 className="mb-2 text-xl">What year or batch?</h2>
-          <p className="mb-5 text-[13.5px] text-sub">Your admission or graduation year.</p>
+          <h2 className="mb-2 text-xl">{kind === 'ADMISSION_PROCESS' ? 'When did you apply?' : 'What year or batch?'}</h2>
+          <p className="mb-5 text-[13.5px] text-sub">
+            {kind === 'ADMISSION_PROCESS' ? 'The year you applied or interviewed.' : 'Your admission or graduation year.'}
+          </p>
           <input
             type="number"
             value={batchYear}
@@ -285,7 +385,7 @@ export function WriteReviewPage() {
         </div>
       )}
 
-      {step === 5 && (
+      {currentKey === 'ratings' && (
         <div>
           <h2 className="mb-2 text-xl">Rate your experience</h2>
           <p className="mb-5 text-[13.5px] text-sub">Tap to rate each category out of 5. Overall rating is required.</p>
@@ -306,9 +406,9 @@ export function WriteReviewPage() {
         </div>
       )}
 
-      {step === 6 && (
+      {currentKey === 'recommend' && (
         <div>
-          <h2 className="mb-2 text-xl">Would you recommend this college?</h2>
+          <h2 className="mb-2 text-xl">{kind === 'ADMISSION_PROCESS' ? 'Would you recommend applying here to others?' : 'Would you recommend this college?'}</h2>
           <OptionCard selected={recommend === true} onClick={() => setRecommend(true)}>
             Yes
           </OptionCard>
@@ -326,9 +426,9 @@ export function WriteReviewPage() {
         </div>
       )}
 
-      {step === 7 && (
+      {currentKey === 'body' && (
         <div>
-          <h2 className="mb-2 text-xl">Write your experience</h2>
+          <h2 className="mb-2 text-xl">{kind === 'ADMISSION_PROCESS' ? 'Describe your admission experience' : 'Write your experience'}</h2>
           <p className="mb-5 text-[13.5px] text-sub">
             Share your genuine experience. Avoid personal information, threats, or unsupported accusations. Minimum 120 characters.
           </p>
@@ -336,7 +436,11 @@ export function WriteReviewPage() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             className="min-h-[160px] w-full rounded-md border border-line p-3 text-sm outline-none focus:border-brand"
-            placeholder="What was your experience like academically, socially, and with placements?"
+            placeholder={
+              kind === 'ADMISSION_PROCESS'
+                ? 'What was the interview like? What questions were asked? How long did the process take? Any tips for future applicants?'
+                : 'What was your experience like academically, socially, and with placements?'
+            }
           />
           <div className="mt-1 text-right text-xs text-sub">{body.length}/120 minimum</div>
           <div className="mt-4 flex justify-between">
@@ -350,7 +454,7 @@ export function WriteReviewPage() {
         </div>
       )}
 
-      {step === 8 && (
+      {currentKey === 'guidelines' && (
         <div>
           <h2 className="mb-2 text-xl">Confirm community guidelines</h2>
           <div className="mb-4 rounded-md bg-surface p-3 text-[13px] text-sub">
@@ -373,16 +477,18 @@ export function WriteReviewPage() {
         </div>
       )}
 
-      {step === 9 && (
+      {currentKey === 'preview' && (
         <div>
           <h2 className="mb-2 text-xl">Preview your review</h2>
           <p className="mb-5 text-[13.5px] text-sub">This is exactly how it will appear publicly.</p>
           <div className="card">
             <Badge kind="pending">Pending moderation</Badge>
             <div className="my-2 text-[12.5px] text-sub">
-              {institutionName} · {relationship ? { CURRENT_STUDENT: 'Current Student', ALUMNI: 'Alumni', FORMER_STUDENT: 'Former Student' }[relationship] : ''} · {batchYear}
+              {institutionName} ·{' '}
+              {kind === 'ADMISSION_PROCESS' ? (admissionOutcome ? admissionOutcomeLabel(admissionOutcome) : '') : relationship ? RELATIONSHIP_LABEL[relationship] : ''} ·{' '}
+              {batchYear}
             </div>
-            <div className="text-brand">{'★★★★★'.slice(0, ratings.OVERALL)}</div>
+            {kind === 'EXPERIENCE' && <div className="text-brand">{'★★★★★'.slice(0, ratings.OVERALL)}</div>}
             <p className="mt-2 text-sm leading-relaxed">"{body}"</p>
           </div>
           {submitMutation.isError && <p className="mt-3 text-xs text-danger">{apiErrorMessage(submitMutation.error)}</p>}

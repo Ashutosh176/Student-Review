@@ -28,6 +28,7 @@ export const searchQuerySchema = z.object({
 export const reviewsQuerySchema = z.object({
   sort: z.enum(['recent', 'helpful', 'highest', 'lowest']).optional().default('recent'),
   verifiedOnly: booleanQueryParam,
+  type: z.enum(['EXPERIENCE', 'ADMISSION_PROCESS']).optional().default('EXPERIENCE'),
   page: z.coerce.number().int().min(1).optional().default(1),
   pageSize: z.coerce.number().int().min(1).max(50).optional().default(10),
 });
