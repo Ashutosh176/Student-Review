@@ -1,6 +1,7 @@
 import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword, verifyPassword } from '../utils/password.js';
+import { ratingSummaryFor } from './institution.service.js';
 
 export async function saveInstitution(userId: string, institutionId: string) {
   const institution = await prisma.institution.findUnique({ where: { id: institutionId } });
@@ -17,11 +18,17 @@ export async function unsaveInstitution(userId: string, institutionId: string) {
 }
 
 export async function listSavedInstitutions(userId: string) {
-  return prisma.savedInstitution.findMany({
+  const saved = await prisma.savedInstitution.findMany({
     where: { userId },
     include: { institution: { include: { locations: { where: { isPrimary: true }, take: 1 } } } },
     orderBy: { createdAt: 'desc' },
   });
+  // CollegeCard (reused here from every other institution listing) expects
+  // institution.summary.{ratings,reviewCount} — attach it the same way
+  // institution.service.ts's own list/search/compare endpoints do.
+  return Promise.all(
+    saved.map(async (s) => ({ ...s, institution: { ...s.institution, summary: await ratingSummaryFor(s.institutionId) } })),
+  );
 }
 
 export async function updateSettings(

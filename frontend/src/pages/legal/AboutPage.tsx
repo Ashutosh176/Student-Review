@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 
 export function AboutPage() {
   return (
@@ -9,7 +10,11 @@ export function AboutPage() {
       <h1 className="mb-3.5 text-2xl">About StudentReview</h1>
       <p className="mb-3.5 text-sm leading-relaxed text-sub">
         StudentReview exists so students can hear from students before choosing where to study. Every review is anonymous by
-        default — "Verified Student" is the only identity signal we ever show publicly.
+        default — "Verified Student" is the only identity signal we ever show publicly. See exactly{' '}
+        <Link to="/trust" className="text-brand">
+          how verification and anonymity work
+        </Link>
+        .
       </p>
       <p className="mb-3.5 text-sm leading-relaxed text-sub">
         Institutions can claim and manage their profile, respond publicly to reviews, and see how students actually experience

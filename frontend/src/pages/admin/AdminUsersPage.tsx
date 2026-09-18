@@ -48,11 +48,17 @@ export function AdminUsersPage() {
                   <Badge kind={u.status === 'ACTIVE' ? 'verified' : 'flagged'}>{u.status}</Badge>
                 </td>
                 <td className="px-3 py-2.5">
-                  {u.status === 'ACTIVE' ? (
-                    <button onClick={() => statusMutation.mutate({ id: u.id, status: 'SUSPENDED' })} className="text-danger hover:underline">
-                      Suspend
-                    </button>
-                  ) : (
+                  {u.status === 'ACTIVE' && (
+                    <span className="flex gap-2.5">
+                      <button onClick={() => statusMutation.mutate({ id: u.id, status: 'SUSPENDED' })} className="text-warning hover:underline">
+                        Suspend
+                      </button>
+                      <button onClick={() => statusMutation.mutate({ id: u.id, status: 'BANNED' })} className="text-danger hover:underline">
+                        Ban
+                      </button>
+                    </span>
+                  )}
+                  {u.status !== 'ACTIVE' && (
                     <button onClick={() => statusMutation.mutate({ id: u.id, status: 'ACTIVE' })} className="text-brand hover:underline">
                       Restore
                     </button>

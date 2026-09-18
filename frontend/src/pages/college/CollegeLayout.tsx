@@ -27,8 +27,11 @@ export function CollegeLayout() {
     enabled: Boolean(slug),
   });
 
+  const savedQuery = useQuery({ queryKey: ['saved-institutions'], queryFn: usersApi.savedInstitutions, enabled: isLoggedIn });
+  const isSaved = savedQuery.data?.some((s) => s.institution.id === query.data?.id) ?? false;
+
   const saveMutation = useMutation({
-    mutationFn: () => usersApi.save(query.data!.id),
+    mutationFn: () => (isSaved ? usersApi.unsave(query.data!.id) : usersApi.save(query.data!.id)),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['saved-institutions'] }),
   });
 
@@ -91,8 +94,14 @@ export function CollegeLayout() {
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">
           <div className="flex gap-2">
-            <button type="button" onClick={() => saveMutation.mutate()} disabled={!isLoggedIn} className="btn btn-ghost btn-sm">
-              ☆ Save
+            <button
+              type="button"
+              onClick={() => saveMutation.mutate()}
+              disabled={!isLoggedIn || saveMutation.isPending}
+              className="btn btn-ghost btn-sm"
+              title={!isLoggedIn ? 'Log in to save colleges' : undefined}
+            >
+              {isSaved ? '★ Saved' : '☆ Save'}
             </button>
             <button type="button" onClick={share} className="btn btn-ghost btn-sm">
               Share

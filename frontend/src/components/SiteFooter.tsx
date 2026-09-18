@@ -35,6 +35,9 @@ export function SiteFooter() {
         </div>
         <div>
           <h5 className="mb-2.5 text-[11.5px] font-semibold text-sub">Trust &amp; Safety</h5>
+          <Link to="/trust" className="mb-1.5 block text-[#4B4F5E]">
+            How Verification Works
+          </Link>
           <Link to="/report-content" className="mb-1.5 block text-[#4B4F5E]">
             Report Content
           </Link>

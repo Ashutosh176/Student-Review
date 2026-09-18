@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { Badge } from './Badge';
 import { Stars } from './Stars';
 import { ReportModal } from './ReportModal';
@@ -46,7 +47,13 @@ export function ReviewCard({ review, institutionName }: { review: PublicReview; 
   return (
     <div className="review-card rounded-card border border-line bg-white p-4">
       <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs font-semibold">
-        {review.author.verified ? <Badge kind="verified">Verified Student</Badge> : <span>Anonymous Student</span>}
+        {review.author.verified ? (
+          <Link to="/trust" title="This student confirmed their official college email or ID — learn how verification works">
+            <Badge kind="verified">Verified Student</Badge>
+          </Link>
+        ) : (
+          <span title="This student hasn't completed college verification — still a real, moderated account">Anonymous Student</span>
+        )}
         <span className="font-normal text-sub">
           · {relationshipLabel(review.relationship)} · {review.batchYear}
         </span>

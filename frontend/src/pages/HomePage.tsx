@@ -116,6 +116,11 @@ export function HomePage() {
             </div>
           ))}
         </div>
+        <p className="mt-7 text-center text-xs text-sub">
+          <Link to="/trust" className="font-semibold text-brand">
+            How we verify students & keep reviews anonymous →
+          </Link>
+        </p>
       </section>
 
       <section className="px-4 py-12 text-center sm:px-7">
