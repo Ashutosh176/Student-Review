@@ -1,10 +1,12 @@
 import crypto from 'node:crypto';
 import { env } from '../config/env.js';
 import { prisma } from '../config/prisma.js';
+import { logger } from '../config/logger.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword, verifyPassword } from '../utils/password.js';
 import { hashToken, refreshTtlToDate, signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
 import { sendEmail } from './email.service.js';
+import { verifyAccountEmail, resetPasswordEmail } from './emailTemplates.js';
 import { getOrCreateRole } from './role.util.js';
 import type { RoleName } from '@prisma/client';
 
@@ -57,12 +59,23 @@ export async function register(input: { username: string; email: string; passwor
     },
   });
   const verifyLink = `${env.clientOrigin}/verify-email?token=${verificationToken}`;
-  await sendEmail({
-    to: user.email,
-    subject: 'Verify your StudentReview account',
-    text: `Verify your email: ${verifyLink}`,
-    template: { key: 'verifyEmail', variables: { USERNAME: user.username, LINK: verifyLink } },
-  });
+  const verifyEmailContent = verifyAccountEmail({ username: user.username, link: verifyLink });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: 'Verify your StudentReview account',
+      text: verifyEmailContent.text,
+      html: verifyEmailContent.html,
+      template: { key: 'verifyEmail', variables: { USERNAME: user.username, LINK: verifyLink } },
+    });
+  } catch (err) {
+    // The account and its verification token are already committed — an
+    // email outage must never turn into a half-created, unrecoverable
+    // account. The token stays valid until its expiry either way; nothing
+    // here should ever log err.message if it could echo SMTP credentials,
+    // and it can't — sendEmail() only ever throws its own sanitized message.
+    logger.warn({ err, userId: user.id }, 'Failed to send account verification email — registration still succeeded');
+  }
 
   return issueTokenPair(user.id);
 }
@@ -113,12 +126,21 @@ export async function forgotPassword(email: string) {
     data: { userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
   });
   const resetLink = `${env.clientOrigin}/reset-password?token=${token}`;
-  await sendEmail({
-    to: user.email,
-    subject: 'Reset your StudentReview password',
-    text: `Reset your password: ${resetLink}`,
-    template: { key: 'resetPassword', variables: { USERNAME: user.username, LINK: resetLink } },
-  });
+  const resetEmailContent = resetPasswordEmail({ username: user.username, link: resetLink });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: 'Reset your StudentReview password',
+      text: resetEmailContent.text,
+      html: resetEmailContent.html,
+      template: { key: 'resetPassword', variables: { USERNAME: user.username, LINK: resetLink } },
+    });
+  } catch (err) {
+    // Letting this throw would turn into a 500 here but not for an
+    // unregistered email (which returns early above) — an outage would
+    // leak which emails are registered on top of breaking the flow.
+    logger.warn({ err, userId: user.id }, 'Failed to send password reset email');
+  }
 }
 
 export async function resetPassword(token: string, newPassword: string) {

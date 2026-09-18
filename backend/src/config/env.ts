@@ -33,6 +33,19 @@ export const env = {
     resendApiKey: process.env.RESEND_API_KEY ?? '',
   },
 
+  // GoDaddy/Titan (or any standard) SMTP — EMAIL_PROVIDER=smtp. Never logged;
+  // email.service.ts only ever logs `to`/`subject`, never this object.
+  smtp: {
+    host: process.env.SMTP_HOST ?? '',
+    port: Number(process.env.SMTP_PORT ?? 465),
+    // Only "false" opts out — SMTP_SECURE unset still defaults to true,
+    // matching port 465's implicit-TLS convention.
+    secure: process.env.SMTP_SECURE !== 'false',
+    user: process.env.SMTP_USER ?? '',
+    pass: process.env.SMTP_PASS ?? '',
+    from: process.env.SMTP_FROM || process.env.SMTP_USER || '',
+  },
+
   msg91: {
     authKey: process.env.MSG91_AUTH_KEY ?? '',
     // The domain added + verified under Email → Domains in the MSG91 panel.

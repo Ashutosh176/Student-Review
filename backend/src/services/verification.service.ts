@@ -1,9 +1,11 @@
 import crypto from 'node:crypto';
 import { prisma } from '../config/prisma.js';
+import { logger } from '../config/logger.js';
 import { AppError } from '../utils/AppError.js';
 import { hashToken } from '../utils/jwt.js';
 import { extractEmailDomain, GENERIC_EMAIL_DOMAINS } from '../utils/emailDomain.js';
 import { sendEmail } from './email.service.js';
+import { collegeOtpEmail } from './emailTemplates.js';
 import { notify } from './notification.service.js';
 import type { RelationshipType } from '@prisma/client';
 
@@ -81,12 +83,24 @@ async function issueOtp(studentVerificationId: string, email: string) {
   await prisma.verificationOtp.create({
     data: { studentVerificationId, codeHash: hashToken(code), expiresAt: new Date(Date.now() + OTP_TTL_MS) },
   });
-  await sendEmail({
-    to: email,
-    subject: 'Your StudentReview verification code',
-    text: `Your StudentReview verification code is ${code}. It expires in 10 minutes. Use it to confirm you can submit a review for this institution — never share this code with anyone.`,
-    template: { key: 'collegeOtp', variables: { OTP: code } },
-  });
+  const otpEmailContent = collegeOtpEmail({ code });
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'StudentReview College Verification Code',
+      text: otpEmailContent.text,
+      html: otpEmailContent.html,
+      template: { key: 'collegeOtp', variables: { OTP: code } },
+    });
+  } catch (err) {
+    // The StudentVerification/VerificationOtp rows are already committed —
+    // letting this throw would 500 the request while leaving a PENDING
+    // record behind that assertNoActiveAttempt then blocks retrying through
+    // startEmailVerification (only resendOtp can recover it). Swallow it so
+    // the caller still gets back a normal PENDING result and the frontend's
+    // "Resend code" button — already wired for exactly this case — works.
+    logger.warn({ err, studentVerificationId }, 'Failed to send college verification OTP email');
+  }
 }
 
 export async function resendOtp(userId: string, institutionId: string) {
