@@ -42,6 +42,24 @@ export interface AdminReportRow {
   review: { id: string; body: string; institution: { name: string } };
 }
 
+export interface AdminQuestionReportRow {
+  id: string;
+  reason: string;
+  details?: string | null;
+  status: string;
+  createdAt: string;
+  question: { id: string; title: string; status: string; institution: { name: string } };
+}
+
+export interface AdminAnswerReportRow {
+  id: string;
+  reason: string;
+  details?: string | null;
+  status: string;
+  createdAt: string;
+  answer: { id: string; body: string; status: string; question: { title: string } };
+}
+
 export interface AdminClaimRow {
   id: string;
   organizationName: string;
@@ -217,6 +235,20 @@ export const adminApi = {
     return { items: res.data.data, total: res.data.meta?.total ?? 0 };
   },
   dismissReport: (id: string) => unwrap(api.post(`/admin/reports/${id}/dismiss`)),
+
+  questionReports: async (params: { status?: string; page?: number; pageSize?: number }) => {
+    const res = await api.get<ApiSuccess<AdminQuestionReportRow[]>>('/admin/question-reports', { params });
+    return { items: res.data.data, total: res.data.meta?.total ?? 0 };
+  },
+  dismissQuestionReport: (id: string) => unwrap(api.post(`/admin/question-reports/${id}/dismiss`)),
+  moderateQuestion: (id: string, action: 'APPROVE' | 'REMOVE', reason?: string) => unwrap(api.post(`/admin/questions/${id}/moderate`, { action, reason })),
+
+  answerReports: async (params: { status?: string; page?: number; pageSize?: number }) => {
+    const res = await api.get<ApiSuccess<AdminAnswerReportRow[]>>('/admin/answer-reports', { params });
+    return { items: res.data.data, total: res.data.meta?.total ?? 0 };
+  },
+  dismissAnswerReport: (id: string) => unwrap(api.post(`/admin/answer-reports/${id}/dismiss`)),
+  moderateAnswer: (id: string, action: 'APPROVE' | 'REMOVE', reason?: string) => unwrap(api.post(`/admin/answers/${id}/moderate`, { action, reason })),
 
   claims: async (status?: string) => {
     const res = await api.get<ApiSuccess<AdminClaimRow[]>>('/admin/claims', { params: { status } });

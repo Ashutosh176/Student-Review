@@ -2,7 +2,7 @@
 // safe to send to a public API response. Controllers must serialize through
 // these helpers instead of returning raw Prisma rows for review/question/answer
 // authorship — this is the single place that decides what "anonymous" means.
-import type { Review, ReviewRating, ReviewReport, ReviewResponse, User, Answer } from '@prisma/client';
+import type { Review, ReviewRating, ReviewReport, ReviewResponse, User, Answer, Question } from '@prisma/client';
 
 export function publicReviewAuthor(_user: Pick<User, 'id'>, verifiedStudent: boolean) {
   return {
@@ -47,10 +47,32 @@ export function serializePublicAnswer(answer: Answer) {
   return {
     id: answer.id,
     questionId: answer.questionId,
-    body: answer.body,
+    body: answer.status === 'FLAGGED' ? undefined : answer.body,
+    status: answer.status,
     author: publicReviewAuthor({ id: answer.userId }, answer.verifiedStudent),
     upvoteCount: answer.upvoteCount,
     createdAt: answer.createdAt,
+  };
+}
+
+// Question has no serializePublicReview-style "author" concept — the
+// frontend never renders who asked a question — but the raw Prisma row
+// still carries `userId`, which the comment at the top of this file rules
+// out shipping in a public response. Strip it here rather than spreading
+// the raw row in the controller.
+type QuestionWithCount = Question & { _count?: { answers?: number } };
+
+export function serializePublicQuestion(question: QuestionWithCount) {
+  return {
+    id: question.id,
+    institutionId: question.institutionId,
+    title: question.title,
+    body: question.status === 'FLAGGED' ? undefined : question.body,
+    status: question.status,
+    createdAt: question.createdAt,
+    // Existing shape (CollegeQuestionsPage, OrgQuestionsPage, MyQuestionsPage
+    // all read q._count.answers) — keep it, don't flatten to a new field.
+    ...(question._count ? { _count: { answers: question._count.answers ?? 0 } } : {}),
   };
 }
 

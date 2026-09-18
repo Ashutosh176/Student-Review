@@ -4,6 +4,7 @@ import { authenticate, authorize } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { idParamSchema } from '../validators/review.validator.js';
 import {
+  contentModerationActionSchema,
   createAdmissionCutoffSchema,
   createCategorySchema,
   createCourseSchema,
@@ -40,6 +41,24 @@ router.post('/moderation/:id/action', validate({ params: idParamSchema, body: mo
 
 router.get('/reports', validate({ query: paginationQuerySchema }), adminController.listReports);
 router.post('/reports/:id/dismiss', validate({ params: idParamSchema }), adminController.dismissReport);
+
+router.get('/question-reports', validate({ query: paginationQuerySchema }), adminController.listQuestionReports);
+router.post('/question-reports/:id/dismiss', validate({ params: idParamSchema }), adminController.dismissQuestionReport);
+router.post(
+  '/questions/:id/moderate',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: contentModerationActionSchema }),
+  adminController.moderateQuestion,
+);
+
+router.get('/answer-reports', validate({ query: paginationQuerySchema }), adminController.listAnswerReports);
+router.post('/answer-reports/:id/dismiss', validate({ params: idParamSchema }), adminController.dismissAnswerReport);
+router.post(
+  '/answers/:id/moderate',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: contentModerationActionSchema }),
+  adminController.moderateAnswer,
+);
 
 router.get('/claims', validate({ query: paginationQuerySchema }), adminController.listClaims);
 router.get('/claims/:id/document', validate({ params: idParamSchema }), adminController.downloadClaimDocument);

@@ -86,6 +86,11 @@ export const revokeSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+export const contentModerationActionSchema = z.object({
+  action: z.enum(['APPROVE', 'REMOVE']),
+  reason: z.string().max(500).optional(),
+});
+
 export const institutionDomainParamSchema = z.object({
   id: z.string().uuid(),
   domainId: z.string().uuid(),

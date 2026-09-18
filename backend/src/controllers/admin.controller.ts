@@ -164,6 +164,32 @@ export const regenerateAiSummary = asyncHandler(async (req, res) => {
   ok(res, { aiSummary: summary });
 });
 
+export const listQuestionReports = asyncHandler(async (req, res) => {
+  const result = await adminService.listQuestionReports(req.query.status as string | undefined, Number(req.query.page) || 1, Number(req.query.pageSize) || 20);
+  ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });
+});
+
+export const dismissQuestionReport = asyncHandler(async (req, res) => {
+  ok(res, await adminService.dismissQuestionReport(req.user!.id, req.params.id));
+});
+
+export const moderateQuestion = asyncHandler(async (req, res) => {
+  ok(res, await adminService.moderateQuestionAction(req.user!.id, req.params.id, req.body.action, req.body.reason));
+});
+
+export const listAnswerReports = asyncHandler(async (req, res) => {
+  const result = await adminService.listAnswerReports(req.query.status as string | undefined, Number(req.query.page) || 1, Number(req.query.pageSize) || 20);
+  ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });
+});
+
+export const dismissAnswerReport = asyncHandler(async (req, res) => {
+  ok(res, await adminService.dismissAnswerReport(req.user!.id, req.params.id));
+});
+
+export const moderateAnswer = asyncHandler(async (req, res) => {
+  ok(res, await adminService.moderateAnswerAction(req.user!.id, req.params.id, req.body.action, req.body.reason));
+});
+
 export const listCategories = asyncHandler(async (_req, res) => {
   const categories = await adminService.listCategories();
   ok(res, categories);

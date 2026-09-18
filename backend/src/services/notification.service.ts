@@ -15,6 +15,8 @@ const PREFERENCE_FIELD: Record<NotificationType, 'notifyReviewActivity' | 'notif
   ORG_RESPONSE: 'notifyCommunityActivity',
   QUESTION_ANSWERED: 'notifyCommunityActivity',
   ANSWER_UPVOTED: 'notifyCommunityActivity',
+  QUESTION_REPORTED: 'notifyCommunityActivity',
+  ANSWER_REPORTED: 'notifyCommunityActivity',
   CLAIM_APPROVED: 'notifySubmissionUpdates',
   CLAIM_REJECTED: 'notifySubmissionUpdates',
   INSTITUTION_APPROVED: 'notifySubmissionUpdates',

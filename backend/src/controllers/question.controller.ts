@@ -1,21 +1,31 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ok } from '../utils/apiResponse.js';
-import { serializePublicAnswer } from '../utils/serializers.js';
+import { serializePublicAnswer, serializePublicQuestion } from '../utils/serializers.js';
 import * as questionService from '../services/question.service.js';
 
 export const create = asyncHandler(async (req, res) => {
   const question = await questionService.createQuestion(req.user!.id, req.body.institutionId, req.body.title, req.body.body);
-  ok(res, question, 201);
+  ok(res, serializePublicQuestion(question), 201);
 });
 
 export const listForInstitution = asyncHandler(async (req, res) => {
   const result = await questionService.listQuestions(req.params.institutionId, Number(req.query.page) || 1, Number(req.query.pageSize) || 20);
-  ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });
+  ok(res, result.items.map(serializePublicQuestion), 200, { total: result.total, page: result.page, pageSize: result.pageSize });
 });
 
 export const getOne = asyncHandler(async (req, res) => {
   const question = await questionService.getQuestionWithAnswers(req.params.id);
-  ok(res, { ...question, answers: question.answers.map(serializePublicAnswer) });
+  ok(res, { ...serializePublicQuestion(question), answers: question.answers.map(serializePublicAnswer) });
+});
+
+export const reportQuestion = asyncHandler(async (req, res) => {
+  const report = await questionService.reportQuestion(req.params.id, req.user!.id, req.body.reason, req.body.details);
+  ok(res, report, 201);
+});
+
+export const reportAnswer = asyncHandler(async (req, res) => {
+  const report = await questionService.reportAnswer(req.params.answerId, req.user!.id, req.body.reason, req.body.details);
+  ok(res, report, 201);
 });
 
 export const mine = asyncHandler(async (req, res) => {

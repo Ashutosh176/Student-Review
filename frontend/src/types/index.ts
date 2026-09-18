@@ -107,10 +107,13 @@ export interface PublicReview {
   editedAt?: string | null;
 }
 
+export type ContentStatus = 'PENDING' | 'APPROVED' | 'FLAGGED' | 'REJECTED' | 'REMOVED';
+
 export interface QuestionSummary {
   id: string;
   title: string;
   body?: string | null;
+  status: ContentStatus;
   createdAt: string;
   _count: { answers: number };
 }
@@ -118,7 +121,8 @@ export interface QuestionSummary {
 export interface AnswerItem {
   id: string;
   questionId: string;
-  body: string;
+  body?: string;
+  status: ContentStatus;
   author: ReviewAuthor;
   upvoteCount: number;
   createdAt: string;

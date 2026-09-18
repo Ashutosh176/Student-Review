@@ -119,6 +119,8 @@ enum NotificationType {
   ORG_RESPONSE
   QUESTION_ANSWERED
   ANSWER_UPVOTED
+  QUESTION_REPORTED
+  ANSWER_REPORTED
   CLAIM_APPROVED
   CLAIM_REJECTED
   INSTITUTION_APPROVED
@@ -224,7 +226,9 @@ model User {
   reviewReports           ReviewReport[]           @relation("Reporter")
   reviewVotes             ReviewVote[]
   questions               Question[]
+  questionReports         QuestionReport[]         @relation("QuestionReporter")
   answers                 Answer[]
+  answerReports           AnswerReport[]           @relation("AnswerReporter")
   answerVotes             AnswerVote[]
   savedInstitutions       SavedInstitution[]
   notifications           Notification[]
@@ -570,9 +574,32 @@ model Question {
   user        User        @relation(fields: [userId], references: [id])
   institution Institution @relation(fields: [institutionId], references: [id])
   answers     Answer[]
+  reports     QuestionReport[]
 
   @@index([institutionId])
   @@map("questions")
+}
+
+// Mirrors ReviewReport (same reason/status enums, same auto-flag-on-threshold
+// behavior in qaReport.service.ts) — kept as its own typed model rather than
+// a polymorphic report table, matching how ReviewReport/AnswerReport are
+// each scoped to one entity type in this schema.
+model QuestionReport {
+  id              String       @id @default(uuid())
+  questionId      String
+  reporterUserId  String
+  reason          ReportReason
+  details         String?
+  status          ReportStatus @default(OPEN)
+  assignedAdminId String?
+  resolvedAt      DateTime?
+  createdAt       DateTime     @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  reporter User     @relation("QuestionReporter", fields: [reporterUserId], references: [id])
+
+  @@index([status])
+  @@map("question_reports")
 }
 
 model Answer {
@@ -585,12 +612,31 @@ model Answer {
   status          ReviewStatus @default(APPROVED)
   createdAt       DateTime     @default(now())
 
-  question Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user     User         @relation(fields: [userId], references: [id])
+  question Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User             @relation(fields: [userId], references: [id])
   votes    AnswerVote[]
+  reports  AnswerReport[]
 
   @@index([questionId])
   @@map("answers")
+}
+
+model AnswerReport {
+  id              String       @id @default(uuid())
+  answerId        String
+  reporterUserId  String
+  reason          ReportReason
+  details         String?
+  status          ReportStatus @default(OPEN)
+  assignedAdminId String?
+  resolvedAt      DateTime?
+  createdAt       DateTime     @default(now())
+
+  answer   Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  reporter User   @relation("AnswerReporter", fields: [reporterUserId], references: [id])
+
+  @@index([status])
+  @@map("answer_reports")
 }
 
 model AnswerVote {

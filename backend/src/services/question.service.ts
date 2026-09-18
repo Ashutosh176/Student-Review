@@ -2,6 +2,8 @@ import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { notify } from './notification.service.js';
 import { isVerified } from './verification.service.js';
+import { getPlatformSettings } from './settings.service.js';
+import type { ReportReason } from '@prisma/client';
 
 export async function createQuestion(userId: string, institutionId: string, title: string, body?: string) {
   const institution = await prisma.institution.findUnique({ where: { id: institutionId } });
@@ -56,6 +58,41 @@ export async function listOwnAnswers(userId: string) {
     orderBy: { createdAt: 'desc' },
     include: { question: { select: { title: true, id: true, institution: { select: { slug: true } } } } },
   });
+}
+
+// Mirrors review.service.ts's reportReview: same auto-flag-on-threshold
+// behavior (reuses the platform's single reportAutoFlagThreshold setting),
+// same "notify the author" pattern.
+export async function reportQuestion(questionId: string, reporterUserId: string, reason: ReportReason, details?: string) {
+  const question = await prisma.question.findUnique({ where: { id: questionId } });
+  if (!question) throw AppError.notFound('Question not found');
+
+  const report = await prisma.questionReport.create({ data: { questionId, reporterUserId, reason, details } });
+
+  const openReportCount = await prisma.questionReport.count({ where: { questionId, status: { in: ['OPEN', 'INVESTIGATING'] } } });
+  const settings = await getPlatformSettings();
+  if (openReportCount >= settings.reportAutoFlagThreshold && question.status === 'APPROVED') {
+    await prisma.question.update({ where: { id: questionId }, data: { status: 'FLAGGED' } });
+  }
+
+  await notify(question.userId, 'QUESTION_REPORTED', 'Your question has been reported and is under review', undefined, undefined);
+  return report;
+}
+
+export async function reportAnswer(answerId: string, reporterUserId: string, reason: ReportReason, details?: string) {
+  const answer = await prisma.answer.findUnique({ where: { id: answerId } });
+  if (!answer) throw AppError.notFound('Answer not found');
+
+  const report = await prisma.answerReport.create({ data: { answerId, reporterUserId, reason, details } });
+
+  const openReportCount = await prisma.answerReport.count({ where: { answerId, status: { in: ['OPEN', 'INVESTIGATING'] } } });
+  const settings = await getPlatformSettings();
+  if (openReportCount >= settings.reportAutoFlagThreshold && answer.status === 'APPROVED') {
+    await prisma.answer.update({ where: { id: answerId }, data: { status: 'FLAGGED' } });
+  }
+
+  await notify(answer.userId, 'ANSWER_REPORTED', 'Your answer has been reported and is under review', undefined, undefined);
+  return report;
 }
 
 export async function toggleAnswerUpvote(answerId: string, userId: string) {

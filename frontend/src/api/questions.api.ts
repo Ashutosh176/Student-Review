@@ -12,4 +12,7 @@ export const questionsApi = {
   getOne: (id: string) => unwrap<QuestionSummary & { answers: AnswerItem[] }>(api.get(`/questions/${id}`)),
   answer: (questionId: string, body: string) => unwrap<AnswerItem>(api.post(`/questions/${questionId}/answers`, { body })),
   upvote: (answerId: string) => unwrap<{ voted: boolean }>(api.post(`/questions/answers/${answerId}/upvote`)),
+  report: (questionId: string, reason: string, details?: string) => unwrap(api.post(`/questions/${questionId}/report`, { reason, details })),
+  reportAnswer: (answerId: string, reason: string, details?: string) =>
+    unwrap(api.post(`/questions/answers/${answerId}/report`, { reason, details })),
 };

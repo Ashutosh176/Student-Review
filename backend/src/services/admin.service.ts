@@ -146,6 +146,70 @@ export async function dismissReport(adminUserId: string, reportId: string) {
   return report;
 }
 
+// Q&A reports have no separate moderation-queue page the way reviews do
+// (AdminReviewsPage) — so unlike dismissReport above, moderateQuestionAction/
+// moderateAnswerAction below let an admin act on the underlying content
+// directly from the same reports row, not just dismiss the complaint.
+export async function listQuestionReports(status?: string, page = 1, pageSize = 20) {
+  const where = status ? { status: status as never } : {};
+  const [total, items] = await Promise.all([
+    prisma.questionReport.count({ where }),
+    prisma.questionReport.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: { question: { select: { id: true, title: true, status: true, institution: { select: { name: true } } } } },
+    }),
+  ]);
+  return { total, page, pageSize, items };
+}
+
+export async function dismissQuestionReport(adminUserId: string, reportId: string) {
+  const report = await prisma.questionReport.update({ where: { id: reportId }, data: { status: 'DISMISSED', resolvedAt: new Date() } });
+  await prisma.adminAction.create({ data: { adminUserId, targetType: 'QuestionReport', targetId: reportId, action: 'DISMISS' } });
+  return report;
+}
+
+export async function moderateQuestionAction(adminUserId: string, questionId: string, action: 'APPROVE' | 'REMOVE', reason?: string) {
+  const updated = await prisma.question.update({
+    where: { id: questionId },
+    data: { status: action === 'APPROVE' ? 'APPROVED' : 'REMOVED' },
+  });
+  await prisma.adminAction.create({ data: { adminUserId, targetType: 'Question', targetId: questionId, action, reason } });
+  return updated;
+}
+
+export async function listAnswerReports(status?: string, page = 1, pageSize = 20) {
+  const where = status ? { status: status as never } : {};
+  const [total, items] = await Promise.all([
+    prisma.answerReport.count({ where }),
+    prisma.answerReport.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: { answer: { select: { id: true, body: true, status: true, question: { select: { title: true } } } } },
+    }),
+  ]);
+  return { total, page, pageSize, items };
+}
+
+export async function dismissAnswerReport(adminUserId: string, reportId: string) {
+  const report = await prisma.answerReport.update({ where: { id: reportId }, data: { status: 'DISMISSED', resolvedAt: new Date() } });
+  await prisma.adminAction.create({ data: { adminUserId, targetType: 'AnswerReport', targetId: reportId, action: 'DISMISS' } });
+  return report;
+}
+
+export async function moderateAnswerAction(adminUserId: string, answerId: string, action: 'APPROVE' | 'REMOVE', reason?: string) {
+  const updated = await prisma.answer.update({
+    where: { id: answerId },
+    data: { status: action === 'APPROVE' ? 'APPROVED' : 'REMOVED' },
+  });
+  await prisma.adminAction.create({ data: { adminUserId, targetType: 'Answer', targetId: answerId, action, reason } });
+  return updated;
+}
+
 export async function createInstitution(input: {
   name: string;
   type: InstitutionType;
