@@ -48,6 +48,10 @@ export const env = {
     },
   },
 
+  // "Students say..." AI summary (aiSummary.service.ts) — inert (never
+  // called, feature just stays off) until this is set.
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
+
   upload: {
     dir: process.env.UPLOAD_DIR ?? './uploads',
     maxMb: Number(process.env.MAX_UPLOAD_MB ?? 5),

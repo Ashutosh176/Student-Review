@@ -79,6 +79,8 @@ export interface InstitutionDetail extends InstitutionSummary {
   courses: CourseDetail[];
   entranceExams: string[];
   admissionCutoffs: AdmissionCutoff[];
+  aiSummary?: string | null;
+  aiSummaryUpdatedAt?: string | null;
 }
 
 export interface ReviewAuthor {

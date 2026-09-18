@@ -366,6 +366,12 @@ model Institution {
   // below are the structured per-course/category/year data; this is just
   // "which exams", shown even before any cutoff rows exist for one.
   entranceExams     String[]          @default([])
+  // AI-generated 2-4 sentence summary of recent approved reviews (see
+  // aiSummary.service.ts) — a supplementary reading aid, never a
+  // substitute for or counted as a review itself. Null until enough
+  // reviews exist and ANTHROPIC_API_KEY is configured.
+  aiSummary         String?
+  aiSummaryUpdatedAt DateTime?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 

@@ -107,6 +107,13 @@ router.post(
 );
 router.delete('/admission-cutoffs/:id', authorize('ADMIN'), validate({ params: idParamSchema }), adminController.deleteAdmissionCutoff);
 
+router.post(
+  '/institutions/:id/ai-summary/regenerate',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema }),
+  adminController.regenerateAiSummary,
+);
+
 router.post('/rankings/recompute', authorize('ADMIN'), adminController.recomputeRankings);
 
 router.get('/payments', validate({ query: paginationQuerySchema }), adminController.listPayments);

@@ -13,11 +13,13 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:studio": "prisma studio",
     "jobs:rankings": "tsx src/jobs/recomputeRankings.job.ts",
+    "jobs:ai-summaries": "tsx src/jobs/generateCollegeSummaries.job.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
     "@prisma/client": "^5.20.0",
     "argon2": "^0.40.3",
     "bad-words": "^3.0.4",

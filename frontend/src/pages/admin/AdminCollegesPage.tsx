@@ -343,6 +343,35 @@ function AdmissionsPanel({ institutionId, examNames }: { institutionId: string; 
   );
 }
 
+function AiSummaryPanel({ institutionId, aiSummary, aiSummaryUpdatedAt }: { institutionId: string; aiSummary?: string | null; aiSummaryUpdatedAt?: string | null }) {
+  const qc = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => adminApi.regenerateAiSummary(institutionId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
+  });
+
+  return (
+    <div>
+      <p className="mb-2 text-[11.5px] text-sub">
+        A short AI-generated digest of this college's recent approved reviews, shown on its public Overview tab as "Students
+        say…" — costs a real API call each time it's regenerated, so it's manual, not automatic.
+      </p>
+      {aiSummary ? (
+        <div className="mb-2 rounded-md bg-white px-3 py-2 text-[12.5px]">
+          <p>{mutation.data?.aiSummary ?? aiSummary}</p>
+          {aiSummaryUpdatedAt && <p className="mt-1.5 text-[11px] text-sub">Last generated {new Date(aiSummaryUpdatedAt).toLocaleString('en-IN')}</p>}
+        </div>
+      ) : (
+        <p className="mb-2 text-[12px] text-sub">No summary generated yet.</p>
+      )}
+      <button type="button" onClick={() => mutation.mutate()} className="btn btn-primary btn-sm" disabled={mutation.isPending}>
+        {mutation.isPending ? 'Generating…' : aiSummary ? 'Regenerate' : 'Generate summary'}
+      </button>
+      {mutation.isError && <p className="mt-2 text-xs text-danger">{apiErrorMessage(mutation.error)}</p>}
+    </div>
+  );
+}
+
 export function AdminCollegesPage() {
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
@@ -350,6 +379,7 @@ export function AdminCollegesPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [domainsOpenId, setDomainsOpenId] = useState<string | null>(null);
   const [admissionsOpenId, setAdmissionsOpenId] = useState<string | null>(null);
+  const [aiSummaryOpenId, setAiSummaryOpenId] = useState<string | null>(null);
   const [params, setParams] = useSearchParams();
   const status = (params.get('status') as 'PENDING' | 'APPROVED' | 'REJECTED' | null) ?? undefined;
 
@@ -478,6 +508,12 @@ export function AdminCollegesPage() {
                           className="text-brand hover:underline"
                         >
                           {admissionsOpenId === inst.id ? 'Hide admissions' : 'Admissions'}
+                        </button>{' '}
+                        <button
+                          onClick={() => setAiSummaryOpenId(aiSummaryOpenId === inst.id ? null : inst.id)}
+                          className="text-brand hover:underline"
+                        >
+                          {aiSummaryOpenId === inst.id ? 'Hide AI summary' : 'AI summary'}
                         </button>
                       </>
                     )}
@@ -494,6 +530,13 @@ export function AdminCollegesPage() {
                   <tr className="border-b border-line bg-surface last:border-0">
                     <td className="px-3 py-3" colSpan={6}>
                       <AdmissionsPanel institutionId={inst.id} examNames={inst.entranceExams} />
+                    </td>
+                  </tr>
+                )}
+                {aiSummaryOpenId === inst.id && (
+                  <tr className="border-b border-line bg-surface last:border-0">
+                    <td className="px-3 py-3" colSpan={6}>
+                      <AiSummaryPanel institutionId={inst.id} aiSummary={inst.aiSummary} aiSummaryUpdatedAt={inst.aiSummaryUpdatedAt} />
                     </td>
                   </tr>
                 )}

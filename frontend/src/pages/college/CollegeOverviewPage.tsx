@@ -17,6 +17,18 @@ export function CollegeOverviewPage() {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_300px]">
       <div>
+        {inst.aiSummary && (
+          <div className="card mb-3 border-brand/20 bg-brand-light">
+            <h4 className="mb-1.5 flex items-center gap-1.5 text-sm">✨ Students say</h4>
+            <p className="text-[13.5px] leading-relaxed text-ink">{inst.aiSummary}</p>
+            <p className="mt-2 text-[11px] text-sub">
+              AI-summarized from recent verified reviews — not a review itself.{' '}
+              <Link to={`/college/${inst.slug}/reviews`} className="text-brand">
+                Read the full reviews
+              </Link>
+            </p>
+          </div>
+        )}
         <div className="card mb-3">
           <h4 className="mb-2 text-sm">About</h4>
           <p className="text-[13.5px] leading-relaxed text-sub">{inst.description ?? 'No description has been added for this institution yet.'}</p>

@@ -153,6 +153,8 @@ export interface AdminInstitutionRow {
   locations: { city: string; state: string }[];
   _count: { reviews: number };
   entranceExams: string[];
+  aiSummary?: string | null;
+  aiSummaryUpdatedAt?: string | null;
 }
 
 export interface CreateInstitutionInput {
@@ -281,6 +283,9 @@ export const adminApi = {
   createAdmissionCutoff: (institutionId: string, input: CreateAdmissionCutoffInput) =>
     unwrap<AdminAdmissionCutoffRow>(api.post(`/admin/institutions/${institutionId}/admission-cutoffs`, input)),
   deleteAdmissionCutoff: (id: string) => unwrap(api.delete(`/admin/admission-cutoffs/${id}`)),
+
+  regenerateAiSummary: (institutionId: string) =>
+    unwrap<{ aiSummary: string }>(api.post(`/admin/institutions/${institutionId}/ai-summary/regenerate`)),
 
   institutions: async (params: { page?: number; pageSize?: number; status?: 'PENDING' | 'APPROVED' | 'REJECTED' }) => {
     const res = await api.get<ApiSuccess<AdminInstitutionRow[]>>('/admin/institutions', { params });

@@ -6,6 +6,7 @@ import * as adminService from '../services/admin.service.js';
 import * as orgService from '../services/organization.service.js';
 import * as verificationService from '../services/verification.service.js';
 import * as admissionService from '../services/admission.service.js';
+import { generateInstitutionSummary } from '../services/aiSummary.service.js';
 import { recomputeAllRankings } from '../modules/ranking/ranking.service.js';
 import { resolveClaimDocumentPath, resolveVerificationDocumentPath } from '../middlewares/upload.js';
 
@@ -151,6 +152,16 @@ export const createAdmissionCutoff = asyncHandler(async (req, res) => {
 export const deleteAdmissionCutoff = asyncHandler(async (req, res) => {
   await admissionService.deleteAdmissionCutoff(req.params.id);
   ok(res, { removed: true });
+});
+
+// ───────────────────────── AI summary ─────────────────────────
+
+export const regenerateAiSummary = asyncHandler(async (req, res) => {
+  const summary = await generateInstitutionSummary(req.params.id);
+  if (!summary) {
+    throw AppError.badRequest('Not enough approved reviews yet, or ANTHROPIC_API_KEY is not configured');
+  }
+  ok(res, { aiSummary: summary });
 });
 
 export const listCategories = asyncHandler(async (_req, res) => {
