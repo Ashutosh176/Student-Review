@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { hashToken } from '../utils/jwt.js';
+import { extractEmailDomain, GENERIC_EMAIL_DOMAINS } from '../utils/emailDomain.js';
 import { sendEmail } from './email.service.js';
 import { notify } from './notification.service.js';
 import type { RelationshipType } from '@prisma/client';
@@ -13,27 +14,7 @@ const OTP_MAX_ATTEMPTS = 5;
 // Generic providers can never satisfy "official university email" no matter
 // what an institution's domain list contains — checked before the curated
 // per-institution list, not instead of it.
-const GENERIC_EMAIL_DOMAINS = new Set([
-  'gmail.com',
-  'yahoo.com',
-  'yahoo.co.in',
-  'outlook.com',
-  'hotmail.com',
-  'protonmail.com',
-  'proton.me',
-  'icloud.com',
-  'aol.com',
-  'live.com',
-  'msn.com',
-  'rediffmail.com',
-  'zoho.com',
-  'mail.com',
-  'gmx.com',
-]);
-
-function extractDomain(email: string): string {
-  return email.toLowerCase().split('@')[1] ?? '';
-}
+const extractDomain = extractEmailDomain;
 
 // "Currently verified for this institution?" — the one check review.service.ts
 // and question.service.ts both gate on. Deliberately a status query, not a
@@ -104,6 +85,7 @@ async function issueOtp(studentVerificationId: string, email: string) {
     to: email,
     subject: 'Your StudentReview verification code',
     text: `Your StudentReview verification code is ${code}. It expires in 10 minutes. Use it to confirm you can submit a review for this institution — never share this code with anyone.`,
+    template: { key: 'collegeOtp', variables: { OTP: code } },
   });
 }
 

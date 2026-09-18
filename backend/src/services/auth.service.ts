@@ -56,10 +56,12 @@ export async function register(input: { username: string; email: string; passwor
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     },
   });
+  const verifyLink = `${env.clientOrigin}/verify-email?token=${verificationToken}`;
   await sendEmail({
     to: user.email,
     subject: 'Verify your StudentReview account',
-    text: `Verify your email: ${env.clientOrigin}/verify-email?token=${verificationToken}`,
+    text: `Verify your email: ${verifyLink}`,
+    template: { key: 'verifyEmail', variables: { USERNAME: user.username, LINK: verifyLink } },
   });
 
   return issueTokenPair(user.id);
@@ -110,10 +112,12 @@ export async function forgotPassword(email: string) {
   await prisma.passwordResetToken.create({
     data: { userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
   });
+  const resetLink = `${env.clientOrigin}/reset-password?token=${token}`;
   await sendEmail({
     to: user.email,
     subject: 'Reset your StudentReview password',
-    text: `Reset your password: ${env.clientOrigin}/reset-password?token=${token}`,
+    text: `Reset your password: ${resetLink}`,
+    template: { key: 'resetPassword', variables: { USERNAME: user.username, LINK: resetLink } },
   });
 }
 

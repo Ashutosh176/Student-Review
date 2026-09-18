@@ -33,6 +33,20 @@ export const env = {
     resendApiKey: process.env.RESEND_API_KEY ?? '',
   },
 
+  msg91: {
+    authKey: process.env.MSG91_AUTH_KEY ?? '',
+    // The domain added + verified under Email → Domains in the MSG91 panel.
+    domain: process.env.MSG91_DOMAIN ?? '',
+    fromEmail: process.env.MSG91_FROM_EMAIL ?? '',
+    fromName: process.env.MSG91_FROM_NAME ?? 'StudentReview',
+    // Each is a separately approved template ID from Email → Templates.
+    templates: {
+      verifyEmail: process.env.MSG91_TEMPLATE_VERIFY_EMAIL ?? '',
+      resetPassword: process.env.MSG91_TEMPLATE_RESET_PASSWORD ?? '',
+      collegeOtp: process.env.MSG91_TEMPLATE_COLLEGE_OTP ?? '',
+    },
+  },
+
   upload: {
     dir: process.env.UPLOAD_DIR ?? './uploads',
     maxMb: Number(process.env.MAX_UPLOAD_MB ?? 5),

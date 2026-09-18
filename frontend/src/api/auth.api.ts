@@ -15,4 +15,5 @@ export const authApi = {
   me: () => unwrap<SelfUser>(api.get('/auth/me')),
   forgotPassword: (email: string) => unwrap<{ message: string }>(api.post('/auth/forgot-password', { email })),
   resetPassword: (token: string, password: string) => unwrap<{ message: string }>(api.post('/auth/reset-password', { token, password })),
+  verifyEmail: (token: string) => unwrap<{ message: string }>(api.post('/auth/verify-email', { token })),
 };
