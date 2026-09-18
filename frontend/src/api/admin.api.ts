@@ -74,6 +74,49 @@ export interface AdminInstitutionEmailDomain {
   createdAt: string;
 }
 
+export interface AdminCourseRow {
+  id: string;
+  institutionId: string;
+  name: string;
+  level: string;
+  department?: string | null;
+  durationYears?: number | null;
+  feePerYearInr?: number | null;
+  totalFeeInr?: number | null;
+}
+
+export interface AdminAdmissionCutoffRow {
+  id: string;
+  institutionId: string;
+  courseId: string;
+  course: { name: string };
+  examName: string;
+  category: string;
+  year: number;
+  openingRank?: number | null;
+  closingRank?: number | null;
+  percentile?: number | null;
+}
+
+export interface CreateCourseInput {
+  name: string;
+  level: 'UG' | 'PG' | 'DOCTORATE' | 'DIPLOMA';
+  department?: string;
+  durationYears?: number;
+  feePerYearInr?: number;
+  totalFeeInr?: number;
+}
+
+export interface CreateAdmissionCutoffInput {
+  courseId: string;
+  examName: string;
+  category: string;
+  year: number;
+  openingRank?: number;
+  closingRank?: number;
+  percentile?: number;
+}
+
 export interface AdminJobRow {
   id: string;
   title: string;
@@ -109,6 +152,7 @@ export interface AdminInstitutionRow {
   submittedBy?: { username: string; email: string } | null;
   locations: { city: string; state: string }[];
   _count: { reviews: number };
+  entranceExams: string[];
 }
 
 export interface CreateInstitutionInput {
@@ -217,6 +261,26 @@ export const adminApi = {
     unwrap<AdminInstitutionEmailDomain>(api.post(`/admin/institutions/${institutionId}/email-domains`, { domain })),
   removeEmailDomain: (institutionId: string, domainId: string) =>
     unwrap(api.delete(`/admin/institutions/${institutionId}/email-domains/${domainId}`)),
+
+  courses: async (institutionId: string) => {
+    const res = await api.get<ApiSuccess<AdminCourseRow[]>>(`/admin/institutions/${institutionId}/courses`);
+    return res.data.data;
+  },
+  createCourse: (institutionId: string, input: CreateCourseInput) =>
+    unwrap<AdminCourseRow>(api.post(`/admin/institutions/${institutionId}/courses`, input)),
+  updateCourse: (courseId: string, input: Partial<CreateCourseInput>) => unwrap<AdminCourseRow>(api.patch(`/admin/courses/${courseId}`, input)),
+  deleteCourse: (courseId: string) => unwrap(api.delete(`/admin/courses/${courseId}`)),
+
+  setEntranceExams: (institutionId: string, examNames: string[]) =>
+    unwrap(api.patch(`/admin/institutions/${institutionId}/entrance-exams`, { examNames })),
+
+  admissionCutoffs: async (institutionId: string) => {
+    const res = await api.get<ApiSuccess<AdminAdmissionCutoffRow[]>>(`/admin/institutions/${institutionId}/admission-cutoffs`);
+    return res.data.data;
+  },
+  createAdmissionCutoff: (institutionId: string, input: CreateAdmissionCutoffInput) =>
+    unwrap<AdminAdmissionCutoffRow>(api.post(`/admin/institutions/${institutionId}/admission-cutoffs`, input)),
+  deleteAdmissionCutoff: (id: string) => unwrap(api.delete(`/admin/admission-cutoffs/${id}`)),
 
   institutions: async (params: { page?: number; pageSize?: number; status?: 'PENDING' | 'APPROVED' | 'REJECTED' }) => {
     const res = await api.get<ApiSuccess<AdminInstitutionRow[]>>('/admin/institutions', { params });

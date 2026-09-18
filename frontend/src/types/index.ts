@@ -49,12 +49,36 @@ export interface InstitutionSummary {
   summary: { reviewCount: number; verifiedCount: number; ratings: RatingSummaryItem[] };
 }
 
+export interface CourseDetail {
+  id: string;
+  name: string;
+  level: string;
+  department?: string | null;
+  durationYears?: number | null;
+  feePerYearInr?: number | null;
+  totalFeeInr?: number | null;
+}
+
+export interface AdmissionCutoff {
+  id: string;
+  courseId: string;
+  course: { name: string };
+  examName: string;
+  category: string;
+  year: number;
+  openingRank?: number | null;
+  closingRank?: number | null;
+  percentile?: number | null;
+}
+
 export interface InstitutionDetail extends InstitutionSummary {
   website?: string | null;
   description?: string | null;
   establishedYear?: number | null;
   claimed: boolean;
-  courses: { id: string; name: string; level: string; department?: string | null; durationYears?: number | null }[];
+  courses: CourseDetail[];
+  entranceExams: string[];
+  admissionCutoffs: AdmissionCutoff[];
 }
 
 export interface ReviewAuthor {

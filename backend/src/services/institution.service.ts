@@ -195,6 +195,7 @@ export async function getInstitutionBySlug(slug: string) {
       category: true,
       courses: true,
       organizationProfile: true,
+      admissionCutoffs: { include: { course: { select: { name: true } } }, orderBy: [{ year: 'desc' as const }, { examName: 'asc' as const }] },
     },
   });
   if (!institution) throw AppError.notFound('Institution not found');

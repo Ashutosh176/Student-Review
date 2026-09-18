@@ -90,3 +90,43 @@ export const institutionDomainParamSchema = z.object({
   id: z.string().uuid(),
   domainId: z.string().uuid(),
 });
+
+// ───────────────────────── Admissions ─────────────────────────
+
+const COURSE_LEVELS = ['UG', 'PG', 'DOCTORATE', 'DIPLOMA'] as const;
+
+export const createCourseSchema = z.object({
+  name: z.string().min(2).max(150),
+  level: z.enum(COURSE_LEVELS),
+  department: z.string().max(120).optional(),
+  durationYears: z.coerce.number().min(0.5).max(10).optional(),
+  feePerYearInr: z.coerce.number().int().min(0).optional(),
+  totalFeeInr: z.coerce.number().int().min(0).optional(),
+});
+
+export const updateCourseSchema = z.object({
+  name: z.string().min(2).max(150).optional(),
+  level: z.enum(COURSE_LEVELS).optional(),
+  department: z.string().max(120).optional(),
+  durationYears: z.coerce.number().min(0.5).max(10).optional(),
+  feePerYearInr: z.coerce.number().int().min(0).optional(),
+  totalFeeInr: z.coerce.number().int().min(0).optional(),
+});
+
+export const setEntranceExamsSchema = z.object({
+  examNames: z.array(z.string().min(1).max(60)).max(20),
+});
+
+export const createAdmissionCutoffSchema = z.object({
+  courseId: z.string().uuid(),
+  examName: z.string().min(1).max(60),
+  category: z.string().min(1).max(40),
+  year: z.coerce
+    .number()
+    .int()
+    .min(2000)
+    .max(new Date().getFullYear() + 1),
+  openingRank: z.coerce.number().int().min(1).optional(),
+  closingRank: z.coerce.number().int().min(1).optional(),
+  percentile: z.coerce.number().min(0).max(100).optional(),
+});

@@ -360,6 +360,11 @@ model Institution {
   status            InstitutionStatus @default(APPROVED)
   submittedByUserId String?
   rejectionReason   String?
+  // Admissions §: entrance exams this institution accepts for admission
+  // (e.g. "JEE Main", "CAT"). A plain tag list, admin-curated — cutoffs
+  // below are the structured per-course/category/year data; this is just
+  // "which exams", shown even before any cutoff rows exist for one.
+  entranceExams     String[]          @default([])
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -376,6 +381,7 @@ model Institution {
   rankingScores        InstitutionRankingScore[]
   emailDomains         InstitutionEmailDomain[]
   studentVerifications StudentVerification[]
+  admissionCutoffs     AdmissionCutoff[]
 
   @@index([type])
   @@index([verified])
@@ -409,13 +415,44 @@ model Course {
   level         String // UG | PG | DOCTORATE | DIPLOMA
   department    String?
   durationYears Float?
+  // Admissions §: nullable — most courses won't have fee data entered yet.
+  // Rupees, whole units (no paise) — matches how Razorpay amounts elsewhere
+  // in this codebase are handled at the integer-rupee level in the UI.
+  feePerYearInr Int?
+  totalFeeInr   Int?
   createdAt     DateTime @default(now())
 
-  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  reviews     Review[]
+  institution      Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  reviews          Review[]
+  admissionCutoffs AdmissionCutoff[]
 
   @@index([institutionId])
   @@map("courses")
+}
+
+// Admissions §: one row per (course, exam, category, year) — the closing/
+// opening rank or percentile a student needed to get in. Deliberately not
+// folded into Course (many rows per course: different exams/categories/
+// years) nor a JSON blob (needs to be queryable/sortable per college page).
+model AdmissionCutoff {
+  id            String   @id @default(uuid())
+  institutionId String
+  courseId      String
+  examName      String
+  category      String // General | OBC-NCL | SC | ST | EWS | ... (free text — categories vary by state/exam)
+  year          Int
+  openingRank   Int?
+  closingRank   Int?
+  percentile    Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId])
+  @@index([courseId])
+  @@map("admission_cutoffs")
 }
 
 // ───────────────────────── Reviews ─────────────────────────

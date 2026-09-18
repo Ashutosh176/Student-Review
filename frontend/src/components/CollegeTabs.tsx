@@ -6,6 +6,7 @@ export function CollegeTabs({ slug }: { slug: string }) {
     { to: `/college/${slug}`, label: 'Overview', end: true },
     { to: `/college/${slug}/reviews`, label: 'Reviews' },
     { to: `/college/${slug}/questions`, label: 'Questions' },
+    { to: `/college/${slug}/admissions`, label: 'Admissions' },
     { to: `/college/${slug}/placements`, label: 'Placements' },
     { to: `/college/${slug}/courses`, label: 'Courses' },
     { to: `/college/${slug}/jobs`, label: 'Jobs' },

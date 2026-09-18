@@ -23,6 +23,7 @@ import { CollegeOverviewPage } from '@/pages/college/CollegeOverviewPage';
 import { CollegeReviewsPage } from '@/pages/college/CollegeReviewsPage';
 import { CollegeQuestionsPage } from '@/pages/college/CollegeQuestionsPage';
 import { CollegePlacementsPage } from '@/pages/college/CollegePlacementsPage';
+import { CollegeAdmissionsPage } from '@/pages/college/CollegeAdmissionsPage';
 import { CollegeCoursesPage } from '@/pages/college/CollegeCoursesPage';
 import { CollegeJobsPage } from '@/pages/college/CollegeJobsPage';
 
@@ -71,6 +72,7 @@ import { PrivacyPage } from '@/pages/legal/PrivacyPage';
 import { TermsPage } from '@/pages/legal/TermsPage';
 import { CommunityGuidelinesPage } from '@/pages/legal/CommunityGuidelinesPage';
 import { ReviewGuidelinesPage } from '@/pages/legal/ReviewGuidelinesPage';
+import { TrustAndVerificationPage } from '@/pages/legal/TrustAndVerificationPage';
 import { OrgResponsePolicyPage } from '@/pages/legal/OrgResponsePolicyPage';
 import { ReportContentPage } from '@/pages/legal/ReportContentPage';
 
@@ -107,6 +109,7 @@ export default function App() {
             <Route index element={<CollegeOverviewPage />} />
             <Route path="reviews" element={<CollegeReviewsPage />} />
             <Route path="questions" element={<CollegeQuestionsPage />} />
+            <Route path="admissions" element={<CollegeAdmissionsPage />} />
             <Route path="placements" element={<CollegePlacementsPage />} />
             <Route path="courses" element={<CollegeCoursesPage />} />
             <Route path="jobs" element={<CollegeJobsPage />} />
@@ -120,6 +123,7 @@ export default function App() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
           <Route path="/review-guidelines" element={<ReviewGuidelinesPage />} />
+          <Route path="/trust" element={<TrustAndVerificationPage />} />
           <Route path="/org-response-policy" element={<OrgResponsePolicyPage />} />
           <Route path="/report-content" element={<ReportContentPage />} />
         </Route>

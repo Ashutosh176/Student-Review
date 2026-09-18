@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { Helmet } from 'react-helmet-async';
-import { adminApi, type CreateInstitutionInput } from '@/api/admin.api';
+import { adminApi, type CreateAdmissionCutoffInput, type CreateCourseInput, type CreateInstitutionInput } from '@/api/admin.api';
 import { apiErrorMessage } from '@/api/client';
 import { DashboardTopbar } from '@/layouts/DashboardLayout';
 import { Badge } from '@/components/Badge';
@@ -74,12 +74,282 @@ function EmailDomainsPanel({ institutionId }: { institutionId: string }) {
   );
 }
 
+const COURSE_LEVELS = ['UG', 'PG', 'DOCTORATE', 'DIPLOMA'] as const;
+const EMPTY_COURSE_FORM: CreateCourseInput = { name: '', level: 'UG', department: '', durationYears: undefined, feePerYearInr: undefined, totalFeeInr: undefined };
+const EMPTY_CUTOFF_FORM = { courseId: '', examName: '', category: '', year: new Date().getFullYear(), openingRank: '', closingRank: '', percentile: '' };
+
+function EntranceExamsEditor({ institutionId, examNames }: { institutionId: string; examNames: string[] }) {
+  const qc = useQueryClient();
+  const [draft, setDraft] = useState('');
+  const mutation = useMutation({
+    mutationFn: (next: string[]) => adminApi.setEntranceExams(institutionId, next),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
+  });
+
+  return (
+    <div>
+      <p className="mb-2 text-[11.5px] text-sub">Entrance exams this institution accepts — shown as a tag list on its public Admissions tab.</p>
+      <div className="mb-2 flex flex-wrap gap-2">
+        {examNames.map((exam) => (
+          <span key={exam} className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[12px]">
+            {exam}
+            <button onClick={() => mutation.mutate(examNames.filter((e) => e !== exam))} className="text-danger hover:underline">
+              ✕
+            </button>
+          </span>
+        ))}
+        {examNames.length === 0 && <span className="text-[12px] text-sub">No entrance exams added yet.</span>}
+      </div>
+      <form
+        className="flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (draft.trim()) {
+            mutation.mutate([...examNames, draft.trim()]);
+            setDraft('');
+          }
+        }}
+      >
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="e.g. JEE Main"
+          className="flex-1 rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+        />
+        <button type="submit" className="btn btn-primary btn-sm" disabled={!draft.trim() || mutation.isPending}>
+          Add
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function CoursesAndFeesEditor({ institutionId }: { institutionId: string }) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState<CreateCourseInput>(EMPTY_COURSE_FORM);
+  const query = useQuery({ queryKey: ['admin', 'courses', institutionId], queryFn: () => adminApi.courses(institutionId) });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'courses', institutionId] });
+  const createMutation = useMutation({
+    mutationFn: () => adminApi.createCourse(institutionId, form),
+    onSuccess: () => {
+      setForm(EMPTY_COURSE_FORM);
+      invalidate();
+    },
+  });
+  const deleteMutation = useMutation({ mutationFn: (courseId: string) => adminApi.deleteCourse(courseId), onSuccess: invalidate });
+
+  return (
+    <div>
+      <p className="mb-2 text-[11.5px] text-sub">Courses offered, with optional fees — shown on the public Courses and Admissions tabs.</p>
+      <div className="mb-2 flex flex-col gap-1.5">
+        {query.data?.map((c) => (
+          <div key={c.id} className="flex items-center justify-between rounded-md bg-white px-2.5 py-1.5 text-[12px]">
+            <span>
+              {c.name} <span className="text-sub">({c.level})</span>
+              {c.feePerYearInr ? ` · ₹${c.feePerYearInr.toLocaleString('en-IN')}/yr` : ''}
+              {c.totalFeeInr ? ` · ₹${c.totalFeeInr.toLocaleString('en-IN')} total` : ''}
+            </span>
+            <button onClick={() => deleteMutation.mutate(c.id)} className="text-danger hover:underline">
+              Remove
+            </button>
+          </div>
+        ))}
+        {query.data?.length === 0 && <span className="text-[12px] text-sub">No courses added yet.</span>}
+      </div>
+      <form
+        className="grid grid-cols-2 gap-2 sm:grid-cols-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (form.name.trim()) createMutation.mutate();
+        }}
+      >
+        <input
+          value={form.name}
+          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          placeholder="Course name"
+          className="col-span-2 rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+        />
+        <select
+          value={form.level}
+          onChange={(e) => setForm((f) => ({ ...f, level: e.target.value as CreateCourseInput['level'] }))}
+          className="rounded-md border border-line px-2 py-1.5 text-[12.5px]"
+        >
+          {COURSE_LEVELS.map((l) => (
+            <option key={l} value={l}>
+              {l}
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          min={0}
+          value={form.feePerYearInr ?? ''}
+          onChange={(e) => setForm((f) => ({ ...f, feePerYearInr: e.target.value ? Number(e.target.value) : undefined }))}
+          placeholder="Fee / year (₹)"
+          className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+        />
+        <input
+          type="number"
+          min={0}
+          value={form.totalFeeInr ?? ''}
+          onChange={(e) => setForm((f) => ({ ...f, totalFeeInr: e.target.value ? Number(e.target.value) : undefined }))}
+          placeholder="Total fee (₹)"
+          className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+        />
+        <button type="submit" className="btn btn-primary btn-sm" disabled={!form.name.trim() || createMutation.isPending}>
+          Add course
+        </button>
+      </form>
+      {createMutation.isError && <p className="mt-2 text-xs text-danger">{apiErrorMessage(createMutation.error)}</p>}
+    </div>
+  );
+}
+
+function AdmissionCutoffsEditor({ institutionId }: { institutionId: string }) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState(EMPTY_CUTOFF_FORM);
+  const coursesQuery = useQuery({ queryKey: ['admin', 'courses', institutionId], queryFn: () => adminApi.courses(institutionId) });
+  const cutoffsQuery = useQuery({ queryKey: ['admin', 'admission-cutoffs', institutionId], queryFn: () => adminApi.admissionCutoffs(institutionId) });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'admission-cutoffs', institutionId] });
+  const createMutation = useMutation({
+    mutationFn: () => {
+      const input: CreateAdmissionCutoffInput = {
+        courseId: form.courseId,
+        examName: form.examName,
+        category: form.category,
+        year: form.year,
+        openingRank: form.openingRank ? Number(form.openingRank) : undefined,
+        closingRank: form.closingRank ? Number(form.closingRank) : undefined,
+        percentile: form.percentile ? Number(form.percentile) : undefined,
+      };
+      return adminApi.createAdmissionCutoff(institutionId, input);
+    },
+    onSuccess: () => {
+      setForm((f) => ({ ...EMPTY_CUTOFF_FORM, courseId: f.courseId, examName: f.examName, category: f.category, year: f.year }));
+      invalidate();
+    },
+  });
+  const deleteMutation = useMutation({ mutationFn: (id: string) => adminApi.deleteAdmissionCutoff(id), onSuccess: invalidate });
+
+  const canSubmit = form.courseId && form.examName.trim() && form.category.trim() && (form.openingRank || form.closingRank || form.percentile);
+
+  return (
+    <div>
+      <p className="mb-2 text-[11.5px] text-sub">Cutoff ranks/percentiles by course, exam, category and year — shown on the public Admissions tab.</p>
+      <div className="mb-2 flex flex-col gap-1.5">
+        {cutoffsQuery.data?.map((c) => (
+          <div key={c.id} className="flex items-center justify-between rounded-md bg-white px-2.5 py-1.5 text-[12px]">
+            <span>
+              {c.course.name} · {c.examName} · {c.category} · {c.year}
+              {c.closingRank ? ` · Closing rank ${c.closingRank.toLocaleString('en-IN')}` : ''}
+              {c.openingRank ? ` (opening ${c.openingRank.toLocaleString('en-IN')})` : ''}
+              {c.percentile ? ` · ${c.percentile}%ile` : ''}
+            </span>
+            <button onClick={() => deleteMutation.mutate(c.id)} className="text-danger hover:underline">
+              Remove
+            </button>
+          </div>
+        ))}
+        {cutoffsQuery.data?.length === 0 && <span className="text-[12px] text-sub">No cutoffs added yet.</span>}
+      </div>
+      {coursesQuery.data?.length === 0 ? (
+        <p className="text-[12px] text-sub">Add a course above before recording a cutoff for it.</p>
+      ) : (
+        <form
+          className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (canSubmit) createMutation.mutate();
+          }}
+        >
+          <select
+            value={form.courseId}
+            onChange={(e) => setForm((f) => ({ ...f, courseId: e.target.value }))}
+            className="col-span-2 rounded-md border border-line px-2 py-1.5 text-[12.5px] sm:col-span-1"
+          >
+            <option value="">Course…</option>
+            {coursesQuery.data?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <input
+            value={form.examName}
+            onChange={(e) => setForm((f) => ({ ...f, examName: e.target.value }))}
+            placeholder="Exam (e.g. JEE Main)"
+            className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+          />
+          <input
+            value={form.category}
+            onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+            placeholder="Category (e.g. General)"
+            className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+          />
+          <input
+            type="number"
+            value={form.year}
+            onChange={(e) => setForm((f) => ({ ...f, year: Number(e.target.value) }))}
+            placeholder="Year"
+            className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+          />
+          <input
+            type="number"
+            min={1}
+            value={form.openingRank}
+            onChange={(e) => setForm((f) => ({ ...f, openingRank: e.target.value }))}
+            placeholder="Opening rank"
+            className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+          />
+          <input
+            type="number"
+            min={1}
+            value={form.closingRank}
+            onChange={(e) => setForm((f) => ({ ...f, closingRank: e.target.value }))}
+            placeholder="Closing rank"
+            className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+          />
+          <input
+            type="number"
+            min={0}
+            max={100}
+            step={0.01}
+            value={form.percentile}
+            onChange={(e) => setForm((f) => ({ ...f, percentile: e.target.value }))}
+            placeholder="Percentile"
+            className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-brand"
+          />
+          <button type="submit" className="btn btn-primary btn-sm" disabled={!canSubmit || createMutation.isPending}>
+            Add cutoff
+          </button>
+        </form>
+      )}
+      {createMutation.isError && <p className="mt-2 text-xs text-danger">{apiErrorMessage(createMutation.error)}</p>}
+    </div>
+  );
+}
+
+function AdmissionsPanel({ institutionId, examNames }: { institutionId: string; examNames: string[] }) {
+  return (
+    <div className="flex flex-col gap-5">
+      <EntranceExamsEditor institutionId={institutionId} examNames={examNames} />
+      <hr className="border-line" />
+      <CoursesAndFeesEditor institutionId={institutionId} />
+      <hr className="border-line" />
+      <AdmissionCutoffsEditor institutionId={institutionId} />
+    </div>
+  );
+}
+
 export function AdminCollegesPage() {
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [domainsOpenId, setDomainsOpenId] = useState<string | null>(null);
+  const [admissionsOpenId, setAdmissionsOpenId] = useState<string | null>(null);
   const [params, setParams] = useSearchParams();
   const status = (params.get('status') as 'PENDING' | 'APPROVED' | 'REJECTED' | null) ?? undefined;
 
@@ -202,6 +472,12 @@ export function AdminCollegesPage() {
                           className="text-brand hover:underline"
                         >
                           {domainsOpenId === inst.id ? 'Hide domains' : 'Email domains'}
+                        </button>{' '}
+                        <button
+                          onClick={() => setAdmissionsOpenId(admissionsOpenId === inst.id ? null : inst.id)}
+                          className="text-brand hover:underline"
+                        >
+                          {admissionsOpenId === inst.id ? 'Hide admissions' : 'Admissions'}
                         </button>
                       </>
                     )}
@@ -211,6 +487,13 @@ export function AdminCollegesPage() {
                   <tr className="border-b border-line bg-surface last:border-0">
                     <td className="px-3 py-3" colSpan={6}>
                       <EmailDomainsPanel institutionId={inst.id} />
+                    </td>
+                  </tr>
+                )}
+                {admissionsOpenId === inst.id && (
+                  <tr className="border-b border-line bg-surface last:border-0">
+                    <td className="px-3 py-3" colSpan={6}>
+                      <AdmissionsPanel institutionId={inst.id} examNames={inst.entranceExams} />
                     </td>
                   </tr>
                 )}

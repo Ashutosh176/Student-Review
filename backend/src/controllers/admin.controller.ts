@@ -5,6 +5,7 @@ import { AppError } from '../utils/AppError.js';
 import * as adminService from '../services/admin.service.js';
 import * as orgService from '../services/organization.service.js';
 import * as verificationService from '../services/verification.service.js';
+import * as admissionService from '../services/admission.service.js';
 import { recomputeAllRankings } from '../modules/ranking/ranking.service.js';
 import { resolveClaimDocumentPath, resolveVerificationDocumentPath } from '../middlewares/upload.js';
 
@@ -113,6 +114,42 @@ export const addEmailDomain = asyncHandler(async (req, res) => {
 
 export const removeEmailDomain = asyncHandler(async (req, res) => {
   await verificationService.removeEmailDomain(req.params.domainId);
+  ok(res, { removed: true });
+});
+
+// ───────────────────────── Admissions ─────────────────────────
+
+export const listCourses = asyncHandler(async (req, res) => {
+  ok(res, await admissionService.listCoursesAdmin(req.params.id));
+});
+
+export const createCourse = asyncHandler(async (req, res) => {
+  ok(res, await admissionService.createCourse(req.params.id, req.body), 201);
+});
+
+export const updateCourse = asyncHandler(async (req, res) => {
+  ok(res, await admissionService.updateCourse(req.params.id, req.body));
+});
+
+export const deleteCourse = asyncHandler(async (req, res) => {
+  await admissionService.deleteCourse(req.params.id);
+  ok(res, { removed: true });
+});
+
+export const setEntranceExams = asyncHandler(async (req, res) => {
+  ok(res, await admissionService.setEntranceExams(req.params.id, req.body.examNames));
+});
+
+export const listAdmissionCutoffs = asyncHandler(async (req, res) => {
+  ok(res, await admissionService.listAdmissionCutoffsAdmin(req.params.id));
+});
+
+export const createAdmissionCutoff = asyncHandler(async (req, res) => {
+  ok(res, await admissionService.createAdmissionCutoff(req.params.id, req.body), 201);
+});
+
+export const deleteAdmissionCutoff = asyncHandler(async (req, res) => {
+  await admissionService.deleteAdmissionCutoff(req.params.id);
   ok(res, { removed: true });
 });
 

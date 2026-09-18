@@ -4,7 +4,9 @@ import { authenticate, authorize } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { idParamSchema } from '../validators/review.validator.js';
 import {
+  createAdmissionCutoffSchema,
   createCategorySchema,
+  createCourseSchema,
   createFaqSchema,
   createInstitutionSchema,
   decisionSchema,
@@ -12,10 +14,12 @@ import {
   moderateReviewActionSchema,
   paginationQuerySchema,
   revokeSchema,
+  setEntranceExamsSchema,
   setFeaturedSchema,
   setJobStatusSchema,
   setUserRoleSchema,
   setUserStatusSchema,
+  updateCourseSchema,
   updateFaqSchema,
   updatePlatformSettingsSchema,
 } from '../validators/admin.validator.js';
@@ -76,6 +80,32 @@ router.delete(
   validate({ params: institutionDomainParamSchema }),
   adminController.removeEmailDomain,
 );
+
+router.get('/institutions/:id/courses', validate({ params: idParamSchema }), adminController.listCourses);
+router.post(
+  '/institutions/:id/courses',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: createCourseSchema }),
+  adminController.createCourse,
+);
+router.patch('/courses/:id', authorize('ADMIN'), validate({ params: idParamSchema, body: updateCourseSchema }), adminController.updateCourse);
+router.delete('/courses/:id', authorize('ADMIN'), validate({ params: idParamSchema }), adminController.deleteCourse);
+
+router.patch(
+  '/institutions/:id/entrance-exams',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: setEntranceExamsSchema }),
+  adminController.setEntranceExams,
+);
+
+router.get('/institutions/:id/admission-cutoffs', validate({ params: idParamSchema }), adminController.listAdmissionCutoffs);
+router.post(
+  '/institutions/:id/admission-cutoffs',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: createAdmissionCutoffSchema }),
+  adminController.createAdmissionCutoff,
+);
+router.delete('/admission-cutoffs/:id', authorize('ADMIN'), validate({ params: idParamSchema }), adminController.deleteAdmissionCutoff);
 
 router.post('/rankings/recompute', authorize('ADMIN'), adminController.recomputeRankings);
 
