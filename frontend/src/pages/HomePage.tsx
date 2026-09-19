@@ -60,9 +60,9 @@ export function HomePage() {
           fetchPriority="high"
           className="absolute inset-0 -z-20 h-full w-full scale-110 object-cover object-[center_35%] blur-[3px]"
         />
-        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-dark/85 via-brand/75 to-brand-deep/90" />
-        <h1 className="mx-auto mb-3 max-w-2xl text-3xl leading-tight sm:text-[38px]">Know what students really think.</h1>
-        <p className="mx-auto mb-6 max-w-lg text-[15px] text-white/85">
+        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-dark/55 via-brand/35 to-brand-deep/60" />
+        <h1 className="mx-auto mb-3 max-w-2xl text-3xl leading-tight [text-shadow:0_2px_14px_rgba(10,16,40,0.55)] sm:text-[38px]">Know what students really think.</h1>
+        <p className="mx-auto mb-6 max-w-lg text-[15px] text-white/95 [text-shadow:0_1px_10px_rgba(10,16,40,0.6)]">
           Explore honest student experiences, ratings and reviews of colleges and universities across India.
         </p>
         <SearchBar variant="hero" />
