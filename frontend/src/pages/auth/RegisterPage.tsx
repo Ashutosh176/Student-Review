@@ -34,7 +34,7 @@ export function RegisterPage() {
         <title>Sign up — StudentReview</title>
       </Helmet>
       <div className="mb-5 flex justify-center">
-        <Logo className="h-8 w-auto" />
+        <Logo className="h-14 w-auto" linkTo={null} />
       </div>
       <form
         onSubmit={(e) => {
