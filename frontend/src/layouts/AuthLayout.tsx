@@ -2,12 +2,13 @@ import { Outlet } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
 
 // Same graduation photo as the home hero: softly blurred and scaled up so the
-// blur never shows a hard edge, under a light brand tint. The top bar mirrors
-// SiteHeader's geometry (padding, border, h-14 logo) so the logo sits in the
-// exact same spot as on every other page.
+// blur never shows a hard edge, under a light brand tint. The logo floats on
+// the photo at the same spot (and size) as in SiteHeader — left edge px-4 /
+// sm:px-7, top py-2.5, h-14 — inside a soft white badge so the brand's dark
+// wordmark stays legible on the image (the logo itself is never recoloured).
 export function AuthLayout() {
   return (
-    <div className="relative isolate flex min-h-screen flex-col overflow-hidden bg-brand">
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-brand p-4">
       <img
         src="/hero.jpg"
         alt=""
@@ -17,15 +18,13 @@ export function AuthLayout() {
       />
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-dark/55 via-brand/35 to-brand-deep/60" />
 
-      <header className="border-b border-line bg-white">
-        <div className="flex items-center gap-6 px-4 py-2.5 sm:px-7">
+      <div className="absolute left-4 top-2.5 z-10 sm:left-7">
+        <div className="-mx-2.5 -my-1 rounded-xl bg-white/90 px-2.5 py-1 shadow-lg backdrop-blur-sm">
           <Logo className="h-14 w-auto flex-none" />
         </div>
-      </header>
+      </div>
 
-      <main className="flex flex-1 items-center justify-center p-4">
-        <Outlet />
-      </main>
+      <Outlet />
     </div>
   );
 }
