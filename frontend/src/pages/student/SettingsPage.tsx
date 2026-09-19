@@ -294,6 +294,58 @@ function DangerZoneSection() {
   );
 }
 
+function DeleteAccountSection() {
+  const navigate = useNavigate();
+  const clear = useAuthStore((s) => s.clear);
+  const [password, setPassword] = useState('');
+  const [confirming, setConfirming] = useState(false);
+
+  const mutation = useMutation({
+    mutationFn: () => usersApi.deleteAccount(password),
+    onSuccess: async () => {
+      await authApi.logout().catch(() => {});
+      navigate('/', { replace: true });
+      clear();
+    },
+  });
+
+  return (
+    <div className="mt-8 border-t border-line pt-6">
+      <h4 className="mb-1 text-sm text-danger">Delete my data</h4>
+      <p className="mb-4 text-xs text-sub">
+        Permanently erases your email, username, verification documents, saved colleges and notifications. Your reviews stay up because they were
+        anonymous, but nothing links them to you any more. This can't be undone.
+      </p>
+      {!confirming ? (
+        <button type="button" className="btn btn-danger btn-sm" onClick={() => setConfirming(true)}>
+          Delete my data
+        </button>
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate();
+          }}
+        >
+          <div className="field max-w-xs">
+            <label>Confirm your password</label>
+            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          {mutation.isError && <p className="mb-3 text-xs text-danger">{apiErrorMessage(mutation.error)}</p>}
+          <div className="flex gap-2">
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfirming(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-danger btn-sm" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Erasing…' : 'Yes, erase everything'}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const user = useAuthStore((s) => s.user);
   const [section, setSection] = useState<(typeof SECTIONS)[number]>('Account');
@@ -343,7 +395,12 @@ export function SettingsPage() {
             />
           )}
           {section === 'Verification' && <VerificationSection />}
-          {section === 'Danger Zone' && <DangerZoneSection />}
+          {section === 'Danger Zone' && (
+            <>
+              <DangerZoneSection />
+              <DeleteAccountSection />
+            </>
+          )}
         </div>
       </div>
     </div>

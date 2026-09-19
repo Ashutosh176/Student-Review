@@ -1,6 +1,8 @@
 import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { toSlug } from '../utils/slug.js';
+import { publicReviewWhere } from '../utils/publishing.js';
+import { serializePublicInstitution } from '../utils/serializers.js';
 import type { InstitutionType, RatingCategory } from '@prisma/client';
 
 const ALL_CATEGORIES: RatingCategory[] = [
@@ -18,7 +20,7 @@ const ALL_CATEGORIES: RatingCategory[] = [
 export async function platformStats() {
   const [institutionCount, verifiedReviewCount] = await Promise.all([
     prisma.institution.count({ where: { status: 'APPROVED' } }),
-    prisma.review.count({ where: { status: 'APPROVED', verifiedStudent: true } }),
+    prisma.review.count({ where: { ...publicReviewWhere(), verifiedStudent: true } }),
   ]);
   return { institutionCount, verifiedReviewCount };
 }
@@ -67,15 +69,15 @@ export async function ratingSummaryFor(institutionId: string) {
   // actually attending" everywhere else it's shown.
   const grouped = await prisma.reviewRating.groupBy({
     by: ['category'],
-    where: { review: { institutionId, status: 'APPROVED', type: 'EXPERIENCE' } },
+    where: { review: { institutionId, ...publicReviewWhere(), type: 'EXPERIENCE' } },
     _avg: { value: true },
     _count: { _all: true },
   });
   const map = new Map(grouped.map((g) => [g.category, { average: g._avg.value ?? 0, count: g._count._all }]));
 
   const [reviewCount, verifiedCount] = await Promise.all([
-    prisma.review.count({ where: { institutionId, status: 'APPROVED', type: 'EXPERIENCE' } }),
-    prisma.review.count({ where: { institutionId, status: 'APPROVED', verifiedStudent: true, type: 'EXPERIENCE' } }),
+    prisma.review.count({ where: { institutionId, ...publicReviewWhere(), type: 'EXPERIENCE' } }),
+    prisma.review.count({ where: { institutionId, ...publicReviewWhere(), verifiedStudent: true, type: 'EXPERIENCE' } }),
   ]);
 
   return {
@@ -159,7 +161,7 @@ export async function listInstitutions(params: {
   ]);
 
   const withSummaries = await Promise.all(
-    institutions.map(async (inst) => ({ ...inst, summary: await ratingSummaryFor(inst.id) })),
+    institutions.map(async (inst) => ({ ...serializePublicInstitution(inst), summary: await ratingSummaryFor(inst.id) })),
   );
 
   if (params.sort === 'rating') {
@@ -188,7 +190,7 @@ export async function searchInstitutions(q: string, limit: number) {
     take: limit,
     include: { locations: { where: { isPrimary: true }, take: 1 } },
   });
-  return institutions;
+  return institutions.map(serializePublicInstitution);
 }
 
 export async function getInstitutionBySlug(slug: string) {
@@ -204,7 +206,7 @@ export async function getInstitutionBySlug(slug: string) {
   });
   if (!institution) throw AppError.notFound('Institution not found');
   const summary = await ratingSummaryFor(institution.id);
-  return { ...institution, summary };
+  return { ...serializePublicInstitution(institution), summary };
 }
 
 export async function getCompareData(slugs: string[]) {
@@ -215,7 +217,7 @@ export async function getCompareData(slugs: string[]) {
   if (institutions.length < 2) throw AppError.badRequest('At least 2 valid institutions are required to compare');
 
   const withSummaries = await Promise.all(
-    institutions.map(async (inst) => ({ ...inst, summary: await ratingSummaryFor(inst.id) })),
+    institutions.map(async (inst) => ({ ...serializePublicInstitution(inst), summary: await ratingSummaryFor(inst.id) })),
   );
   // Preserve requested order for a stable shareable comparison URL.
   return slugs

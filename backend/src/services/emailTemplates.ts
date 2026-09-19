@@ -99,7 +99,7 @@ export function resetPasswordEmail(input: { username: string; link: string }): {
 
 export function collegeOtpEmail(input: { code: string }): { html: string; text: string } {
   const html = shell({
-    previewText: `Your StudentReview college verification code is ${input.code}`,
+    previewText: `Your verification code is ${input.code}`,
     heading: 'College verification code',
     bodyHtml: `
       <p style="margin:0 0 16px;">Your StudentReview college verification code is:</p>

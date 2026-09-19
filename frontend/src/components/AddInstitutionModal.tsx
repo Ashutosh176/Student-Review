@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi, type CreateInstitutionInput } from '@/api/admin.api';
 import { apiErrorMessage } from '@/api/client';
@@ -24,6 +24,7 @@ export function AddInstitutionModal({
   helperText = 'Creates an unclaimed, unverified profile. Organizations can claim it later.',
   submitLabel = 'Create institution',
   submittingLabel = 'Creating…',
+  initialName = '',
 }: {
   open: boolean;
   onClose: () => void;
@@ -34,9 +35,15 @@ export function AddInstitutionModal({
   helperText?: string;
   submitLabel?: string;
   submittingLabel?: string;
+  initialName?: string;
 }) {
   const [form, setForm] = useState<CreateInstitutionInput>(EMPTY);
   const categoriesQuery = useQuery({ queryKey: ['admin', 'categories'], queryFn: adminApi.categories, enabled: open });
+
+  useEffect(() => {
+    if (open) setForm((f) => (f.name ? f : { ...f, name: initialName }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 

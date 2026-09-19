@@ -10,8 +10,8 @@ import { AppError } from '../utils/AppError.js';
 // any express.static root — they are never publicly reachable by URL, only
 // through the authenticated download route in admin.routes.ts, since a claim
 // document can contain identifying business/KYC information.
-const CLAIMS_DIR = path.join(process.cwd(), env.upload.dir, 'claims');
-const VERIFICATIONS_DIR = path.join(process.cwd(), env.upload.dir, 'verifications');
+const CLAIMS_DIR = path.resolve(process.cwd(), env.upload.dir, 'claims');
+const VERIFICATIONS_DIR = path.resolve(process.cwd(), env.upload.dir, 'verifications');
 
 const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'image/png', 'image/jpeg']);
 
@@ -46,7 +46,7 @@ export function claimDocumentStorageKey(filename: string): string {
 }
 
 export function resolveClaimDocumentPath(storageKey: string): string {
-  const base = path.join(process.cwd(), env.upload.dir);
+  const base = path.resolve(process.cwd(), env.upload.dir);
   const resolved = path.resolve(base, storageKey);
   if (!resolved.startsWith(path.resolve(base) + path.sep)) {
     throw AppError.badRequest('Invalid document reference');
@@ -85,7 +85,7 @@ export function verificationDocumentStorageKey(filename: string): string {
 }
 
 export function resolveVerificationDocumentPath(storageKey: string): string {
-  const base = path.join(process.cwd(), env.upload.dir);
+  const base = path.resolve(process.cwd(), env.upload.dir);
   const resolved = path.resolve(base, storageKey);
   if (!resolved.startsWith(path.resolve(base) + path.sep)) {
     throw AppError.badRequest('Invalid document reference');

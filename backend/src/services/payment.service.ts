@@ -53,6 +53,7 @@ function safeEqualHex(expectedHex: string, actualHex: string): boolean {
 }
 
 function verifySignature(orderId: string, paymentId: string, signature: string): boolean {
+  if (!env.razorpay.keySecret) return false; // an empty HMAC key is forgeable
   const expected = crypto.createHmac('sha256', env.razorpay.keySecret).update(`${orderId}|${paymentId}`).digest('hex');
   return safeEqualHex(expected, signature);
 }

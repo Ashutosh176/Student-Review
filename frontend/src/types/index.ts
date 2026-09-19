@@ -78,6 +78,7 @@ export interface InstitutionDetail extends InstitutionSummary {
   claimed: boolean;
   courses: CourseDetail[];
   entranceExams: string[];
+  admissionProcess?: string | null;
   admissionCutoffs: AdmissionCutoff[];
   aiSummary?: string | null;
   aiSummaryUpdatedAt?: string | null;
@@ -98,7 +99,7 @@ export interface PublicReview {
   type: ReviewKind;
   relationship: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT' | 'APPLICANT';
   admissionOutcome?: AdmissionOutcome | null;
-  batchYear: number;
+  batchYear?: number | null; // withheld until a college has enough reviews (anonymity)
   title?: string | null;
   body?: string;
   recommend: boolean;

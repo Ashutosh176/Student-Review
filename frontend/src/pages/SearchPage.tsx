@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
@@ -136,7 +136,15 @@ export function SearchPage() {
           {query.isLoading && <CardSkeletonGrid count={6} />}
           {query.isError && <ErrorState />}
           {query.data && query.data.items.length === 0 && (
-            <EmptyState title="No colleges found" description="Try a different search term or clear your filters." />
+            <EmptyState
+              title="No colleges found"
+              description="Try a different search term or clear your filters — or add it yourself and write the first review."
+              action={
+                <Link to={`/write-review${initialQ ? `?q=${encodeURIComponent(initialQ)}` : ''}`} className="btn btn-primary btn-sm">
+                  Can't find your college? Add it
+                </Link>
+              }
+            />
           )}
           {query.data && query.data.items.length > 0 && (
             <div className="flex flex-col gap-3">

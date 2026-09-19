@@ -23,6 +23,13 @@ export const env = {
     refreshTtl: process.env.JWT_REFRESH_TTL ?? '30d',
   },
 
+  // Hours between public-visibility batches for approved reviews (see
+  // utils/publishing.ts). 0 disables batching (dev default).
+  // Where /api/contact messages are delivered.
+  contactTo: process.env.CONTACT_TO ?? 'no-reply@studentreview.in',
+
+  reviewPublishBatchHours: Number(process.env.REVIEW_PUBLISH_BATCH_HOURS ?? (process.env.NODE_ENV === 'production' ? 12 : 0)),
+
   cookieSecret: required('COOKIE_SECRET', 'dev-cookie-secret-change-me'),
 
   email: {
@@ -91,3 +98,18 @@ export const env = {
     webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET ?? '',
   },
 };
+
+// Refuse to boot in production with dev-default secrets — a known JWT secret
+// lets anyone forge an ADMIN token.
+if (env.isProd) {
+  const weak = (v: string) => v.length < 32 || v.includes('change-me');
+  const bad = [
+    weak(env.jwt.accessSecret) && 'JWT_ACCESS_SECRET',
+    weak(env.jwt.refreshSecret) && 'JWT_REFRESH_SECRET',
+    weak(env.cookieSecret) && 'COOKIE_SECRET',
+    env.clientOrigin.startsWith('http://') && 'CLIENT_ORIGIN (must be https)',
+    env.email.provider === 'console' && 'EMAIL_PROVIDER (console would log OTP codes)',
+    env.razorpay.keyId && !env.razorpay.keySecret && 'RAZORPAY_KEY_SECRET',
+  ].filter(Boolean);
+  if (bad.length) throw new Error('Insecure production configuration: ' + bad.join(', '));
+}

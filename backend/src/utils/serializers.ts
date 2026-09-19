@@ -4,6 +4,14 @@
 // authorship — this is the single place that decides what "anonymous" means.
 import type { Review, ReviewRating, ReviewReport, ReviewResponse, User, Answer, Question, ReviewType } from '@prisma/client';
 
+// Exact timestamps are a deanonymisation side-channel (see also
+// utils/publishing.ts for publication batching). Public output is truncated to
+// the calendar day; exact times stay in the DB for moderation only.
+export function coarsenDate(d: Date | null | undefined): Date | null {
+  if (!d) return null;
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
 export function publicReviewAuthor(_user: Pick<User, 'id'>, verifiedStudent: boolean, reviewType?: ReviewType) {
   // ADMISSION_PROCESS reviews are never verified (see review.service.ts
   // createReview) — labeled distinctly as "Anonymous Applicant" so a reader
@@ -27,15 +35,17 @@ type ReviewWithRelations = Review & {
   _count?: { votes?: number; reports?: number };
 };
 
-export function serializePublicReview(review: ReviewWithRelations) {
+// `revealCohort`: batchYear is only published once the college has enough
+// reviews that "Alumni · 2024" doesn't single out one person. courseId is
+// never published — no page displays it and it narrows the cohort further.
+export function serializePublicReview(review: ReviewWithRelations, revealCohort = false) {
   return {
     id: review.id,
     institutionId: review.institutionId,
-    courseId: review.courseId,
     type: review.type,
     relationship: review.relationship,
     admissionOutcome: review.admissionOutcome,
-    batchYear: review.batchYear,
+    batchYear: revealCohort ? review.batchYear : null,
     title: review.title,
     body: review.status === 'FLAGGED' ? undefined : review.body,
     recommend: review.recommend,
@@ -45,10 +55,10 @@ export function serializePublicReview(review: ReviewWithRelations) {
     sentiment: review.sentiment,
     helpfulCount: review.helpfulCount,
     officialResponse: review.response
-      ? { body: review.response.body, createdAt: review.response.createdAt }
+      ? { body: review.response.body, createdAt: coarsenDate(review.response.createdAt) }
       : null,
-    createdAt: review.createdAt,
-    editedAt: review.editedAt,
+    createdAt: coarsenDate(review.createdAt),
+    editedAt: coarsenDate(review.editedAt),
   };
 }
 
@@ -60,7 +70,7 @@ export function serializePublicAnswer(answer: Answer) {
     status: answer.status,
     author: publicReviewAuthor({ id: answer.userId }, answer.verifiedStudent),
     upvoteCount: answer.upvoteCount,
-    createdAt: answer.createdAt,
+    createdAt: coarsenDate(answer.createdAt),
   };
 }
 
@@ -78,7 +88,7 @@ export function serializePublicQuestion(question: QuestionWithCount) {
     title: question.title,
     body: question.status === 'FLAGGED' ? undefined : question.body,
     status: question.status,
-    createdAt: question.createdAt,
+    createdAt: coarsenDate(question.createdAt),
     // Existing shape (CollegeQuestionsPage, OrgQuestionsPage, MyQuestionsPage
     // all read q._count.answers) — keep it, don't flatten to a new field.
     ...(question._count ? { _count: { answers: question._count.answers ?? 0 } } : {}),
@@ -115,4 +125,21 @@ export function serializeReportForAdmin(report: ReviewReport) {
     // reporterUserId intentionally omitted from admin list views; resolved
     // only in the single-report detail endpoint that requires MODERATOR+.
   };
+}
+
+// Public institution shape: raw Prisma rows carry submittedByUserId (who
+// proposed the college), rejectionReason and the org's contactEmail — none of
+// which belong in an unauthenticated response.
+export function serializePublicInstitution<T extends Record<string, any>>(inst: T) {
+  const { submittedByUserId: _s, submittedBy: _sb, rejectionReason: _r, organizationProfile, ...rest } = inst;
+  if (!organizationProfile) return rest;
+  const { contactEmail: _c, ...safeProfile } = organizationProfile;
+  return { ...rest, organizationProfile: safeProfile };
+}
+
+// Moderators/admins judge content, not authors. Strips every author/reporter
+// identifier from a raw review or report row before it leaves the admin API.
+export function stripIdentity<T extends Record<string, unknown>>(row: T): Omit<T, 'userId' | 'reporterUserId'> {
+  const { userId: _u, reporterUserId: _r, ...rest } = row as T & { userId?: unknown; reporterUserId?: unknown };
+  return rest;
 }

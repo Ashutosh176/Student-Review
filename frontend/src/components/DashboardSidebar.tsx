@@ -1,6 +1,7 @@
 import { Link, NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { Logo } from './Logo';
+import { useAuthStore } from '@/store/authStore';
 
 export type DashboardKind = 'student' | 'org' | 'admin';
 
@@ -41,27 +42,25 @@ const ITEMS: Record<DashboardKind, { icon: string; label: string; to: string }[]
 };
 
 export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?: string }) {
+  const user = useAuthStore((s) => s.user);
+  const name = brand ?? user?.username ?? (kind === 'admin' ? 'Admin' : kind === 'org' ? 'Organization' : 'My Account');
+
   return (
-    <div className="hidden w-[220px] flex-none flex-col bg-brand-deep p-3 text-white md:flex">
-      <div className="flex items-center gap-2 px-2 pb-4">
-        {kind === 'student' ? (
-          <div className="rounded-md bg-white px-2 py-1">
-            <Logo className="h-6 w-auto" linkTo="/" />
-          </div>
-        ) : (
-          <span className="font-heading text-sm font-extrabold">{brand ?? (kind === 'admin' ? 'Admin' : 'Organization')}</span>
-        )}
+    <div className="hidden w-[220px] flex-none flex-col bg-brand-light p-3 text-ink md:flex">
+      <div className="px-2 pb-4">
+        <Logo className="h-11 w-auto" linkTo="/" />
+        <div className="mt-2.5 truncate text-[13px] font-semibold text-ink">{name}</div>
       </div>
       {/* Present in every role's dashboard — the only way back to the
           public site from inside admin/org, which previously had none. */}
       <Link
         to="/"
-        className="mb-2 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-white/60 hover:bg-white/10 hover:text-white"
+        className="mb-2 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-sub hover:bg-white hover:text-ink"
       >
         <span>🏠</span>
         Back to site
       </Link>
-      <div className="mb-2 border-t border-white/10" />
+      <div className="mb-2 border-t border-line" />
       <nav className="flex flex-col gap-0.5">
         {ITEMS[kind].map((item) => (
           <NavLink
@@ -69,7 +68,7 @@ export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?:
             to={item.to}
             end={item.to === '/dashboard' || item.to === '/admin' || item.to.endsWith('/dashboard')}
             className={({ isActive }) =>
-              clsx('flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-white/60', isActive && 'bg-white/10 text-white')
+              clsx('flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-sub', isActive && 'bg-white text-brand')
             }
           >
             <span>{item.icon}</span>

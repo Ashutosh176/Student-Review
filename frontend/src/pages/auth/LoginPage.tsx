@@ -5,7 +5,6 @@ import { Helmet } from 'react-helmet-async';
 import { authApi } from '@/api/auth.api';
 import { apiErrorMessage } from '@/api/client';
 import { useAuthStore } from '@/store/authStore';
-import { defaultDashboardPath } from '@/utils/roles';
 import { Logo } from '@/components/Logo';
 import { AuthCard } from '@/layouts/AuthLayout';
 
@@ -22,7 +21,7 @@ export function LoginPage() {
     onSuccess: (res) => {
       setAccessToken(res.accessToken, res.user);
       const from = (location.state as { from?: { pathname?: string; search?: string } })?.from;
-      const target = from?.pathname ? `${from.pathname}${from.search ?? ''}` : defaultDashboardPath(res.user.roles);
+      const target = from?.pathname ? `${from.pathname}${from.search ?? ''}` : '/';
       navigate(target, { replace: true });
     },
   });

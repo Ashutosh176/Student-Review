@@ -28,9 +28,9 @@ export async function listQuestions(institutionId: string, page = 1, pageSize = 
 export async function getQuestionWithAnswers(questionId: string) {
   const question = await prisma.question.findUnique({
     where: { id: questionId },
-    include: { answers: { orderBy: { upvoteCount: 'desc' } } },
+    include: { answers: { where: { status: { in: ['APPROVED', 'FLAGGED'] } }, orderBy: { upvoteCount: 'desc' } } },
   });
-  if (!question) throw AppError.notFound('Question not found');
+  if (!question || !['APPROVED', 'FLAGGED'].includes(question.status)) throw AppError.notFound('Question not found');
   return question;
 }
 

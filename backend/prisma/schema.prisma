@@ -386,6 +386,12 @@ model Institution {
   establishedYear   Int?
   website           String?
   description       String?
+  // Free-text, admin/seed-curated walkthrough of how admission works here
+  // (entrance exam, counselling/selection process, key dates) — shown on
+  // the Admissions tab above the structured exam/fee/cutoff data. Distinct
+  // from entranceExams (a tag list) and admissionCutoffs (per-course rank
+  // data); this is the narrative that ties them together for a reader.
+  admissionProcess String?
   logoUrl           String?
   verified          Boolean           @default(false)
   claimed           Boolean           @default(false)

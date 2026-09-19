@@ -6,6 +6,7 @@ import { institutionsApi } from '@/api/institutions.api';
 import { reviewsApi } from '@/api/reviews.api';
 import { CollegeCard } from '@/components/CollegeCard';
 import { ReviewCard } from '@/components/ReviewCard';
+import { HowItWorks } from '@/components/HowItWorks';
 import { SearchBar } from '@/components/SearchBar';
 import { CardSkeletonGrid, EmptyState } from '@/components/LoadingSkeleton';
 import { useScrollOutProgress } from '@/hooks/useScrollOutProgress';
@@ -97,31 +98,7 @@ export function HomePage() {
         )}
       </section>
 
-      <section className="bg-surface px-4 py-9 sm:px-7">
-        <h3 className="mb-6 text-center text-lg">How StudentReview works</h3>
-        <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
-          {[
-            [
-              '🔍',
-              'Find your college',
-              statsQuery.data ? `Search ${statsQuery.data.institutionCount}+ Indian colleges and universities.` : 'Search Indian colleges and universities.',
-            ],
-            ['📖', 'Read real experiences', 'Anonymous, verified reviews across placements, faculty, hostel life and more.'],
-            ['✍️', 'Share your experience anonymously', 'Help other students by sharing your honest take.'],
-          ].map(([icon, title, desc]) => (
-            <div key={title} className="text-center">
-              <div className="mb-2 text-3xl">{icon}</div>
-              <h4 className="mb-1 text-sm">{title}</h4>
-              <p className="text-xs text-sub">{desc}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-7 text-center text-xs text-sub">
-          <Link to="/trust" className="font-semibold text-brand">
-            How we verify students & keep reviews anonymous →
-          </Link>
-        </p>
-      </section>
+      <HowItWorks institutionCount={statsQuery.data?.institutionCount} />
 
       <section className="px-4 py-12 text-center sm:px-7">
         <h3 className="mb-2 text-lg">For Colleges</h3>

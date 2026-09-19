@@ -1,0 +1,27 @@
+<svg width="220" height="220" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2A5E"/>
+      <stop offset="100%" stop-color="#101A3E"/>
+    </linearGradient>
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2A3B7A"/>
+      <stop offset="100%" stop-color="#141F4A"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(20,20)">
+    <circle cx="90" cy="90" r="90" fill="url(#badgeGrad)"/>
+
+    <g transform="translate(30,52)">
+      <polygon points="60,0 120,26 60,52 0,26" fill="#F2B705"/>
+      <path d="M28,34 L92,34 L100,52 C100,66 82,76 60,76 C38,76 20,66 20,52 Z" fill="url(#capGrad)"/>
+      <circle cx="60" cy="26" r="4.5" fill="#F2B705"/>
+      <line x1="60" y1="26" x2="94" y2="46" stroke="#F2B705" stroke-width="3" stroke-linecap="round"/>
+      <g transform="translate(94,46)">
+        <line x1="0" y1="0" x2="0" y2="24" stroke="#F2B705" stroke-width="3" stroke-linecap="round"/>
+        <path d="M-6,24 Q0,38 6,24 Z" fill="#F2B705"/>
+      </g>
+    </g>
+  </g>
+</svg>

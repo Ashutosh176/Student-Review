@@ -51,9 +51,10 @@ export const respond = asyncHandler(async (req, res) => {
 export const latest = asyncHandler(async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 6, 20);
   const reviews = await reviewService.listLatestReviews(limit);
+  const revealed = await reviewService.institutionsWithRevealedCohort([...new Set(reviews.map((r) => r.institutionId))]);
   ok(
     res,
-    reviews.map((r) => ({ ...serializePublicReview(r), institution: { name: r.institution.name, slug: r.institution.slug } })),
+    reviews.map((r) => ({ ...serializePublicReview(r, revealed.has(r.institutionId)), institution: { name: r.institution.name, slug: r.institution.slug } })),
   );
 });
 

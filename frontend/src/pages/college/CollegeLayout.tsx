@@ -80,6 +80,7 @@ export function CollegeLayout() {
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-xl sm:text-[22px]">{inst.name}</h1>
               {inst.verified && <Badge kind="verified">✓ Verified</Badge>}
+              {!inst.claimed && <Badge kind="pending">Unclaimed</Badge>}
             </div>
             <div className="mt-2 flex flex-wrap gap-4 text-[13px] text-sub">
               {location && <span>📍 {location.city}, {location.state}</span>}
@@ -90,6 +91,9 @@ export function CollegeLayout() {
               )}
               {inst.establishedYear && <span>🏛 Est. {inst.establishedYear}</span>}
             </div>
+            {!inst.claimed && (
+              <p className="mt-1.5 text-[11.5px] text-sub">This college profile has not been claimed by the institution yet.</p>
+            )}
           </div>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">

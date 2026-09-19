@@ -68,35 +68,17 @@ function AccountControls({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-// The static, non-animated header middle section — nav next to the logo,
-// search always fully shown. This is the permanent layout on every page
-// except the homepage (matches the Figma reference, which renders the full
-// header identically everywhere) and needs none of the measurement/
-// interpolation machinery below.
-function StaticNavSearch() {
-  return (
-    <>
-      <nav className="hidden gap-6 text-sm font-semibold text-[#33373A] md:flex">
-        {NAV_LINKS.map((l) => (
-          <Link key={l.to} to={l.to} className="hover:text-brand">
-            {l.label}
-          </Link>
-        ))}
-      </nav>
-      <div className="hidden max-w-[420px] flex-1 md:flex">
-        <SearchBar variant="header" className="w-full" />
-      </div>
-    </>
-  );
-}
-
-// The homepage's version: [nav + search] is ONE group whose CENTER stays
-// fixed at all times — the group is never "on its way to the logo". As
-// search grows from 0 to its target width, the group's total width grows
-// with it, and centering that wider group within the same fixed midpoint
-// naturally pushes its left edge (the tabs) left by exactly half the
-// growth while its right edge (the search bar) extends right by the other
-// half — one `progress` value, one formula, both edges always in sync.
+// [nav + search] as ONE group whose CENTER stays fixed in the header's
+// middle region — the group is never "on its way to the logo". Every page
+// but the homepage renders this at a constant progress of 1 (search fully
+// shown, nothing to animate) so the tabs+search sit centered exactly as on
+// the homepage's fully-scrolled state; the homepage additionally animates
+// `progress` from 0 to 1 as its hero scrolls out. As search grows from 0 to
+// its target width, the group's total width grows with it, and centering
+// that wider group within the same fixed midpoint naturally pushes its left
+// edge (the tabs) left by exactly half the growth while its right edge (the
+// search bar) extends right by the other half — one `progress` value, one
+// formula, both edges always in sync.
 function AnimatedNavSearch({ progress }: { progress: number }) {
   const { ref: middleRef, width: containerWidth } = useElementWidth<HTMLDivElement>();
   const { ref: navRef, width: navWidth } = useElementWidth<HTMLElement>();
@@ -162,7 +144,7 @@ export function SiteHeader() {
       <div className="flex items-center gap-6 px-4 py-2.5 sm:px-7">
         <Logo className="h-14 w-auto flex-none" />
 
-        {heroProgress === null ? <StaticNavSearch /> : <AnimatedNavSearch progress={heroProgress} />}
+        <AnimatedNavSearch progress={heroProgress ?? 1} />
 
         <AccountControls onLogout={handleLogout} />
 

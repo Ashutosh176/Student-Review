@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { stripIdentity } from '../utils/serializers.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ok } from '../utils/apiResponse.js';
 import { AppError } from '../utils/AppError.js';
@@ -39,22 +40,22 @@ export const setUserStatus = asyncHandler(async (req, res) => {
 
 export const moderationQueue = asyncHandler(async (req, res) => {
   const result = await adminService.moderationQueue(Number(req.query.page) || 1, Number(req.query.pageSize) || 20);
-  ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });
+  ok(res, result.items.map(stripIdentity), 200, { total: result.total, page: result.page, pageSize: result.pageSize });
 });
 
 export const moderateReview = asyncHandler(async (req, res) => {
   const updated = await adminService.moderateReviewAction(req.user!.id, req.params.id, req.body.action, req.body.reason);
-  ok(res, updated);
+  ok(res, stripIdentity(updated));
 });
 
 export const listReports = asyncHandler(async (req, res) => {
   const result = await adminService.listReports(req.query.status as string | undefined, Number(req.query.page) || 1, Number(req.query.pageSize) || 20);
-  ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });
+  ok(res, result.items.map(stripIdentity), 200, { total: result.total, page: result.page, pageSize: result.pageSize });
 });
 
 export const dismissReport = asyncHandler(async (req, res) => {
   const report = await adminService.dismissReport(req.user!.id, req.params.id);
-  ok(res, report);
+  ok(res, stripIdentity(report));
 });
 
 export const listClaims = asyncHandler(async (req, res) => {

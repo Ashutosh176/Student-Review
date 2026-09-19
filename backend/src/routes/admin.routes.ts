@@ -32,7 +32,7 @@ router.use(authenticate, authorize('ADMIN', 'MODERATOR'));
 router.get('/dashboard', adminController.dashboard);
 router.get('/analytics', adminController.analytics);
 
-router.get('/users', validate({ query: paginationQuerySchema }), adminController.listUsers);
+router.get('/users', authorize('ADMIN'), validate({ query: paginationQuerySchema }), adminController.listUsers);
 router.patch('/users/:id/status', authorize('ADMIN'), validate({ params: idParamSchema, body: setUserStatusSchema }), adminController.setUserStatus);
 router.patch('/users/:id/roles', authorize('ADMIN'), validate({ params: idParamSchema, body: setUserRoleSchema }), adminController.setUserRole);
 

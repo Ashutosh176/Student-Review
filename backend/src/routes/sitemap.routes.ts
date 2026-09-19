@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { env } from '../config/env.js';
 import { prisma } from '../config/prisma.js';
 
 // Dynamic sitemap (spec §29). Served at the API root so it can be proxied to
@@ -13,7 +14,7 @@ router.get('/sitemap.xml', async (req, res, next) => {
 
     const staticPaths = ['/', '/search', '/colleges', '/compare', '/rankings', '/about', '/contact', '/privacy', '/terms', '/community-guidelines'];
 
-    const origin = `${req.protocol}://${req.get('host')}`.replace(/:\d+$/, ''); // strip API port; real deploy sets CLIENT_ORIGIN
+    const origin = env.clientOrigin; // never derive from the Host header
     const urls = [
       ...staticPaths.map((p) => `<url><loc>${origin}${p}</loc></url>`),
       ...institutions.map(

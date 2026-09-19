@@ -65,7 +65,7 @@ export function ReviewCard({ review, institutionName }: { review: PublicReview; 
         )}
         {review.admissionOutcome && <Badge kind={OUTCOME_BADGE_KIND[review.admissionOutcome]}>{admissionOutcomeLabel(review.admissionOutcome)}</Badge>}
         <span className="font-normal text-sub">
-          · {relationshipLabel(review.relationship)} · {review.batchYear}
+          · {relationshipLabel(review.relationship)}{review.batchYear ? ` · ${review.batchYear}` : ""}
         </span>
       </div>
       {review.type === 'EXPERIENCE' && <Stars value={overall} size="text-base" />}

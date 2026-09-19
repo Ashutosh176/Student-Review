@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { publicCutoff, publicReviewWhere, MIN_BUCKET_SIZE } from '../utils/publishing.js';
 import { env } from '../config/env.js';
 import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
@@ -245,17 +246,17 @@ export async function removeMember(orgProfileId: string, memberId: string) {
 
 export async function getOrgAnalytics(institutionId: string) {
   const [totalReviews, verifiedReviews, respondedCount, sentimentGroups, monthlyRatings] = await Promise.all([
-    prisma.review.count({ where: { institutionId, status: 'APPROVED' } }),
-    prisma.review.count({ where: { institutionId, status: 'APPROVED', verifiedStudent: true } }),
-    prisma.review.count({ where: { institutionId, status: 'APPROVED', response: { isNot: null } } }),
-    prisma.review.groupBy({ by: ['sentiment'], where: { institutionId, status: 'APPROVED' }, _count: { _all: true } }),
-    prisma.$queryRaw<{ month: string; avg: number }[]>`
-      SELECT to_char(date_trunc('month', r."createdAt"), 'YYYY-MM') as month, AVG(rr.value) as avg
+    prisma.review.count({ where: { institutionId, ...publicReviewWhere() } }),
+    prisma.review.count({ where: { institutionId, ...publicReviewWhere(), verifiedStudent: true } }),
+    prisma.review.count({ where: { institutionId, ...publicReviewWhere(), response: { isNot: null } } }),
+    prisma.review.groupBy({ by: ['sentiment'], where: { institutionId, ...publicReviewWhere() }, _count: { _all: true } }),
+    prisma.$queryRaw<{ month: string; avg: number; n: number }[]>`
+      SELECT to_char(date_trunc('month', r."createdAt"), 'YYYY-MM') as month, AVG(rr.value) as avg, COUNT(*)::int as n
       FROM reviews r
       JOIN review_ratings rr ON rr."reviewId" = r.id AND rr.category = 'OVERALL'
       WHERE r."institutionId" = ${institutionId} AND r.status = 'APPROVED'
-        AND r."createdAt" >= NOW() - INTERVAL '6 months'
-      GROUP BY 1 ORDER BY 1 ASC
+        AND r."createdAt" >= NOW() - INTERVAL '6 months' AND r."createdAt" < ${publicCutoff()}
+      GROUP BY 1 HAVING COUNT(*) >= ${MIN_BUCKET_SIZE} ORDER BY 1 ASC
     `,
   ]);
 
@@ -286,7 +287,7 @@ const TOPICS = ['Placement', 'Faculty', 'Hostel', 'Fees', 'Infrastructure', 'Adm
 // sentiment.service.ts; this just aggregates by topic + sentiment label.
 export async function getSentimentByTopic(institutionId: string) {
   const reviews = await prisma.review.findMany({
-    where: { institutionId, status: 'APPROVED', sentimentTopics: { isEmpty: false } },
+    where: { institutionId, ...publicReviewWhere(), sentimentTopics: { isEmpty: false } },
     select: { sentiment: true, sentimentTopics: true },
   });
 
@@ -301,5 +302,5 @@ export async function getSentimentByTopic(institutionId: string) {
       neutral: Math.round((countOf('NEUTRAL') / total) * 100),
       negative: Math.round((countOf('NEGATIVE') / total) * 100),
     };
-  }).filter((t) => t.mentionCount > 0);
+  }).filter((t) => t.mentionCount >= MIN_BUCKET_SIZE);
 }

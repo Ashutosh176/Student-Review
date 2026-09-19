@@ -50,10 +50,20 @@ export function SiteFooter() {
         </div>
         <div>
           <h5 className="mb-2.5 text-[11.5px] font-semibold text-sub">Follow</h5>
-          <a href="#" className="mb-1.5 block text-[#4B4F5E]">
+          <a
+            href="https://www.instagram.com/studentreview.india?stkn=MTFqa2hhcGZ4d3dpag%3D%3D&utm_source=qr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-1.5 block text-[#4B4F5E]"
+          >
             Instagram
           </a>
-          <a href="#" className="mb-1.5 block text-[#4B4F5E]">
+          <a
+            href="https://www.linkedin.com/company/studentreview-in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-1.5 block text-[#4B4F5E]"
+          >
             LinkedIn
           </a>
         </div>

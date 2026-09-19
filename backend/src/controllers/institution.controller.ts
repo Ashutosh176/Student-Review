@@ -46,7 +46,8 @@ export const compare = asyncHandler(async (req, res) => {
 export const institutionReviews = asyncHandler(async (req, res) => {
   const institution = await institutionService.getInstitutionBySlug(req.params.slug);
   const result = await reviewService.listInstitutionReviews(institution.id, req.query as never);
-  ok(res, result.items.map(serializePublicReview), 200, { total: result.total, page: result.page, pageSize: result.pageSize });
+  const revealed = await reviewService.institutionsWithRevealedCohort([institution.id]);
+  ok(res, result.items.map((r) => serializePublicReview(r, revealed.has(institution.id))), 200, { total: result.total, page: result.page, pageSize: result.pageSize });
 });
 
 export const institutionJobs = asyncHandler(async (req, res) => {

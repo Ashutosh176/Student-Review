@@ -80,13 +80,19 @@ export async function register(input: { username: string; email: string; passwor
   return issueTokenPair(user.id);
 }
 
+let cachedDummyHash: string | undefined;
+async function dummyHash() {
+  cachedDummyHash ??= await hashPassword(crypto.randomBytes(16).toString('hex'));
+  return cachedDummyHash;
+}
+
 export async function login(input: { email: string; password: string }) {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
-  if (!user) throw AppError.unauthorized('Invalid email or password');
+  // Always burn one hash verification so an unknown email takes as long as a
+  // wrong password (no timing-based account enumeration).
+  const valid = await verifyPassword(user?.passwordHash ?? (await dummyHash()), input.password);
+  if (!user || !valid) throw AppError.unauthorized('Invalid email or password');
   if (user.status !== 'ACTIVE') throw AppError.forbidden('This account is not active');
-
-  const valid = await verifyPassword(user.passwordHash, input.password);
-  if (!valid) throw AppError.unauthorized('Invalid email or password');
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   return issueTokenPair(user.id);
@@ -102,8 +108,19 @@ export async function refresh(refreshToken: string) {
 
   const tokenHash = hashToken(refreshToken);
   const stored = await prisma.refreshToken.findUnique({ where: { tokenHash } });
-  if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
+  if (!stored) throw AppError.unauthorized('Refresh token expired or revoked');
+  if (stored.revokedAt) {
+    // A token that was already rotated is being replayed: either it was
+    // stolen or a client is broken. Kill every session for this user.
+    await prisma.refreshToken.updateMany({ where: { userId: stored.userId, revokedAt: null }, data: { revokedAt: new Date() } });
     throw AppError.unauthorized('Refresh token expired or revoked');
+  }
+  if (stored.expiresAt < new Date()) throw AppError.unauthorized('Refresh token expired or revoked');
+
+  const owner = await prisma.user.findUnique({ where: { id: stored.userId }, select: { status: true } });
+  if (!owner || owner.status !== 'ACTIVE') {
+    await prisma.refreshToken.updateMany({ where: { userId: stored.userId, revokedAt: null }, data: { revokedAt: new Date() } });
+    throw AppError.forbidden('This account is not active');
   }
 
   // Rotate: revoke the used token and issue a new pair.

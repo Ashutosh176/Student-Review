@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { env } from '../config/env.js';
 import { z } from 'zod';
 import { validate } from '../middlewares/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -25,7 +26,7 @@ router.post(
     await prisma.auditLog.create({
       data: { action: 'CONTACT_FORM_SUBMITTED', entityType: 'ContactMessage', metadata: { name, email, subject, message } },
     });
-    await sendEmail({ to: 'support@studentreview.example', subject: `[Contact] ${subject} — ${name}`, text: message });
+    await sendEmail({ to: env.contactTo, subject: `[Contact] ${subject} — ${name}`, text: message });
     ok(res, { received: true }, 201);
   }),
 );

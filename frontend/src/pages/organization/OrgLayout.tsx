@@ -24,7 +24,7 @@ export function OrgLayout() {
 
   return (
     <div className="flex min-h-screen bg-surface">
-      <DashboardSidebar kind="org" brand={`${query.data.institution.name} · Org`} />
+      <DashboardSidebar kind="org" brand={query.data.institution.name} />
       <div className="flex-1 p-4 sm:p-6">
         <Outlet context={query.data} />
       </div>

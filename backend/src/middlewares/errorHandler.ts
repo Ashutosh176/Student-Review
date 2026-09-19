@@ -26,7 +26,14 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     return fail(res, err.message, err.statusCode, err.details);
   }
 
-  logger.error({ err }, 'Unhandled error');
+  // In production log only the error's shape: Prisma/validation error text
+  // can embed the query arguments (review body, user ids).
+  if (env.isProd) {
+    const e = err as { name?: string; code?: string; message?: string };
+    logger.error({ errName: e?.name, code: e?.code, msg: String(e?.message ?? '').split('\n')[0].slice(0, 160) }, 'Unhandled error');
+  } else {
+    logger.error({ err }, 'Unhandled error');
+  }
   // Never leak stack traces or internals in production responses (spec §44).
   return fail(res, env.isProd ? 'Something went wrong' : (err as Error)?.message ?? 'Something went wrong', 500);
 }

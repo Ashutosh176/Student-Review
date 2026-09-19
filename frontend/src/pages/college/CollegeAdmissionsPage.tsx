@@ -10,20 +10,28 @@ function formatInr(amount?: number | null): string | null {
 export function CollegeAdmissionsPage() {
   const inst = useCollegeContext();
   const coursesWithFees = inst.courses.filter((c) => c.feePerYearInr || c.totalFeeInr);
-  const hasNothing = inst.entranceExams.length === 0 && coursesWithFees.length === 0 && inst.admissionCutoffs.length === 0;
+  const hasNothing =
+    !inst.admissionProcess && inst.entranceExams.length === 0 && coursesWithFees.length === 0 && inst.admissionCutoffs.length === 0;
 
   if (hasNothing) {
     return (
       <EmptyState
         icon="🎓"
         title="Admission details aren't available yet"
-        description="Entrance exams, fees and cutoff ranks for this college will appear here once added."
+        description="The admission process, entrance exams, fees and cutoff ranks for this college will appear here once added."
       />
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {inst.admissionProcess && (
+        <div className="card">
+          <h4 className="mb-2.5 text-sm">Admission process</h4>
+          <p className="text-[13.5px] leading-relaxed text-sub">{inst.admissionProcess}</p>
+        </div>
+      )}
+
       {inst.entranceExams.length > 0 && (
         <div className="card">
           <h4 className="mb-2.5 text-sm">Entrance exams accepted</h4>

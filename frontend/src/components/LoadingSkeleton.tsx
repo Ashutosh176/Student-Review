@@ -23,12 +23,23 @@ export function CardSkeletonGrid({ count = 8 }: { count?: number }) {
   );
 }
 
-export function EmptyState({ icon = '📭', title, description }: { icon?: string; title: string; description?: string }) {
+export function EmptyState({
+  icon = '📭',
+  title,
+  description,
+  action,
+}: {
+  icon?: string;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+}) {
   return (
     <div className="card flex flex-col items-center py-12 text-center text-sub">
       <div className="mb-3 text-3xl">{icon}</div>
       <p className="font-semibold text-ink">{title}</p>
       {description && <p className="mt-1 max-w-sm text-sm">{description}</p>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }

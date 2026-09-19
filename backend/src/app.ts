@@ -64,12 +64,24 @@ export function createApp() {
   );
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use(cookieParser(env.cookieSecret));
-  app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === '/health' } }));
+  // Request logs deliberately omit client IP, headers and query strings: an
+  // IP+timestamp line for POST /api/reviews would otherwise be a
+  // reviewer-correlation record for anyone with log access.
+  app.use(
+    pinoHttp({
+      logger,
+      autoLogging: { ignore: (req) => req.url === '/health' },
+      serializers: {
+        req: (req) => ({ id: req.id, method: req.method, url: String(req.url).split('?')[0] }),
+        res: (res) => ({ statusCode: res.statusCode }),
+      },
+    }),
+  );
   app.use(generalLimiter);
 
   app.get('/health', (_req, res) => res.json({ success: true, data: { status: 'ok' } }));
   app.use(sitemapRoutes);
-  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
+  if (!env.isProd) app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
   app.use('/api/auth', authRoutes);
   app.use('/api/institutions', institutionRoutes);

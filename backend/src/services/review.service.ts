@@ -5,6 +5,7 @@ import { classifySentiment, extractTopics } from '../modules/moderation/sentimen
 import { notify, notifySavedCollegeReviewers } from './notification.service.js';
 import { getPlatformSettings } from './settings.service.js';
 import { isVerified } from './verification.service.js';
+import { MIN_COHORT_FOR_BATCH_YEAR, publicReviewWhere } from '../utils/publishing.js';
 import type { AdmissionOutcome, RatingCategory, ReviewStatus, ReviewType } from '@prisma/client';
 
 export interface CreateReviewInput {
@@ -40,6 +41,14 @@ export async function createReview(userId: string, input: CreateReviewInput) {
     }
     verifiedStudent = true;
   }
+
+  // One live review per person per college per type. Editing (PATCH) is the
+  // way to change it; a removed/rejected review doesn't block a fresh one.
+  const existing = await prisma.review.findFirst({
+    where: { userId, institutionId: input.institutionId, type, status: { in: ['PENDING', 'APPROVED', 'FLAGGED'] } },
+    select: { id: true },
+  });
+  if (existing) throw AppError.conflict('You have already reviewed this college — edit your existing review instead.');
 
   const sentiment = classifySentiment(input.body);
   const topics = extractTopics(input.body);
@@ -92,7 +101,7 @@ export async function createReview(userId: string, input: CreateReviewInput) {
     userId,
     status === 'APPROVED' ? 'REVIEW_APPROVED' : status === 'REJECTED' ? 'REVIEW_REJECTED' : 'SYSTEM',
     status === 'APPROVED'
-      ? 'Your review was approved and is now live'
+      ? 'Your review was approved and will be published shortly'
       : status === 'REJECTED'
         ? 'Your review could not be published'
         : 'Your review is under moderation review',
@@ -120,7 +129,7 @@ export async function listInstitutionReviews(
   institutionId: string,
   params: { sort: 'recent' | 'helpful' | 'highest' | 'lowest'; verifiedOnly?: boolean; type?: ReviewType; page: number; pageSize: number },
 ) {
-  const where: Record<string, unknown> = { institutionId, status: 'APPROVED', type: params.type ?? 'EXPERIENCE' };
+  const where: Record<string, unknown> = { institutionId, ...publicReviewWhere(), type: params.type ?? 'EXPERIENCE' };
   if (params.verifiedOnly) where.verifiedStudent = true;
 
   let orderBy: Record<string, unknown> = { createdAt: 'desc' };
@@ -201,7 +210,7 @@ export async function deleteOwnReview(userId: string, reviewId: string) {
 
 export async function reportReview(reviewId: string, reporterUserId: string, reason: string, details?: string) {
   const review = await prisma.review.findUnique({ where: { id: reviewId } });
-  if (!review) throw AppError.notFound('Review not found');
+  if (!review || review.status !== 'APPROVED') throw AppError.notFound('Review not found');
 
   const report = await prisma.reviewReport.create({
     data: { reviewId, reporterUserId, reason: reason as never, details },
@@ -218,6 +227,8 @@ export async function reportReview(reviewId: string, reporterUserId: string, rea
 }
 
 export async function toggleHelpfulVote(reviewId: string, userId: string) {
+  const target = await prisma.review.findUnique({ where: { id: reviewId }, select: { status: true } });
+  if (!target || target.status !== 'APPROVED') throw AppError.notFound('Review not found');
   const existing = await prisma.reviewVote.findUnique({ where: { reviewId_userId: { reviewId, userId } } });
   if (existing) {
     await prisma.$transaction([
@@ -235,7 +246,7 @@ export async function toggleHelpfulVote(reviewId: string, userId: string) {
 
 export async function respondToReview(reviewId: string, organizationMemberId: string, body: string) {
   const review = await prisma.review.findUnique({ where: { id: reviewId }, include: { response: true } });
-  if (!review) throw AppError.notFound('Review not found');
+  if (!review || review.status !== 'APPROVED') throw AppError.notFound('Review not found');
   if (review.response) throw AppError.conflict('This review already has an official response');
 
   const response = await prisma.reviewResponse.create({ data: { reviewId, organizationMemberId, body } });
@@ -248,7 +259,7 @@ export async function listLatestReviews(limit = 6) {
   // doesn't fit ADMISSION_PROCESS reviews, which are never verified by
   // design; those live on a college's own Reviews tab instead.
   return prisma.review.findMany({
-    where: { status: 'APPROVED', type: 'EXPERIENCE' },
+    where: { ...publicReviewWhere(), type: 'EXPERIENCE' },
     orderBy: { createdAt: 'desc' },
     take: limit,
     include: { ratings: true, response: true, institution: { select: { name: true, slug: true } } },
@@ -261,4 +272,16 @@ export async function listOwnReviews(userId: string) {
     orderBy: { createdAt: 'desc' },
     include: { ratings: true, institution: { select: { name: true, slug: true } } },
   });
+}
+
+// Institutions with enough public reviews that cohort fields (batch year)
+// can be shown without singling anyone out.
+export async function institutionsWithRevealedCohort(institutionIds: string[]): Promise<Set<string>> {
+  if (institutionIds.length === 0) return new Set();
+  const grouped = await prisma.review.groupBy({
+    by: ['institutionId'],
+    where: { institutionId: { in: institutionIds }, ...publicReviewWhere() },
+    _count: { _all: true },
+  });
+  return new Set(grouped.filter((g) => g._count._all >= MIN_COHORT_FOR_BATCH_YEAR).map((g) => g.institutionId));
 }

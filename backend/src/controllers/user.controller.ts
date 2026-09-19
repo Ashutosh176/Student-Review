@@ -39,6 +39,11 @@ export const deactivateAccount = asyncHandler(async (req, res) => {
   ok(res, { message: 'Your account has been deactivated.' });
 });
 
+export const deleteAccount = asyncHandler(async (req, res) => {
+  await userService.deleteAccount(req.user!.id, req.body.password);
+  ok(res, { message: 'Your personal data has been erased.' });
+});
+
 export const notifications = asyncHandler(async (req, res) => {
   const result = await notificationService.listNotifications(req.user!.id, Number(req.query.page) || 1, Number(req.query.pageSize) || 20);
   ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });

@@ -28,6 +28,7 @@ export const usersApi = {
   }) => unwrap(api.patch('/users/settings', input)),
   changePassword: (input: { currentPassword: string; newPassword: string }) =>
     unwrap<{ message: string }>(api.patch('/users/password', input)),
+  deleteAccount: (password: string) => unwrap<{ message: string }>(api.post('/users/delete-account', { password })),
   deactivate: (password: string) => unwrap<{ message: string }>(api.post('/users/deactivate', { password })),
   notifications: async () => {
     const res = await api.get<ApiSuccess<NotificationItem[]>>('/users/notifications');

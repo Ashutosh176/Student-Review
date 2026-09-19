@@ -195,6 +195,10 @@ export function VerificationGate({
             placeholder="you@university.edu.in"
             className="mb-2 w-full rounded-md border border-line px-3 py-2.5 text-sm outline-none focus:border-brand"
           />
+          <p className="mb-2 rounded-md bg-warning-bg px-2.5 py-2 text-[11.5px] text-warning">
+            Heads-up: the code is sent to your college mailbox, which your college's IT team can technically see. If you'd rather your college not
+            know you're using StudentReview, use "Upload ID / document instead" — it never touches college email.
+          </p>
           {startMutation.isError && <p className="mb-2 text-xs text-danger">{apiErrorMessage(startMutation.error)}</p>}
           <button
             type="button"
@@ -208,7 +212,8 @@ export function VerificationGate({
       ) : (
         <>
           <p className="mb-2 text-[11.5px] text-sub">
-            If your official email no longer works, upload an ID card or degree certificate instead — an admin will review it.
+            Upload an ID card or degree certificate — only StudentReview's admin reviews it, and your college is never contacted. Your document is
+            deleted if you erase your account. (Also use this if your official email no longer works.)
           </p>
           <input
             type="file"

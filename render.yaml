@@ -1,0 +1,72 @@
+# Render Blueprint — API + managed Postgres. Secrets (sync: false) are entered
+# in the Render dashboard, never committed.
+databases:
+  - name: studentreview-db
+    region: singapore
+    plan: basic-256mb # paid tier: includes backups / point-in-time recovery
+    databaseName: studentreview
+    user: studentreview
+    ipAllowList: [] # private network only — no public access to the database
+
+services:
+  - type: web
+    name: studentreview-api
+    runtime: node
+    region: singapore
+    plan: starter
+    rootDir: backend
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+    # RUN_SEED=1 (first deploy only) loads roles + the college catalogue; remove it afterwards.
+    startCommand: npx prisma migrate deploy && ([ "$RUN_SEED" != "1" ] || npx tsx prisma/seed.ts) && node dist/server.js
+    healthCheckPath: /health
+    disk:
+      name: uploads
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: studentreview-db
+          property: connectionString
+      - key: CLIENT_ORIGIN
+        value: https://studentreview.in
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: REVIEW_PUBLISH_BATCH_HOURS
+        value: "12"
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: COOKIE_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: smtp
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: CONTACT_TO
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false

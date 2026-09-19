@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { prisma } from '../config/prisma.js';
 import { logger } from '../config/logger.js';
 import { AppError } from '../utils/AppError.js';
-import { hashToken } from '../utils/jwt.js';
+import { env } from '../config/env.js';
 import { extractEmailDomain, GENERIC_EMAIL_DOMAINS } from '../utils/emailDomain.js';
 import { sendEmail } from './email.service.js';
 import { collegeOtpEmail } from './emailTemplates.js';
@@ -12,6 +12,15 @@ import type { RelationshipType } from '@prisma/client';
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
+const VERIFICATION_MAX_TOTAL_ATTEMPTS = 10;
+
+// Keyed HMAC, not a bare hash: a leaked DB can't be brute-forced offline
+// (6-digit codes) or used to look up which university emails were verified.
+function hmac(value: string): string {
+  return crypto.createHmac('sha256', env.cookieSecret).update(value).digest('hex');
+}
+const hashToken = hmac;
+const emailKey = (email: string) => 'h:' + hmac(email.trim().toLowerCase());
 
 // Generic providers can never satisfy "official university email" no matter
 // what an institution's domain list contains — checked before the curated
@@ -69,6 +78,15 @@ export async function startEmailVerification(
   if (!allowed || allowed.institutionId !== institutionId) {
     throw AppError.badRequest('This email domain is not recognized as an official email for the selected institution');
   }
+
+  // One mailbox verifies one account (blocks sock-puppet accounts). After
+  // verification the plaintext address is replaced by a keyed hash (below),
+  // so compare against that.
+  const taken = await prisma.studentVerification.findFirst({
+    where: { status: 'VERIFIED', universityEmail: emailKey(email), userId: { not: userId } },
+    select: { id: true },
+  });
+  if (taken) throw AppError.conflict('This university email is already linked to another account');
 
   const verification = await prisma.studentVerification.create({
     data: { userId, institutionId, relationship, method: 'EMAIL_OTP', status: 'PENDING', universityEmail: email.toLowerCase(), domain },
@@ -139,6 +157,14 @@ export async function verifyOtp(userId: string, institutionId: string, code: str
   if (otp.expiresAt < new Date()) throw AppError.badRequest('This code has expired — request a new one');
   if (otp.attempts >= OTP_MAX_ATTEMPTS) throw AppError.tooMany('Too many attempts — request a new code');
 
+  // Resending resets the per-code budget, so also cap failures across every
+  // code issued for this attempt.
+  const spent = await prisma.verificationOtp.aggregate({ where: { studentVerificationId: verification.id }, _sum: { attempts: true } });
+  if ((spent._sum.attempts ?? 0) >= VERIFICATION_MAX_TOTAL_ATTEMPTS) {
+    await prisma.studentVerification.update({ where: { id: verification.id }, data: { status: 'EXPIRED' } });
+    throw AppError.tooMany('Too many failed attempts — please start verification again');
+  }
+
   if (hashToken(code) !== otp.codeHash) {
     await prisma.verificationOtp.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
     throw AppError.unauthorized('Incorrect verification code');
@@ -146,7 +172,12 @@ export async function verifyOtp(userId: string, institutionId: string, code: str
 
   const [, updated] = await prisma.$transaction([
     prisma.verificationOtp.update({ where: { id: otp.id }, data: { consumedAt: new Date() } }),
-    prisma.studentVerification.update({ where: { id: verification.id }, data: { status: 'VERIFIED', verifiedAt: new Date() } }),
+    // Keep only a keyed hash of the address: the plaintext (usually
+    // firstname.lastname@college.edu) would let a DB reader name every reviewer.
+    prisma.studentVerification.update({
+      where: { id: verification.id },
+      data: { status: 'VERIFIED', verifiedAt: new Date(), universityEmail: verification.universityEmail ? emailKey(verification.universityEmail) : null },
+    }),
   ]);
   return updated;
 }

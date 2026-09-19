@@ -1,4 +1,7 @@
+import fs from 'node:fs';
+import crypto from 'node:crypto';
 import { prisma } from '../config/prisma.js';
+import { resolveVerificationDocumentPath } from '../middlewares/upload.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword, verifyPassword } from '../utils/password.js';
 import { ratingSummaryFor } from './institution.service.js';
@@ -68,5 +71,47 @@ export async function deactivateAccount(userId: string, password: string) {
   await prisma.$transaction([
     prisma.user.update({ where: { id: userId }, data: { status: 'DEACTIVATED' } }),
     prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } }),
+  ]);
+}
+
+// Right to erasure without destroying community content: every piece of
+// personal data is deleted or scrubbed, while the (already anonymous) reviews,
+// questions and answers stay, now attached to an empty shell account nobody
+// can log into.
+export async function deleteAccount(userId: string, password: string) {
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+  const valid = await verifyPassword(user.passwordHash, password);
+  if (!valid) throw AppError.unauthorized('Incorrect password');
+
+  const docs = await prisma.studentVerification.findMany({ where: { userId, documentUrl: { not: null } }, select: { documentUrl: true } });
+  for (const d of docs) {
+    try {
+      fs.rmSync(resolveVerificationDocumentPath(d.documentUrl!), { force: true });
+    } catch {
+      // A missing/invalid path must not block erasure of the DB rows.
+    }
+  }
+
+  const shell = userId.replace(/-/g, '').slice(0, 12);
+  await prisma.$transaction([
+    prisma.refreshToken.deleteMany({ where: { userId } }),
+    prisma.passwordResetToken.deleteMany({ where: { userId } }),
+    prisma.emailVerificationToken.deleteMany({ where: { userId } }),
+    prisma.studentVerification.deleteMany({ where: { userId } }),
+    prisma.savedInstitution.deleteMany({ where: { userId } }),
+    prisma.notification.deleteMany({ where: { userId } }),
+    prisma.userRole.deleteMany({ where: { userId } }),
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: `deleted-${shell}@deleted.invalid`,
+        username: `deleted-${shell}`,
+        passwordHash: await hashPassword(crypto.randomBytes(32).toString('hex')),
+        status: 'DEACTIVATED',
+        emailVerifiedAt: null,
+        lastLoginAt: null,
+        publicProfileOptIn: false,
+      },
+    }),
   ]);
 }

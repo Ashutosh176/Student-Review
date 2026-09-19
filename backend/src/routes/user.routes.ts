@@ -19,6 +19,7 @@ router.delete('/saved-institutions/:institutionId', userController.unsaveInstitu
 router.patch('/settings', validate({ body: updateSettingsSchema }), userController.updateSettings);
 router.patch('/password', validate({ body: changePasswordSchema }), userController.changePassword);
 router.post('/deactivate', validate({ body: deactivateAccountSchema }), userController.deactivateAccount);
+router.post('/delete-account', validate({ body: deactivateAccountSchema }), userController.deleteAccount);
 
 router.get('/notifications', userController.notifications);
 router.post('/notifications/:id/read', userController.markNotificationRead);
