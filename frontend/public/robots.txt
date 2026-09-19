@@ -11,4 +11,4 @@ Disallow: /admin
 Disallow: /write-review
 Disallow: /claim
 
-Sitemap: /sitemap.xml
+Sitemap: https://studentreview.in/sitemap.xml
