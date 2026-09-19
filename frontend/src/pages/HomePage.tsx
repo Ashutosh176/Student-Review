@@ -51,7 +51,16 @@ export function HomePage() {
         />
       </Helmet>
 
-      <section ref={heroRef} className="bg-brand px-4 py-14 text-center text-white sm:px-6 sm:py-16">
+      <section ref={heroRef} className="relative isolate overflow-hidden bg-brand px-4 py-14 text-center text-white sm:px-6 sm:py-16">
+        {/* Background photo: softly blurred (scaled up so the blur never shows a hard edge) under a brand tint that keeps the white text legible. */}
+        <img
+          src="/hero.jpg"
+          alt=""
+          aria-hidden
+          fetchPriority="high"
+          className="absolute inset-0 -z-20 h-full w-full scale-110 object-cover object-[center_35%] blur-[3px]"
+        />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-dark/85 via-brand/75 to-brand-deep/90" />
         <h1 className="mx-auto mb-3 max-w-2xl text-3xl leading-tight sm:text-[38px]">Know what students really think.</h1>
         <p className="mx-auto mb-6 max-w-lg text-[15px] text-white/85">
           Explore honest student experiences, ratings and reviews of colleges and universities across India.
