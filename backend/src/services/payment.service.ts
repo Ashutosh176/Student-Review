@@ -4,6 +4,7 @@ import { prisma } from '../config/prisma.js';
 import { razorpay, razorpayEnabled } from '../config/razorpay.js';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/AppError.js';
+import { logger } from '../config/logger.js';
 import { notify } from './notification.service.js';
 import { getPlatformSettings } from './settings.service.js';
 
@@ -33,12 +34,18 @@ export async function createCheckoutOrder(organizationProfileId: string, plan: P
   const client = requireRazorpay();
   const amount = await planAmountPaise(plan);
 
-  const order = await client.orders.create({
-    amount,
-    currency: 'INR',
-    receipt: `org_${organizationProfileId}_${Date.now()}`,
-    notes: { organizationProfileId, plan },
-  });
+  // Razorpay caps `receipt` at 40 chars — a full UUID + timestamp is 54.
+  const receipt = `org_${organizationProfileId.replace(/-/g, '').slice(0, 20)}_${Date.now()}`;
+  let order;
+  try {
+    order = await client.orders.create({ amount, currency: 'INR', receipt, notes: { organizationProfileId, plan } });
+  } catch (err) {
+    // The Razorpay SDK rejects with a plain object ({ statusCode, error: { code, description } }),
+    // not an Error — surface its reason instead of an anonymous 500.
+    const e = err as { statusCode?: number; error?: { code?: string; description?: string; reason?: string } };
+    logger.error({ statusCode: e?.statusCode, code: e?.error?.code, description: e?.error?.description, reason: e?.error?.reason }, 'Razorpay order creation failed');
+    throw new AppError(`Payment provider error: ${e?.error?.description ?? 'could not create the order'}`, 502);
+  }
 
   return { orderId: order.id, amount, currency: 'INR', keyId: env.razorpay.keyId, plan };
 }
