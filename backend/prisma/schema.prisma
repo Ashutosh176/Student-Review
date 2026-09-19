@@ -378,40 +378,40 @@ model InstitutionCategory {
 }
 
 model Institution {
-  id                String            @id @default(uuid())
-  slug              String            @unique
-  name              String
-  type              InstitutionType
-  categoryId        String?
-  establishedYear   Int?
-  website           String?
-  description       String?
+  id                 String            @id @default(uuid())
+  slug               String            @unique
+  name               String
+  type               InstitutionType
+  categoryId         String?
+  establishedYear    Int?
+  website            String?
+  description        String?
   // Free-text, admin/seed-curated walkthrough of how admission works here
   // (entrance exam, counselling/selection process, key dates) — shown on
   // the Admissions tab above the structured exam/fee/cutoff data. Distinct
   // from entranceExams (a tag list) and admissionCutoffs (per-course rank
   // data); this is the narrative that ties them together for a reader.
-  admissionProcess String?
-  logoUrl           String?
-  verified          Boolean           @default(false)
-  claimed           Boolean           @default(false)
-  featured          Boolean           @default(false)
-  status            InstitutionStatus @default(APPROVED)
-  submittedByUserId String?
-  rejectionReason   String?
+  admissionProcess   String?
+  logoUrl            String?
+  verified           Boolean           @default(false)
+  claimed            Boolean           @default(false)
+  featured           Boolean           @default(false)
+  status             InstitutionStatus @default(APPROVED)
+  submittedByUserId  String?
+  rejectionReason    String?
   // Admissions §: entrance exams this institution accepts for admission
   // (e.g. "JEE Main", "CAT"). A plain tag list, admin-curated — cutoffs
   // below are the structured per-course/category/year data; this is just
   // "which exams", shown even before any cutoff rows exist for one.
-  entranceExams     String[]          @default([])
+  entranceExams      String[]          @default([])
   // AI-generated 2-4 sentence summary of recent approved reviews (see
   // aiSummary.service.ts) — a supplementary reading aid, never a
   // substitute for or counted as a review itself. Null until enough
   // reviews exist and ANTHROPIC_API_KEY is configured.
-  aiSummary         String?
+  aiSummary          String?
   aiSummaryUpdatedAt DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   category             InstitutionCategory?      @relation(fields: [categoryId], references: [id])
   submittedBy          User?                     @relation("InstitutionSubmitter", fields: [submittedByUserId], references: [id])
@@ -503,27 +503,27 @@ model AdmissionCutoff {
 // ───────────────────────── Reviews ─────────────────────────
 
 model Review {
-  id               String           @id @default(uuid())
+  id               String            @id @default(uuid())
   userId           String
   institutionId    String
   courseId         String?
-  type             ReviewType       @default(EXPERIENCE)
+  type             ReviewType        @default(EXPERIENCE)
   relationship     RelationshipType
   admissionOutcome AdmissionOutcome?
   batchYear        Int
   title            String?
   body             String
   recommend        Boolean
-  verifiedStudent  Boolean          @default(false)
-  status           ReviewStatus     @default(PENDING)
-  moderationNotes String?
-  riskScore       Int              @default(0)
-  sentiment       Sentiment?
-  sentimentTopics String[]         @default([])
-  helpfulCount    Int              @default(0)
-  editedAt        DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  verifiedStudent  Boolean           @default(false)
+  status           ReviewStatus      @default(PENDING)
+  moderationNotes  String?
+  riskScore        Int               @default(0)
+  sentiment        Sentiment?
+  sentimentTopics  String[]          @default([])
+  helpfulCount     Int               @default(0)
+  editedAt         DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   user        User            @relation(fields: [userId], references: [id])
   institution Institution     @relation(fields: [institutionId], references: [id])
@@ -608,8 +608,8 @@ model Question {
   status        ReviewStatus @default(APPROVED)
   createdAt     DateTime     @default(now())
 
-  user        User        @relation(fields: [userId], references: [id])
-  institution Institution @relation(fields: [institutionId], references: [id])
+  user        User             @relation(fields: [userId], references: [id])
+  institution Institution      @relation(fields: [institutionId], references: [id])
   answers     Answer[]
   reports     QuestionReport[]
 
@@ -649,8 +649,8 @@ model Answer {
   status          ReviewStatus @default(APPROVED)
   createdAt       DateTime     @default(now())
 
-  question Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user     User             @relation(fields: [userId], references: [id])
+  question Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id])
   votes    AnswerVote[]
   reports  AnswerReport[]
 
@@ -960,4 +960,17 @@ model AdminAction {
   admin User @relation("AdminActor", fields: [adminUserId], references: [id])
 
   @@map("admin_actions")
+}
+
+// Uploaded verification / claim documents. Stored in the database (not on the
+// web server's disk) so they survive redeploys and are erased with the account.
+// Only ever read through the authenticated admin download routes.
+model StoredDocument {
+  id        String   @id @default(uuid())
+  mimeType  String
+  sizeBytes Int
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  @@map("stored_documents")
 }

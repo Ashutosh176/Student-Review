@@ -5,7 +5,7 @@ import * as orgService from '../services/organization.service.js';
 import * as jobService from '../services/job.service.js';
 import * as paymentService from '../services/payment.service.js';
 import { ratingSummaryFor } from '../services/institution.service.js';
-import { claimDocumentStorageKey } from '../middlewares/upload.js';
+import { storeUploadedDocument } from '../middlewares/upload.js';
 
 // inviteTokenHash/inviteTokenExpiresAt are internal — never let them reach a client response.
 function stripInviteToken<T extends { inviteTokenHash?: unknown; inviteTokenExpiresAt?: unknown }>(member: T) {
@@ -14,7 +14,7 @@ function stripInviteToken<T extends { inviteTokenHash?: unknown; inviteTokenExpi
 }
 
 export const submitClaim = asyncHandler(async (req, res) => {
-  const documentUrl = req.file ? claimDocumentStorageKey(req.file.filename) : undefined;
+  const documentUrl = req.file ? await storeUploadedDocument(req.file) : undefined;
   const claim = await orgService.submitClaim(req.user!.id, req.params.id, { ...req.body, documentUrl });
   // documentUrl is an internal storage key, not for client consumption — strip it from the response.
   const { documentUrl: _internal, ...safeClaim } = claim;

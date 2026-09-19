@@ -1,7 +1,6 @@
-import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { prisma } from '../config/prisma.js';
-import { resolveVerificationDocumentPath } from '../middlewares/upload.js';
+import { deleteStoredDocument } from '../middlewares/upload.js';
 import { AppError } from '../utils/AppError.js';
 import { hashPassword, verifyPassword } from '../utils/password.js';
 import { ratingSummaryFor } from './institution.service.js';
@@ -84,13 +83,7 @@ export async function deleteAccount(userId: string, password: string) {
   if (!valid) throw AppError.unauthorized('Incorrect password');
 
   const docs = await prisma.studentVerification.findMany({ where: { userId, documentUrl: { not: null } }, select: { documentUrl: true } });
-  for (const d of docs) {
-    try {
-      fs.rmSync(resolveVerificationDocumentPath(d.documentUrl!), { force: true });
-    } catch {
-      // A missing/invalid path must not block erasure of the DB rows.
-    }
-  }
+  for (const d of docs) await deleteStoredDocument(d.documentUrl);
 
   const shell = userId.replace(/-/g, '').slice(0, 12);
   await prisma.$transaction([

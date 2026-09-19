@@ -2,7 +2,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ok } from '../utils/apiResponse.js';
 import { AppError } from '../utils/AppError.js';
 import * as verificationService from '../services/verification.service.js';
-import { verificationDocumentStorageKey } from '../middlewares/upload.js';
+import { storeUploadedDocument } from '../middlewares/upload.js';
 
 export const start = asyncHandler(async (req, res) => {
   const result = await verificationService.startEmailVerification(
@@ -26,7 +26,7 @@ export const resendOtp = asyncHandler(async (req, res) => {
 
 export const submitDocument = asyncHandler(async (req, res) => {
   if (!req.file) throw AppError.badRequest('A document file is required');
-  const documentUrl = verificationDocumentStorageKey(req.file.filename);
+  const documentUrl = await storeUploadedDocument(req.file);
   const result = await verificationService.startDocumentVerification(
     req.user!.id,
     req.body.institutionId,

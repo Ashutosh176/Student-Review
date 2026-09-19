@@ -1,41 +1,28 @@
-# Render Blueprint — API + managed Postgres. Secrets (sync: false) are entered
-# in the Render dashboard, never committed.
-databases:
-  - name: studentreview-db
-    region: singapore
-    plan: basic-256mb # paid tier: includes backups / point-in-time recovery
-    databaseName: studentreview
-    user: studentreview
-    ipAllowList: [] # private network only — no public access to the database
-
+# Render Blueprint — API only (free tier). The database is a separate Neon
+# Postgres project (free); its connection string and all other secrets
+# (sync: false) are entered in the Render dashboard, never committed.
 services:
   - type: web
     name: studentreview-api
     runtime: node
     region: singapore
-    plan: starter
+    plan: free
     rootDir: backend
     buildCommand: npm ci --include=dev && npx prisma generate && npm run build
     # RUN_SEED=1 (first deploy only) loads roles + the college catalogue; remove it afterwards.
     startCommand: npx prisma migrate deploy && ([ "$RUN_SEED" != "1" ] || npx tsx prisma/seed.ts) && node dist/server.js
     healthCheckPath: /health
-    disk:
-      name: uploads
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: studentreview-db
-          property: connectionString
       - key: CLIENT_ORIGIN
         value: https://studentreview.in
-      - key: UPLOAD_DIR
-        value: /var/data/uploads
       - key: REVIEW_PUBLISH_BATCH_HOURS
         value: "12"
+      - key: EMAIL_PROVIDER
+        value: smtp
+      - key: DATABASE_URL
+        sync: false
       - key: JWT_ACCESS_SECRET
         sync: false
       - key: JWT_REFRESH_SECRET
@@ -48,8 +35,6 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-      - key: EMAIL_PROVIDER
-        value: smtp
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT

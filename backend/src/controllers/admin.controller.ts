@@ -9,7 +9,7 @@ import * as verificationService from '../services/verification.service.js';
 import * as admissionService from '../services/admission.service.js';
 import { generateInstitutionSummary } from '../services/aiSummary.service.js';
 import { recomputeAllRankings } from '../modules/ranking/ranking.service.js';
-import { resolveClaimDocumentPath, resolveVerificationDocumentPath } from '../middlewares/upload.js';
+import { sendStoredDocument } from '../middlewares/upload.js';
 
 // documentUrl is an internal storage key, not for client consumption — the
 // dedicated download route resolves it server-side instead. universityEmail
@@ -67,10 +67,7 @@ export const downloadClaimDocument = asyncHandler(async (req, res) => {
   const record = await orgService.getClaimDocumentPath(req.params.id);
   if (!record) throw AppError.notFound('No document was submitted with this claim');
 
-  const absolutePath = resolveClaimDocumentPath(record.path);
-  if (!fs.existsSync(absolutePath)) throw AppError.notFound('Document file is missing from storage');
-
-  res.download(absolutePath);
+  await sendStoredDocument(res, record.path);
 });
 
 export const decideClaim = asyncHandler(async (req, res) => {
@@ -98,10 +95,7 @@ export const downloadVerificationDocument = asyncHandler(async (req, res) => {
   const storageKey = await verificationService.getVerificationDocumentPath(req.params.id);
   if (!storageKey) throw AppError.notFound('No document was submitted with this verification');
 
-  const absolutePath = resolveVerificationDocumentPath(storageKey);
-  if (!fs.existsSync(absolutePath)) throw AppError.notFound('Document file is missing from storage');
-
-  res.download(absolutePath);
+  await sendStoredDocument(res, storageKey);
 });
 
 export const listEmailDomains = asyncHandler(async (req, res) => {
