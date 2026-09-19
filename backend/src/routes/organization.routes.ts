@@ -14,6 +14,8 @@ const router = Router();
 
 // Invite accept flow runs before the invitee has the ORGANIZATION role, so
 // these two must stay ahead of the router-wide authorize('ORGANIZATION') gate.
+// Public: powers the marketing /pricing page (no account needed).
+router.get('/public-plan-prices', orgController.planPrices);
 router.get('/invites/:token', orgController.getInvite);
 router.post('/invites/:token/accept', authenticate, orgController.acceptInvite);
 

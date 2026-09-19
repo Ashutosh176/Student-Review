@@ -70,6 +70,8 @@ import { FaqPage } from '@/pages/FaqPage';
 import { ContactPage } from '@/pages/legal/ContactPage';
 import { PrivacyPage } from '@/pages/legal/PrivacyPage';
 import { TermsPage } from '@/pages/legal/TermsPage';
+import { RefundPolicyPage } from '@/pages/legal/RefundPolicyPage';
+import { PricingPage } from '@/pages/PricingPage';
 import { CommunityGuidelinesPage } from '@/pages/legal/CommunityGuidelinesPage';
 import { ReviewGuidelinesPage } from '@/pages/legal/ReviewGuidelinesPage';
 import { TrustAndVerificationPage } from '@/pages/legal/TrustAndVerificationPage';
@@ -121,6 +123,8 @@ export default function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/refund-policy" element={<RefundPolicyPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
           <Route path="/review-guidelines" element={<ReviewGuidelinesPage />} />
           <Route path="/trust" element={<TrustAndVerificationPage />} />

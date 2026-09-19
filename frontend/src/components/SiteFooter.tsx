@@ -20,6 +20,9 @@ export function SiteFooter() {
           <Link to="/faq" className="mb-1.5 block text-[#4B4F5E]">
             FAQ
           </Link>
+          <Link to="/pricing" className="mb-1.5 block text-[#4B4F5E]">
+            Pricing
+          </Link>
         </div>
         <div>
           <h5 className="mb-2.5 text-[11.5px] font-semibold text-sub">Legal</h5>
@@ -28,6 +31,9 @@ export function SiteFooter() {
           </Link>
           <Link to="/terms" className="mb-1.5 block text-[#4B4F5E]">
             Terms
+          </Link>
+          <Link to="/refund-policy" className="mb-1.5 block text-[#4B4F5E]">
+            Refund &amp; Cancellation
           </Link>
           <Link to="/community-guidelines" className="mb-1.5 block text-[#4B4F5E]">
             Community Guidelines

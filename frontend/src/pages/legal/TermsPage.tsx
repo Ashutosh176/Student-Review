@@ -3,7 +3,7 @@ import { LegalPage } from './LegalPage';
 export function TermsPage() {
   return (
     <LegalPage title="Terms of Service">
-      <p>By using StudentReview, you agree to the following terms.</p>
+      <p>By using StudentReview, you agree to the following terms. StudentReview is operated by Ashutosh Sharma, India.</p>
       <h2>Reviews are user experiences</h2>
       <p>
         Reviews represent individual users' personal experiences and opinions. StudentReview does not verify every factual

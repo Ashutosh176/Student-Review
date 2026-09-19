@@ -23,7 +23,12 @@ export function ContactPage() {
       <Helmet>
         <title>Contact — StudentReview</title>
       </Helmet>
-      <h1 className="mb-4.5 text-2xl">Contact us</h1>
+      <h1 className="mb-2 text-2xl">Contact us</h1>
+      <p className="mb-4.5 text-[13px] leading-relaxed text-sub">
+        StudentReview (studentreview.in) is operated by Ashutosh Sharma, India.
+        <br />
+        Email: <a href="mailto:no-reply@studentreview.in" className="font-semibold text-brand">no-reply@studentreview.in</a> · We reply within 3 business days.
+      </p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
