@@ -6,7 +6,7 @@ export function SiteFooter() {
     <footer className="border-t border-line bg-white px-4 py-9 sm:px-7 print:hidden">
       <div className="grid grid-cols-2 gap-6 text-[12.5px] sm:grid-cols-3 lg:grid-cols-5">
         <div className="col-span-2 sm:col-span-3 lg:col-span-1">
-          <Logo className="mb-2 h-7 w-auto" />
+          <Logo className="mb-2 h-14 w-auto" />
           <p className="max-w-[200px] text-sub">Honest, anonymous college reviews for students across India.</p>
         </div>
         <div>
