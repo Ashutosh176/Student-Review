@@ -46,21 +46,11 @@ export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?:
   const name = brand ?? user?.username ?? (kind === 'admin' ? 'Admin' : kind === 'org' ? 'Organization' : 'My Account');
 
   return (
-    <div className="hidden w-[220px] flex-none flex-col bg-brand-light p-3 text-ink md:flex">
+    <div className="hidden w-[220px] flex-none flex-col overflow-y-auto bg-brand-light p-3 text-ink md:sticky md:top-0 md:flex md:h-screen md:self-start">
       <div className="px-2 pb-4">
         <Logo className="h-11 w-auto" linkTo="/" />
         <div className="mt-2.5 truncate text-[13px] font-semibold text-ink">{name}</div>
       </div>
-      {/* Present in every role's dashboard — the only way back to the
-          public site from inside admin/org, which previously had none. */}
-      <Link
-        to="/"
-        className="mb-2 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-sub hover:bg-white hover:text-ink"
-      >
-        <span>🏠</span>
-        Back to site
-      </Link>
-      <div className="mb-2 border-t border-line" />
       <nav className="flex flex-col gap-0.5">
         {ITEMS[kind].map((item) => (
           <NavLink
@@ -76,6 +66,20 @@ export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?:
           </NavLink>
         ))}
       </nav>
+      {/* Present in every role's dashboard — the only way back to the
+          public site from inside admin/org. Pinned to the bottom of the panel. */}
+      <div className="mt-auto border-t border-line pt-2">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-sub hover:bg-white hover:text-ink"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M19 12H5" />
+            <path d="m12 19-7-7 7-7" />
+          </svg>
+          Back
+        </Link>
+      </div>
     </div>
   );
 }
