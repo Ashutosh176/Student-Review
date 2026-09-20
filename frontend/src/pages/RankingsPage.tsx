@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { Helmet } from 'react-helmet-async';
 import { rankingsApi, type RankingMetric } from '@/api/rankings.api';
 import { EmptyState, ErrorState } from '@/components/LoadingSkeleton';
+import { rankingSeo } from '@/lib/seo/siteSeo';
 
 const TABS: { slug: string; metric: RankingMetric; label: string }[] = [
   { slug: '', metric: 'OVERALL', label: 'Top Rated' },
@@ -20,15 +21,13 @@ export function RankingsPage() {
   const active = TABS.find((t) => t.slug === (metricSlug ?? '')) ?? TABS[0];
 
   const query = useQuery({ queryKey: ['rankings', active.metric], queryFn: () => rankingsApi.get(active.metric, 25) });
+  const seo = rankingSeo(active.label);
 
   return (
     <div className="px-4 py-6 sm:px-7">
       <Helmet>
-        <title>{active.label} Colleges in India — Rankings & Reviews — StudentReview</title>
-        <meta
-          name="description"
-          content={`${active.label} colleges in India, ranked from verified student reviews. See which institutions students rate highest for ${active.label.toLowerCase()}.`}
-        />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
         <link rel="canonical" href={`${window.location.origin}/rankings${metricSlug ? `/${metricSlug}` : ''}`} />
       </Helmet>
       <div className="mb-1.5 flex flex-wrap items-end justify-between gap-2">

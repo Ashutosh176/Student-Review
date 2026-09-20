@@ -8,6 +8,7 @@ import { verificationApi } from '@/api/verification.api';
 import { ReviewCard } from '@/components/ReviewCard';
 import { CardSkeletonGrid, EmptyState, ErrorState } from '@/components/LoadingSkeleton';
 import { useAuthStore } from '@/store/authStore';
+import { collegeSeoMeta } from '@/lib/seo/collegeSeo';
 import { useCollegeContext } from './CollegeLayout';
 import type { ReviewKind } from '@/types';
 
@@ -52,15 +53,14 @@ export function CollegeReviewsPage() {
           ? 'Write a review'
           : 'Verify your university email to write a review';
 
+  const seo = collegeSeoMeta(inst, 'reviews');
+
   return (
     <div>
       <Helmet>
-        <title>{inst.name} Reviews — Student Experiences & Ratings — StudentReview</title>
-        <meta
-          name="description"
-          content={`Read ${inst.summary.reviewCount.toLocaleString('en-IN')} verified student reviews of ${inst.name} — placements, faculty, hostel, campus life and admission experiences, straight from real students.`}
-        />
-        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/reviews`} />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <link rel="canonical" href={`${window.location.origin}${seo.path}`} />
       </Helmet>
       <div className="mb-3 flex gap-1 overflow-x-auto rounded-card border border-line bg-white p-1">
         {KINDS.map((k) => (
