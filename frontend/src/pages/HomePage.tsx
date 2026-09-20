@@ -12,6 +12,7 @@ import { CardSkeletonGrid, EmptyState } from '@/components/LoadingSkeleton';
 import { useScrollOutProgress } from '@/hooks/useScrollOutProgress';
 import { useHeroVisibilityStore } from '@/store/heroVisibilityStore';
 import { HEADER_HEIGHT_PX } from '@/components/SiteHeader';
+import { homeSeo, homeStructuredData } from '@/lib/seo/siteSeo';
 
 export function HomePage() {
   const statsQuery = useQuery({ queryKey: ['institutions', 'stats'], queryFn: institutionsApi.stats, staleTime: 5 * 60 * 1000 });
@@ -41,36 +42,19 @@ export function HomePage() {
 
   useEffect(() => clearHero, [clearHero]);
 
-  const structuredData = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'StudentReview',
-      url: 'https://studentreview.in',
-      logo: 'https://studentreview.in/logo.svg',
-      sameAs: ['https://www.instagram.com/studentreview.india', 'https://www.linkedin.com/company/studentreview-in'],
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'StudentReview',
-      url: 'https://studentreview.in',
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: 'https://studentreview.in/search?q={search_term_string}',
-        'query-input': 'required name=search_term_string',
-      },
-    },
-  ];
+  const origin = 'https://studentreview.in';
+  const structuredData = homeStructuredData(origin);
 
   return (
     <>
       <Helmet>
-        <title>StudentReview — Know what students really think</title>
-        <meta
-          name="description"
-          content="Explore honest student experiences, ratings and reviews of colleges and universities across India."
-        />
+        <title>{homeSeo.title}</title>
+        <meta name="description" content={homeSeo.description} />
+        <link rel="canonical" href={`${origin}/`} />
+        <meta property="og:title" content={homeSeo.title} />
+        <meta property="og:description" content={homeSeo.description} />
+        <meta property="og:url" content={`${origin}/`} />
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
       </Helmet>
 
       <section ref={heroRef} className="relative isolate overflow-hidden bg-brand px-4 py-14 text-center text-white sm:px-6 sm:py-16">

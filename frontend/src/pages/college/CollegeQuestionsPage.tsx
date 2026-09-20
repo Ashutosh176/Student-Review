@@ -7,6 +7,7 @@ import { questionsApi } from '@/api/questions.api';
 import { EmptyState, ErrorState } from '@/components/LoadingSkeleton';
 import { timeAgo } from '@/utils/formatDate';
 import { useAuthStore } from '@/store/authStore';
+import { collegeSeoMeta } from '@/lib/seo/collegeSeo';
 import { useCollegeContext } from './CollegeLayout';
 
 export function CollegeQuestionsPage() {
@@ -28,12 +29,14 @@ export function CollegeQuestionsPage() {
     },
   });
 
+  const seo = collegeSeoMeta(inst, 'questions');
+
   return (
     <div>
       <Helmet>
-        <title>{inst.name} Questions & Answers — Ask Current Students — StudentReview</title>
-        <meta name="description" content={`Questions and answers about ${inst.name}, answered by current students and alumni on StudentReview.`} />
-        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/questions`} />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <link rel="canonical" href={`${window.location.origin}${seo.path}`} />
       </Helmet>
       <div className="mb-4 flex items-center justify-between">
         <h4 className="text-base">Questions &amp; Answers</h4>
