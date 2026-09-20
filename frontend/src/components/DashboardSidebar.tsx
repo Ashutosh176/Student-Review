@@ -41,12 +41,42 @@ const ITEMS: Record<DashboardKind, { icon: string; label: string; to: string }[]
   ],
 };
 
-export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?: string }) {
+// Sits above the sidebar/content split — rendered by each dashboard layout
+// only below the md breakpoint, where the sidebar itself is hidden.
+export function DashboardMobileBar({ onOpen }: { onOpen: () => void }) {
+  return (
+    <div className="mb-3 flex items-center gap-3 border-b border-line pb-3 md:hidden">
+      <button
+        type="button"
+        aria-label="Open menu"
+        onClick={onOpen}
+        className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-brand-light text-ink"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <Logo className="h-8 w-auto" linkTo="/" />
+    </div>
+  );
+}
+
+export function DashboardSidebar({
+  kind,
+  brand,
+  mobileOpen = false,
+  onMobileClose,
+}: {
+  kind: DashboardKind;
+  brand?: string;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}) {
   const user = useAuthStore((s) => s.user);
   const name = brand ?? user?.username ?? (kind === 'admin' ? 'Admin' : kind === 'org' ? 'Organization' : 'My Account');
 
-  return (
-    <div className="hidden w-[220px] flex-none flex-col overflow-y-auto bg-brand-light p-3 text-ink md:sticky md:top-0 md:flex md:h-screen md:self-start">
+  const panel = (
+    <>
       <div className="px-2 pb-4">
         <Logo className="h-11 w-auto" linkTo="/" />
         <div className="mt-2.5 truncate text-[13px] font-semibold text-ink">{name}</div>
@@ -57,6 +87,7 @@ export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?:
             key={item.to}
             to={item.to}
             end={item.to === '/dashboard' || item.to === '/admin' || item.to.endsWith('/dashboard')}
+            onClick={onMobileClose}
             className={({ isActive }) =>
               clsx('flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-sub', isActive && 'bg-white text-brand')
             }
@@ -71,6 +102,7 @@ export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?:
       <div className="mt-auto border-t border-line pt-2">
         <Link
           to="/"
+          onClick={onMobileClose}
           className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.8px] font-medium text-sub hover:bg-white hover:text-ink"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -80,6 +112,23 @@ export function DashboardSidebar({ kind, brand }: { kind: DashboardKind; brand?:
           Back
         </Link>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      <div className="hidden w-[220px] flex-none flex-col overflow-y-auto bg-brand-light p-3 text-ink md:sticky md:top-0 md:flex md:h-screen md:self-start">
+        {panel}
+      </div>
+
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={onMobileClose} />
+          <div className="absolute inset-y-0 left-0 flex w-[250px] flex-col overflow-y-auto bg-brand-light p-3 text-ink shadow-xl">
+            {panel}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

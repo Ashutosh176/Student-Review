@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Outlet, useOutletContext } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { organizationApi, type OrgMembership } from '@/api/organization.api';
-import { DashboardSidebar } from '@/components/DashboardSidebar';
+import { DashboardMobileBar, DashboardSidebar } from '@/components/DashboardSidebar';
 import { ErrorState } from '@/components/LoadingSkeleton';
 
 export function useOrgContext() {
@@ -10,6 +11,7 @@ export function useOrgContext() {
 
 export function OrgLayout() {
   const query = useQuery({ queryKey: ['organization', 'me'], queryFn: organizationApi.me });
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   if (query.isLoading) {
     return <div className="flex min-h-screen items-center justify-center bg-surface text-sub">Loading organization…</div>;
@@ -24,8 +26,14 @@ export function OrgLayout() {
 
   return (
     <div className="flex min-h-screen bg-surface">
-      <DashboardSidebar kind="org" brand={query.data.institution.name} />
+      <DashboardSidebar
+        kind="org"
+        brand={query.data.institution.name}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
+      />
       <div className="flex-1 p-4 sm:p-6">
+        <DashboardMobileBar onOpen={() => setMobileNavOpen(true)} />
         <Outlet context={query.data} />
       </div>
     </div>

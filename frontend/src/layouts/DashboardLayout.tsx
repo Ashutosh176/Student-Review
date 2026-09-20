@@ -1,11 +1,15 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { DashboardSidebar, type DashboardKind } from '@/components/DashboardSidebar';
+import { DashboardMobileBar, DashboardSidebar, type DashboardKind } from '@/components/DashboardSidebar';
 
 export function DashboardLayout({ kind, brand }: { kind: DashboardKind; brand?: string }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-surface">
-      <DashboardSidebar kind={kind} brand={brand} />
+      <DashboardSidebar kind={kind} brand={brand} mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
       <div className="flex-1 p-4 sm:p-6">
+        <DashboardMobileBar onOpen={() => setMobileNavOpen(true)} />
         <Outlet />
       </div>
     </div>
