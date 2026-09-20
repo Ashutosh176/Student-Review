@@ -133,9 +133,11 @@ export function OrgSettingsPage() {
         })}
       </div>
       <p className="mt-3.5 text-[11.5px] text-sub">No plan can remove or hide legitimate reviews. Moderation is only for policy violations.</p>
-      <p className="mt-1 mb-4.5 text-[11.5px] text-sub">
-        Checkout runs on Razorpay <strong>test mode</strong> — use their published test card/UPI credentials, no real money moves.
-      </p>
+      {billingQuery.data?.razorpayMode === 'test' && (
+        <p className="mt-1 mb-4.5 text-[11.5px] text-sub">
+          Checkout runs on Razorpay <strong>test mode</strong> — use their published test card/UPI credentials, no real money moves.
+        </p>
+      )}
 
       <div className="card">
         <h4 className="mb-3 text-sm">Billing history</h4>

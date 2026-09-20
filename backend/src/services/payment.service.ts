@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import type { SubscriptionPlan } from '@prisma/client';
 import { prisma } from '../config/prisma.js';
-import { razorpay, razorpayEnabled } from '../config/razorpay.js';
+import { razorpay, razorpayEnabled, razorpayMode } from '../config/razorpay.js';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/AppError.js';
 import { logger } from '../config/logger.js';
@@ -160,5 +160,5 @@ export async function getBillingInfo(organizationProfileId: string) {
       take: 20,
     }),
   ]);
-  return { subscription, payments, razorpayEnabled };
+  return { subscription, payments, razorpayEnabled, razorpayMode };
 }

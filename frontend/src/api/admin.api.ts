@@ -338,7 +338,8 @@ export const adminApi = {
 
   payments: async (params: { page?: number; pageSize?: number }) => {
     const res = await api.get<ApiSuccess<AdminPaymentRow[]>>('/admin/payments', { params });
-    return { items: res.data.data, total: res.data.meta?.total ?? 0 };
+    const mode = (res.data.meta as { razorpayMode?: 'live' | 'test' | 'disabled' } | undefined)?.razorpayMode;
+    return { items: res.data.data, total: res.data.meta?.total ?? 0, razorpayMode: mode ?? 'test' };
   },
 
   jobs: async (params: { page?: number; pageSize?: number }) => {

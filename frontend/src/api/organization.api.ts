@@ -38,6 +38,7 @@ interface BillingInfo {
   subscription: { id: string; plan: 'FREE' | 'PRO' | 'BUSINESS'; status: string; currentPeriodEnd: string | null } | null;
   payments: BillingPayment[];
   razorpayEnabled: boolean;
+  razorpayMode?: 'live' | 'test' | 'disabled';
 }
 
 interface CheckoutOrder {

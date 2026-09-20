@@ -22,9 +22,21 @@ export function AdminPaymentsPage() {
         <title>Payments — Admin — StudentReview</title>
       </Helmet>
       <DashboardTopbar crumb="Admin" title="Payments" />
-      <div className="card mb-3.5 bg-warning-bg text-[12.5px] text-warning">
-        ⚠ Razorpay is wired in <strong>test mode</strong> — transactions below use test cards/UPI, no real money moves.
-      </div>
+      {query.data?.razorpayMode === 'test' && (
+        <div className="card mb-3.5 bg-warning-bg text-[12.5px] text-warning">
+          ⚠ Razorpay is running in <strong>test mode</strong> — transactions below use test cards/UPI, no real money moves.
+        </div>
+      )}
+      {query.data?.razorpayMode === 'live' && (
+        <div className="card mb-3.5 text-[12.5px] text-sub">
+          Razorpay is running in <strong>live mode</strong> — transactions below are real payments.
+        </div>
+      )}
+      {query.data?.razorpayMode === 'disabled' && (
+        <div className="card mb-3.5 bg-warning-bg text-[12.5px] text-warning">
+          ⚠ Razorpay is <strong>not configured</strong> on the server — checkout is disabled.
+        </div>
+      )}
       {query.data && query.data.items.length === 0 && <EmptyState icon="🧾" title="No transactions yet" />}
       {query.data && query.data.items.length > 0 && (
         <div className="card overflow-x-auto p-0">

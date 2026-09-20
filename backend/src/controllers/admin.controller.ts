@@ -9,6 +9,7 @@ import * as verificationService from '../services/verification.service.js';
 import * as admissionService from '../services/admission.service.js';
 import { generateInstitutionSummary } from '../services/aiSummary.service.js';
 import { recomputeAllRankings } from '../modules/ranking/ranking.service.js';
+import { razorpayMode } from '../config/razorpay.js';
 import { sendStoredDocument } from '../middlewares/upload.js';
 
 // documentUrl is an internal storage key, not for client consumption — the
@@ -223,7 +224,7 @@ export const recomputeRankings = asyncHandler(async (_req, res) => {
 
 export const listPayments = asyncHandler(async (req, res) => {
   const result = await adminService.listPaymentsAdmin(Number(req.query.page) || 1, Number(req.query.pageSize) || 20);
-  ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });
+  ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize, razorpayMode });
 });
 
 export const listJobs = asyncHandler(async (req, res) => {
