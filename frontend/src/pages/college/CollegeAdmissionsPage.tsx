@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Badge } from '@/components/Badge';
 import { EmptyState } from '@/components/LoadingSkeleton';
-import { collegeSeoMeta } from '@/lib/seo/collegeSeo';
 import { useCollegeContext } from './CollegeLayout';
 
 function formatInr(amount?: number | null): string | null {
@@ -15,19 +14,21 @@ export function CollegeAdmissionsPage() {
   const hasNothing =
     !inst.admissionProcess && inst.entranceExams.length === 0 && coursesWithFees.length === 0 && inst.admissionCutoffs.length === 0;
 
-  const seoMeta = collegeSeoMeta(inst, 'admissions');
-  const seoTags = (
+  const seo = (
     <Helmet>
-      <title>{seoMeta.title}</title>
-      <meta name="description" content={seoMeta.description} />
-      <link rel="canonical" href={`${window.location.origin}${seoMeta.path}`} />
+      <title>{inst.name} Admissions — Process, Cutoffs & Fees — StudentReview</title>
+      <meta
+        name="description"
+        content={`Admission process, entrance exams, course fees and cutoff ranks for ${inst.name}, plus real applicant experiences from StudentReview.`}
+      />
+      <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/admissions`} />
     </Helmet>
   );
 
   if (hasNothing) {
     return (
       <>
-        {seoTags}
+        {seo}
         <EmptyState
           icon="🎓"
           title="Admission details aren't available yet"
@@ -39,7 +40,7 @@ export function CollegeAdmissionsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      {seoTags}
+      {seo}
       {inst.admissionProcess && (
         <div className="card">
           <h4 className="mb-2.5 text-sm">Admission process</h4>

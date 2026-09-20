@@ -2,20 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
 import { EmptyState, ErrorState } from '@/components/LoadingSkeleton';
-import { collegeSeoMeta } from '@/lib/seo/collegeSeo';
 import { useCollegeContext } from './CollegeLayout';
 
 export function CollegeJobsPage() {
   const inst = useCollegeContext();
   const query = useQuery({ queryKey: ['institution-jobs', inst.slug], queryFn: () => institutionsApi.jobs(inst.slug) });
-  const seo = collegeSeoMeta(inst, 'jobs');
 
   return (
     <div>
       <Helmet>
-        <title>{seo.title}</title>
-        <meta name="description" content={seo.description} />
-        <link rel="canonical" href={`${window.location.origin}${seo.path}`} />
+        <title>Jobs & Internships at {inst.name} — StudentReview</title>
+        <meta name="description" content={`Open jobs and internship listings posted by ${inst.name} on StudentReview.`} />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/jobs`} />
       </Helmet>
       {query.isError && <ErrorState />}
       {query.data && query.data.length === 0 && (

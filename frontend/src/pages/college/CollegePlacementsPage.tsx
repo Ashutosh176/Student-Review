@@ -1,19 +1,20 @@
 import { Helmet } from 'react-helmet-async';
 import { RatingBar } from '@/components/RatingBar';
-import { collegeSeoMeta } from '@/lib/seo/collegeSeo';
 import { useCollegeContext } from './CollegeLayout';
 
 export function CollegePlacementsPage() {
   const inst = useCollegeContext();
   const placement = inst.summary.ratings.find((r) => r.category === 'PLACEMENT');
-  const seo = collegeSeoMeta(inst, 'placements');
 
   return (
     <div className="flex flex-col gap-3">
       <Helmet>
-        <title>{seo.title}</title>
-        <meta name="description" content={seo.description} />
-        <link rel="canonical" href={`${window.location.origin}${seo.path}`} />
+        <title>{inst.name} Placements — Student Reviews & Ratings — StudentReview</title>
+        <meta
+          name="description"
+          content={`How students rate placements at ${inst.name}${placement ? ` — ${placement.average.toFixed(1)}/5 based on ${placement.count} reviews` : ''}. Read real placement experiences before you apply.`}
+        />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/placements`} />
       </Helmet>
       <div className="card">
         <h4 className="mb-2.5 text-sm">Placement sentiment</h4>

@@ -9,7 +9,6 @@ import { RatingBar } from '@/components/RatingBar';
 import { CollegeTabs } from '@/components/CollegeTabs';
 import { ErrorState } from '@/components/LoadingSkeleton';
 import { useAuthStore } from '@/store/authStore';
-import { collegeSeoMeta, collegeStructuredData } from '@/lib/seo/collegeSeo';
 import type { InstitutionDetail } from '@/types';
 
 export function useCollegeContext() {
@@ -59,19 +58,52 @@ export function CollegeLayout() {
   const inst = query.data;
   const overall = inst.summary.ratings.find((r) => r.category === 'OVERALL');
   const location = inst.locations[0];
-  const origin = window.location.origin;
-  const canonicalUrl = `${origin}/college/${inst.slug}`;
-  const seo = collegeSeoMeta(inst, 'overview');
-  const structuredData = collegeStructuredData(inst, origin);
+  const canonicalUrl = `${window.location.origin}/college/${inst.slug}`;
+  const metaDescription =
+    inst.description ??
+    `${inst.summary.reviewCount.toLocaleString('en-IN')} student reviews of ${inst.name}${overall ? ` — rated ${overall.average.toFixed(1)}/5` : ''}. Read honest, anonymous feedback on placements, faculty and campus life.`;
+
+  // AggregateRating + Review — Google's rich-result eligibility for the star
+  // rating shown next to this page in search (needs >=1 rating to render).
+  // BreadcrumbList — Colleges > name trail shown in the SERP instead of the raw URL.
+  const structuredData = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollegeOrUniversity',
+      name: inst.name,
+      url: canonicalUrl,
+      ...(inst.website ? { sameAs: [inst.website] } : {}),
+      ...(location ? { address: { '@type': 'PostalAddress', addressLocality: location.city, addressRegion: location.state, addressCountry: location.country ?? 'IN' } } : {}),
+      ...(overall && inst.summary.reviewCount > 0
+        ? {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: overall.average.toFixed(1),
+              reviewCount: inst.summary.reviewCount,
+              bestRating: '5',
+              worstRating: '1',
+            },
+          }
+        : {}),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Colleges', item: `${window.location.origin}/colleges` },
+        { '@type': 'ListItem', position: 2, name: inst.name, item: canonicalUrl },
+      ],
+    },
+  ];
 
   return (
     <div className="px-4 pb-8 pt-4 sm:px-7">
       <Helmet>
-        <title>{seo.title}</title>
-        <meta name="description" content={seo.description} />
+        <title>{inst.name} — Reviews, Ratings & More — StudentReview</title>
+        <meta name="description" content={metaDescription} />
         <link rel="canonical" href={canonicalUrl} />
         <meta property="og:title" content={`${inst.name} — Student Reviews & Ratings`} />
-        <meta property="og:description" content={seo.description} />
+        <meta property="og:description" content={metaDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify(structuredData)}</script>

@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
 import { CollegeCard } from '@/components/CollegeCard';
 import { CardSkeletonGrid, EmptyState } from '@/components/LoadingSkeleton';
-import { collegesListingSeo } from '@/lib/seo/siteSeo';
 
 export function CollegesListingPage() {
   const [page, setPage] = useState(1);
@@ -21,8 +20,8 @@ export function CollegesListingPage() {
   return (
     <div className="px-4 py-6 sm:px-7">
       <Helmet>
-        <title>{collegesListingSeo.title}</title>
-        <meta name="description" content={collegesListingSeo.description} />
+        <title>College Reviews — Browse All Colleges & Universities — StudentReview</title>
+        <meta name="description" content="Browse student reviews and ratings for colleges and universities across India. Compare placements, faculty, hostel life and more before you choose." />
         <link rel="canonical" href={`${window.location.origin}/colleges`} />
       </Helmet>
       <div className="mb-4.5 flex flex-wrap items-end justify-between gap-3">

@@ -1,21 +1,19 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { EmptyState } from '@/components/LoadingSkeleton';
-import { collegeSeoMeta } from '@/lib/seo/collegeSeo';
 import { useCollegeContext } from './CollegeLayout';
 
 export function CollegeCoursesPage() {
   const inst = useCollegeContext();
   const [q, setQ] = useState('');
   const courses = inst.courses.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()));
-  const seo = collegeSeoMeta(inst, 'courses');
 
   return (
     <div>
       <Helmet>
-        <title>{seo.title}</title>
-        <meta name="description" content={seo.description} />
-        <link rel="canonical" href={`${window.location.origin}${seo.path}`} />
+        <title>{inst.name} Courses & Programs — StudentReview</title>
+        <meta name="description" content={`Courses, programs and duration offered at ${inst.name}, with student reviews and ratings for each.`} />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/courses`} />
       </Helmet>
       <input
         value={q}
