@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
 import { questionsApi } from '@/api/questions.api';
 import { EmptyState, ErrorState } from '@/components/LoadingSkeleton';
@@ -29,6 +30,11 @@ export function CollegeQuestionsPage() {
 
   return (
     <div>
+      <Helmet>
+        <title>{inst.name} Questions & Answers — Ask Current Students — StudentReview</title>
+        <meta name="description" content={`Questions and answers about ${inst.name}, answered by current students and alumni on StudentReview.`} />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/questions`} />
+      </Helmet>
       <div className="mb-4 flex items-center justify-between">
         <h4 className="text-base">Questions &amp; Answers</h4>
         <button

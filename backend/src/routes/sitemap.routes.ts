@@ -14,11 +14,16 @@ router.get('/sitemap.xml', async (req, res, next) => {
 
     const staticPaths = ['/', '/search', '/colleges', '/compare', '/rankings', '/about', '/contact', '/privacy', '/terms', '/community-guidelines'];
 
+    // Each college's sub-tabs are distinct, indexable content (reviews,
+    // placements, admissions) with their own title/description — not just
+    // duplicates of the overview tab, so they belong in the sitemap too.
+    const collegeSubPaths = ['', '/reviews', '/placements', '/admissions', '/courses', '/questions'];
+
     const origin = env.clientOrigin; // never derive from the Host header
     const urls = [
       ...staticPaths.map((p) => `<url><loc>${origin}${p}</loc></url>`),
-      ...institutions.map(
-        (i) => `<url><loc>${origin}/college/${i.slug}</loc><lastmod>${i.updatedAt.toISOString()}</lastmod></url>`,
+      ...institutions.flatMap((i) =>
+        collegeSubPaths.map((p) => `<url><loc>${origin}/college/${i.slug}${p}</loc><lastmod>${i.updatedAt.toISOString()}</lastmod></url>`),
       ),
     ];
 

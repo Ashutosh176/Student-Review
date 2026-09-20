@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Badge } from '@/components/Badge';
 import { EmptyState } from '@/components/LoadingSkeleton';
 import { useCollegeContext } from './CollegeLayout';
@@ -13,18 +14,33 @@ export function CollegeAdmissionsPage() {
   const hasNothing =
     !inst.admissionProcess && inst.entranceExams.length === 0 && coursesWithFees.length === 0 && inst.admissionCutoffs.length === 0;
 
+  const seo = (
+    <Helmet>
+      <title>{inst.name} Admissions — Process, Cutoffs & Fees — StudentReview</title>
+      <meta
+        name="description"
+        content={`Admission process, entrance exams, course fees and cutoff ranks for ${inst.name}, plus real applicant experiences from StudentReview.`}
+      />
+      <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/admissions`} />
+    </Helmet>
+  );
+
   if (hasNothing) {
     return (
-      <EmptyState
-        icon="🎓"
-        title="Admission details aren't available yet"
-        description="The admission process, entrance exams, fees and cutoff ranks for this college will appear here once added."
-      />
+      <>
+        {seo}
+        <EmptyState
+          icon="🎓"
+          title="Admission details aren't available yet"
+          description="The admission process, entrance exams, fees and cutoff ranks for this college will appear here once added."
+        />
+      </>
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {seo}
       {inst.admissionProcess && (
         <div className="card">
           <h4 className="mb-2.5 text-sm">Admission process</h4>

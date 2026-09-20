@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import clsx from 'clsx';
 import { institutionsApi } from '@/api/institutions.api';
 import { verificationApi } from '@/api/verification.api';
@@ -53,6 +54,14 @@ export function CollegeReviewsPage() {
 
   return (
     <div>
+      <Helmet>
+        <title>{inst.name} Reviews — Student Experiences & Ratings — StudentReview</title>
+        <meta
+          name="description"
+          content={`Read ${inst.summary.reviewCount.toLocaleString('en-IN')} verified student reviews of ${inst.name} — placements, faculty, hostel, campus life and admission experiences, straight from real students.`}
+        />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/reviews`} />
+      </Helmet>
       <div className="mb-3 flex gap-1 overflow-x-auto rounded-card border border-line bg-white p-1">
         {KINDS.map((k) => (
           <button

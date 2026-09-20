@@ -20,11 +20,13 @@ export function CollegesListingPage() {
   return (
     <div className="px-4 py-6 sm:px-7">
       <Helmet>
-        <title>All Colleges — StudentReview</title>
+        <title>College Reviews — Browse All Colleges & Universities — StudentReview</title>
+        <meta name="description" content="Browse student reviews and ratings for colleges and universities across India. Compare placements, faculty, hostel life and more before you choose." />
+        <link rel="canonical" href={`${window.location.origin}/colleges`} />
       </Helmet>
       <div className="mb-4.5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl">All Colleges</h2>
+          <h1 className="text-xl">College Reviews — All Colleges</h1>
           <p className="mt-1 text-[13px] text-sub">Browse institutions across India</p>
         </div>
         <select value={sort} onChange={(e) => setSort(e.target.value as never)} className="rounded-md border border-line px-2 py-1.5 text-[12.5px]">

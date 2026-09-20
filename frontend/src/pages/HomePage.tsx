@@ -41,6 +41,28 @@ export function HomePage() {
 
   useEffect(() => clearHero, [clearHero]);
 
+  const structuredData = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'StudentReview',
+      url: 'https://studentreview.in',
+      logo: 'https://studentreview.in/logo.svg',
+      sameAs: ['https://www.instagram.com/studentreview.india', 'https://www.linkedin.com/company/studentreview-in'],
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'StudentReview',
+      url: 'https://studentreview.in',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://studentreview.in/search?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ];
+
   return (
     <>
       <Helmet>

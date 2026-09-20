@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { EmptyState } from '@/components/LoadingSkeleton';
 import { useCollegeContext } from './CollegeLayout';
 
@@ -9,6 +10,11 @@ export function CollegeCoursesPage() {
 
   return (
     <div>
+      <Helmet>
+        <title>{inst.name} Courses & Programs — StudentReview</title>
+        <meta name="description" content={`Courses, programs and duration offered at ${inst.name}, with student reviews and ratings for each.`} />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/courses`} />
+      </Helmet>
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}

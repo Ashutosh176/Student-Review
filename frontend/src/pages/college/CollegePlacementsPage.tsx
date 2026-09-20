@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { RatingBar } from '@/components/RatingBar';
 import { useCollegeContext } from './CollegeLayout';
 
@@ -7,6 +8,14 @@ export function CollegePlacementsPage() {
 
   return (
     <div className="flex flex-col gap-3">
+      <Helmet>
+        <title>{inst.name} Placements — Student Reviews & Ratings — StudentReview</title>
+        <meta
+          name="description"
+          content={`How students rate placements at ${inst.name}${placement ? ` — ${placement.average.toFixed(1)}/5 based on ${placement.count} reviews` : ''}. Read real placement experiences before you apply.`}
+        />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/placements`} />
+      </Helmet>
       <div className="card">
         <h4 className="mb-2.5 text-sm">Placement sentiment</h4>
         <RatingBar category="PLACEMENT" value={placement?.average ?? 0} />

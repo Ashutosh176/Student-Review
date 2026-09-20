@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { questionsApi } from '@/api/questions.api';
 import { Badge } from '@/components/Badge';
 import { ReportModal } from '@/components/ReportModal';
@@ -45,9 +46,37 @@ export function QuestionDetailPage() {
 
   const question = query.data;
   const questionFlagged = question.status === 'FLAGGED';
+  const approvedAnswers = question.answers.filter((a) => a.status !== 'FLAGGED');
+
+  // QAPage schema is only valid (and only worth emitting) once the question
+  // has passed moderation and has at least one visible answer — an empty or
+  // flagged Q&A isn't something we want Google surfacing as a rich result.
+  const structuredData =
+    !questionFlagged && approvedAnswers.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'QAPage',
+          mainEntity: {
+            '@type': 'Question',
+            name: question.title,
+            text: question.body ?? question.title,
+            answerCount: approvedAnswers.length,
+            acceptedAnswer: approvedAnswers
+              .slice()
+              .sort((a, b) => b.upvoteCount - a.upvoteCount)
+              .slice(0, 1)
+              .map((a) => ({ '@type': 'Answer', text: a.body ?? '', upvoteCount: a.upvoteCount }))[0],
+          },
+        }
+      : null;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-7">
+      <Helmet>
+        <title>{question.title} — StudentReview Q&A</title>
+        <meta name="description" content={(question.body ?? question.title).slice(0, 155)} />
+        {structuredData && <script type="application/ld+json">{JSON.stringify(structuredData)}</script>}
+      </Helmet>
       <Link to={`/college/${slug}/questions`} className="mb-3 inline-block text-xs text-sub hover:text-brand">
         ← Back to questions
       </Link>

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
 import { EmptyState, ErrorState } from '@/components/LoadingSkeleton';
 import { useCollegeContext } from './CollegeLayout';
@@ -9,6 +10,11 @@ export function CollegeJobsPage() {
 
   return (
     <div>
+      <Helmet>
+        <title>Jobs & Internships at {inst.name} — StudentReview</title>
+        <meta name="description" content={`Open jobs and internship listings posted by ${inst.name} on StudentReview.`} />
+        <link rel="canonical" href={`${window.location.origin}/college/${inst.slug}/jobs`} />
+      </Helmet>
       {query.isError && <ErrorState />}
       {query.data && query.data.length === 0 && (
         <EmptyState icon="💼" title="No open listings" description="This institution hasn't published any jobs or internships yet." />

@@ -5,17 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>StudentReview — Honest Campus Insights</title>
-    <meta
-      name="description"
-      content="Anonymous, verified student reviews and ratings for colleges and universities across India. Compare placements, faculty, hostel life and more before you choose."
-    />
-    <meta property="og:title" content="StudentReview — Honest Campus Insights" />
-    <meta
-      property="og:description"
-      content="Explore honest student experiences, ratings and reviews of colleges and universities across India."
-    />
+    <!--
+      No static description/canonical/og:title/og:description/og:url here —
+      react-helmet-async only manages tags IT renders, so a static duplicate
+      of a tag a page's own <Helmet> also sets never gets removed and both
+      coexist in the DOM. A page with its own Helmet gets exactly one of
+      each; a page without one simply has none, which is the correct/neutral
+      fallback (Google self-canonicalizes and synthesizes a snippet from
+      content when these are absent — far safer than a wrong static value,
+      especially for <link rel="canonical">, where Google ignores ALL
+      canonical tags on a page if more than one is present).
+    -->
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/logo.svg" />
+    <meta property="og:image" content="https://studentreview.in/logo.svg" />
+    <meta property="og:site_name" content="StudentReview" />
     <meta name="twitter:card" content="summary" />
   </head>
   <body>

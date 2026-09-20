@@ -24,10 +24,15 @@ export function RankingsPage() {
   return (
     <div className="px-4 py-6 sm:px-7">
       <Helmet>
-        <title>{active.label} Colleges — India — StudentReview</title>
+        <title>{active.label} Colleges in India — Rankings & Reviews — StudentReview</title>
+        <meta
+          name="description"
+          content={`${active.label} colleges in India, ranked from verified student reviews. See which institutions students rate highest for ${active.label.toLowerCase()}.`}
+        />
+        <link rel="canonical" href={`${window.location.origin}/rankings${metricSlug ? `/${metricSlug}` : ''}`} />
       </Helmet>
       <div className="mb-1.5 flex flex-wrap items-end justify-between gap-2">
-        <h2 className="text-xl">{active.label} Colleges — India</h2>
+        <h1 className="text-xl">{active.label} Colleges — India</h1>
         <Link to="/about" className="text-[12.5px] font-semibold text-brand">
           How rankings work →
         </Link>
