@@ -96,29 +96,27 @@ export async function startEmailVerification(
   return { id: verification.id, status: verification.status };
 }
 
-async function issueOtp(studentVerificationId: string, email: string) {
+// The OTP row is written before responding, but the email itself is sent in the
+// background: waiting on the mail provider made the request (and the user's
+// "Send code" click) take seconds. A failed send is logged; "Resend code" recovers.
+async function issueOtp(studentVerificationId: string, email: string): Promise<void> {
   const code = crypto.randomInt(100000, 1000000).toString();
   await prisma.verificationOtp.create({
     data: { studentVerificationId, codeHash: hashToken(code), expiresAt: new Date(Date.now() + OTP_TTL_MS) },
   });
   const otpEmailContent = collegeOtpEmail({ code });
-  try {
-    await sendEmail({
-      to: email,
-      subject: 'StudentReview College Verification Code',
-      text: otpEmailContent.text,
-      html: otpEmailContent.html,
-      template: { key: 'collegeOtp', variables: { OTP: code } },
-    });
-  } catch (err) {
-    // The StudentVerification/VerificationOtp rows are already committed —
-    // letting this throw would 500 the request while leaving a PENDING
-    // record behind that assertNoActiveAttempt then blocks retrying through
-    // startEmailVerification (only resendOtp can recover it). Swallow it so
-    // the caller still gets back a normal PENDING result and the frontend's
-    // "Resend code" button — already wired for exactly this case — works.
+  // A send failure must never throw: the rows are already committed, and a 500
+  // would leave a PENDING record that assertNoActiveAttempt then blocks retrying
+  // through startEmailVerification (only resendOtp can recover it).
+  void sendEmail({
+    to: email,
+    subject: 'StudentReview College Verification Code',
+    text: otpEmailContent.text,
+    html: otpEmailContent.html,
+    template: { key: 'collegeOtp', variables: { OTP: code } },
+  }).catch((err) => {
     logger.warn({ err, studentVerificationId }, 'Failed to send college verification OTP email');
-  }
+  });
 }
 
 export async function resendOtp(userId: string, institutionId: string) {

@@ -39,6 +39,11 @@ function getSmtpTransporter(): Transporter {
     port: env.smtp.port,
     secure: env.smtp.secure,
     auth: { user: env.smtp.user, pass: env.smtp.pass },
+    // Nodemailer's defaults wait ~2 min on an unreachable host (e.g. a platform
+    // that blocks outbound SMTP), which hangs the request the user is waiting on.
+    connectionTimeout: 8_000,
+    greetingTimeout: 8_000,
+    socketTimeout: 15_000,
   });
   return smtpTransporter;
 }
