@@ -10,6 +10,7 @@ import {
   createCourseSchema,
   createFaqSchema,
   createInstitutionSchema,
+  updateInstitutionSchema,
   decisionSchema,
   institutionDomainParamSchema,
   moderateReviewActionSchema,
@@ -74,6 +75,12 @@ router.post('/categories', authorize('ADMIN'), validate({ body: createCategorySc
 
 router.get('/institutions', validate({ query: paginationQuerySchema }), adminController.listInstitutions);
 router.post('/institutions', authorize('ADMIN'), validate({ body: createInstitutionSchema }), adminController.createInstitution);
+router.patch(
+  '/institutions/:id',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: updateInstitutionSchema }),
+  adminController.updateInstitution,
+);
 router.post(
   '/institutions/:id/decision',
   authorize('ADMIN'),

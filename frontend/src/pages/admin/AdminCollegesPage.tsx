@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { Helmet } from 'react-helmet-async';
-import { adminApi, type CreateAdmissionCutoffInput, type CreateCourseInput, type CreateInstitutionInput } from '@/api/admin.api';
+import { adminApi, type CreateAdmissionCutoffInput, type CreateCourseInput, type CreateInstitutionInput, type AdminInstitutionRow } from '@/api/admin.api';
 import { apiErrorMessage } from '@/api/client';
 import { DashboardTopbar } from '@/layouts/DashboardLayout';
 import { Badge } from '@/components/Badge';
@@ -375,6 +375,7 @@ function AiSummaryPanel({ institutionId, aiSummary, aiSummaryUpdatedAt }: { inst
 export function AdminCollegesPage() {
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState<AdminInstitutionRow | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [domainsOpenId, setDomainsOpenId] = useState<string | null>(null);
@@ -396,6 +397,14 @@ export function AdminCollegesPage() {
     onSuccess: () => {
       setAddOpen(false);
       qc.invalidateQueries({ queryKey: ['admin', 'institutions'] });
+    },
+  });
+  const updateMutation = useMutation({
+    mutationFn: (input: CreateInstitutionInput) => adminApi.updateInstitution(editing!.id, input),
+    onSuccess: () => {
+      setEditing(null);
+      qc.invalidateQueries({ queryKey: ['admin', 'institutions'] });
+      qc.invalidateQueries({ queryKey: ['institutions'] });
     },
   });
   const decideMutation = useMutation({
@@ -479,6 +488,9 @@ export function AdminCollegesPage() {
                   </td>
                   <td className="px-3 py-2.5">{inst._count.reviews}</td>
                   <td className="px-3 py-2.5">
+                    <button onClick={() => setEditing(inst)} className="text-brand hover:underline">
+                      Edit
+                    </button>{' '}
                     {inst.status === 'PENDING' ? (
                       rejectingId === inst.id ? (
                         <span className="text-sub">Add a reason below</span>
@@ -576,6 +588,35 @@ export function AdminCollegesPage() {
           </tbody>
         </table>
       </div>
+
+      <AddInstitutionModal
+        key={editing?.id ?? 'edit'}
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
+        onSubmit={(input) => updateMutation.mutate(input)}
+        submitting={updateMutation.isPending}
+        error={updateMutation.error}
+        heading="Edit institution"
+        helperText="Updates the public college page. The page URL stays the same even if you rename it."
+        submitLabel="Save changes"
+        submittingLabel="Saving…"
+        showAdmissionProcess
+        initialValues={
+          editing
+            ? {
+                name: editing.name,
+                type: editing.type as CreateInstitutionInput['type'],
+                city: editing.locations[0]?.city ?? '',
+                state: editing.locations[0]?.state ?? '',
+                establishedYear: editing.establishedYear ?? undefined,
+                website: editing.website ?? '',
+                description: editing.description ?? '',
+                admissionProcess: editing.admissionProcess ?? '',
+                categoryId: editing.categoryId ?? undefined,
+              }
+            : undefined
+        }
+      />
 
       <AddInstitutionModal
         open={addOpen}

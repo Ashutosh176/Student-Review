@@ -173,6 +173,11 @@ export interface AdminInstitutionRow {
   entranceExams: string[];
   aiSummary?: string | null;
   aiSummaryUpdatedAt?: string | null;
+  description?: string | null;
+  website?: string | null;
+  establishedYear?: number | null;
+  admissionProcess?: string | null;
+  categoryId?: string | null;
 }
 
 export interface CreateInstitutionInput {
@@ -183,6 +188,7 @@ export interface CreateInstitutionInput {
   establishedYear?: number;
   website?: string;
   description?: string;
+  admissionProcess?: string;
   categoryId?: string;
 }
 
@@ -327,6 +333,14 @@ export const adminApi = {
   },
   setFeatured: (id: string, featured: boolean) => unwrap(api.patch(`/admin/institutions/${id}/featured`, { featured })),
   createInstitution: (input: CreateInstitutionInput) => unwrap<AdminInstitutionRow>(api.post('/admin/institutions', input)),
+  updateInstitution: (id: string, input: CreateInstitutionInput) =>
+    unwrap<AdminInstitutionRow>(
+      api.patch(`/admin/institutions/${id}`, {
+        ...input,
+        establishedYear: input.establishedYear ?? null,
+        categoryId: input.categoryId || null,
+      }),
+    ),
   decideInstitution: (id: string, decision: 'APPROVED' | 'REJECTED', reason?: string) =>
     unwrap(api.post(`/admin/institutions/${id}/decision`, { decision, reason })),
   categories: async () => {

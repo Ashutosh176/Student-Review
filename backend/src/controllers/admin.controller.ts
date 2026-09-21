@@ -207,6 +207,11 @@ export const createInstitution = asyncHandler(async (req, res) => {
   ok(res, institution, 201);
 });
 
+export const updateInstitution = asyncHandler(async (req, res) => {
+  const institution = await adminService.updateInstitution(req.params.id, req.body);
+  ok(res, institution);
+});
+
 export const decideInstitutionSubmission = asyncHandler(async (req, res) => {
   const institution = await adminService.decideInstitutionSubmission(req.params.id, req.user!.id, req.body.decision, req.body.reason);
   ok(res, institution);

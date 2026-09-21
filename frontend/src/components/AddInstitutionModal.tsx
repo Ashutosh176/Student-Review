@@ -26,6 +26,8 @@ export function AddInstitutionModal({
   submitLabel = 'Create institution',
   submittingLabel = 'Creating…',
   initialName = '',
+  initialValues,
+  showAdmissionProcess = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -37,12 +39,15 @@ export function AddInstitutionModal({
   submitLabel?: string;
   submittingLabel?: string;
   initialName?: string;
+  // Edit mode: start from an existing institution's values instead of a blank form.
+  initialValues?: Partial<CreateInstitutionInput>;
+  showAdmissionProcess?: boolean;
 }) {
   const [form, setForm] = useState<CreateInstitutionInput>(EMPTY);
   const categoriesQuery = useQuery({ queryKey: ['admin', 'categories'], queryFn: adminApi.categories, enabled: open });
 
   useEffect(() => {
-    if (open) setForm({ ...EMPTY, name: initialName });
+    if (open) setForm({ ...EMPTY, name: initialName, ...initialValues });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -140,6 +145,12 @@ export function AddInstitutionModal({
             <label>Description</label>
             <textarea rows={3} value={form.description} onChange={(e) => update('description', e.target.value)} />
           </div>
+          {showAdmissionProcess && (
+            <div className="field">
+              <label>Admission process</label>
+              <textarea rows={4} value={form.admissionProcess ?? ''} onChange={(e) => update('admissionProcess', e.target.value)} />
+            </div>
+          )}
           {Boolean(error) && <p className="mb-3 text-xs text-danger">{apiErrorMessage(error)}</p>}
           <div className="mt-1.5 flex gap-2">
             <button type="button" className="btn btn-ghost flex-1 justify-center" onClick={onClose}>

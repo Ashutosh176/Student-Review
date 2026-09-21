@@ -41,6 +41,21 @@ export const createInstitutionSchema = z.object({
   categoryId: z.string().uuid().optional().or(z.literal('')),
 });
 
+// Full-replace edit of an institution's core details from the admin panel. The
+// slug is deliberately not editable — changing it would break every public URL
+// and search-engine listing for the college.
+export const updateInstitutionSchema = z.object({
+  name: z.string().min(2).max(200),
+  type: z.enum(INSTITUTION_TYPES),
+  city: z.string().min(2).max(100),
+  state: z.string().min(2).max(100),
+  establishedYear: z.number().int().min(1800).max(new Date().getFullYear()).nullable().optional(),
+  website: z.string().url().optional().or(z.literal('')),
+  description: z.string().max(3000).optional(),
+  admissionProcess: z.string().max(5000).optional(),
+  categoryId: z.string().uuid().optional().or(z.literal('')).nullable(),
+});
+
 export const createCategorySchema = z.object({
   name: z.string().min(2).max(100),
 });

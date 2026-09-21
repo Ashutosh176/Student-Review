@@ -239,6 +239,42 @@ export async function createInstitution(input: {
   });
 }
 
+export async function updateInstitution(
+  institutionId: string,
+  input: {
+    name: string;
+    type: InstitutionType;
+    city: string;
+    state: string;
+    establishedYear?: number | null;
+    website?: string;
+    description?: string;
+    admissionProcess?: string;
+    categoryId?: string | null;
+  },
+) {
+  const existing = await prisma.institution.findUnique({ where: { id: institutionId }, include: { locations: { where: { isPrimary: true }, take: 1 } } });
+  if (!existing) throw AppError.notFound('Institution not found');
+
+  const primary = existing.locations[0];
+  return prisma.institution.update({
+    where: { id: institutionId },
+    data: {
+      name: input.name,
+      type: input.type,
+      establishedYear: input.establishedYear ?? null,
+      website: input.website || null,
+      description: input.description || null,
+      admissionProcess: input.admissionProcess || null,
+      categoryId: input.categoryId || null,
+      locations: primary
+        ? { update: { where: { id: primary.id }, data: { city: input.city, state: input.state } } }
+        : { create: { city: input.city, state: input.state, isPrimary: true } },
+    },
+    include: { locations: { where: { isPrimary: true }, take: 1 }, _count: { select: { reviews: true } } },
+  });
+}
+
 export async function listCategories() {
   return prisma.institutionCategory.findMany({
     orderBy: { name: 'asc' },
