@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { institutionsApi } from '@/api/institutions.api';
@@ -54,6 +55,8 @@ export function SearchBar({ variant, className, initialValue = '' }: { variant: 
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const [rect, setRect] = useState<{ left: number; top: number; width: number } | null>(null);
   const styles = VARIANT_STYLES[variant];
 
   useEffect(() => {
@@ -63,7 +66,8 @@ export function SearchBar({ variant, className, initialValue = '' }: { variant: 
 
   useEffect(() => {
     function onDown(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (wrapRef.current && !wrapRef.current.contains(t) && !listRef.current?.contains(t)) setOpen(false);
     }
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
@@ -77,6 +81,23 @@ export function SearchBar({ variant, className, initialValue = '' }: { variant: 
   });
   const suggestions = debounced.length >= 2 ? (suggestionsQuery.data ?? []) : [];
   const showList = open && suggestions.length > 0;
+
+  // The list is portaled to <body> and positioned from the form's rect, so no
+  // ancestor's overflow (the animated header clips its children) can cut it off.
+  useEffect(() => {
+    if (!showList) return;
+    function measure() {
+      const r = wrapRef.current?.querySelector('form')?.getBoundingClientRect();
+      if (r) setRect({ left: r.left, top: r.bottom, width: r.width });
+    }
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, true);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure, true);
+    };
+  }, [showList]);
 
   function go(path: string) {
     setOpen(false);
@@ -125,8 +146,13 @@ export function SearchBar({ variant, className, initialValue = '' }: { variant: 
           {variant === 'mobile' ? 'Go' : 'Search'}
         </button>
       </form>
-      {showList && (
-        <ul role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 max-h-80 overflow-auto rounded-xl border border-line bg-white py-1 text-left shadow-lg">
+      {showList && rect && createPortal(
+        <ul
+          ref={listRef}
+          role="listbox"
+          style={{ position: 'fixed', left: rect.left, top: rect.top + 4, width: Math.max(rect.width, 280) }}
+          className="z-[60] max-h-80 overflow-auto rounded-xl border border-line bg-white py-1 text-left shadow-lg"
+        >
           {suggestions.map((s, i) => {
             const loc = s.locations[0];
             return (
@@ -144,7 +170,8 @@ export function SearchBar({ variant, className, initialValue = '' }: { variant: 
               </li>
             );
           })}
-        </ul>
+        </ul>,
+        document.body,
       )}
     </div>
   );

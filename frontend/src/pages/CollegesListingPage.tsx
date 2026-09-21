@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
 import { CollegeCard } from '@/components/CollegeCard';
 import { CardSkeletonGrid, EmptyState } from '@/components/LoadingSkeleton';
+import { SearchBar } from '@/components/SearchBar';
 import { collegesListingSeo } from '@/lib/seo/siteSeo';
 
 export function CollegesListingPage() {
@@ -36,6 +37,8 @@ export function CollegesListingPage() {
           <option value="name">Sort: Name (A-Z)</option>
         </select>
       </div>
+
+      <SearchBar variant="page" className="mb-5" />
 
       {query.isLoading && <CardSkeletonGrid count={12} />}
       {query.data && query.data.items.length === 0 && <EmptyState title="No colleges yet" />}
