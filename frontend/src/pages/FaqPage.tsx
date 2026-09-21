@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -14,6 +14,10 @@ function matches(text: string, term: string) {
 function AskQuestionForm({ prefill }: { prefill: string }) {
   const user = useAuthStore((s) => s.user);
   const [form, setForm] = useState({ name: user?.username ?? '', email: user?.email ?? '', message: prefill });
+  // The account often finishes loading after this mounts — fill blanks then, never overwrite typing.
+  useEffect(() => {
+    if (user) setForm((f) => ({ ...f, name: f.name || user.username, email: f.email || user.email }));
+  }, [user]);
   const mutation = useMutation({
     // Goes through the existing support inbox (/contact); the prefix lets the team spot FAQ-page questions.
     mutationFn: () => api.post('/contact', { name: form.name, email: form.email, subject: 'General question', message: `[Student question via FAQ] ${form.message}` }),
