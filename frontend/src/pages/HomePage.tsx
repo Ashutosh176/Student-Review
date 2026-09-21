@@ -57,15 +57,17 @@ export function HomePage() {
         <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
       </Helmet>
 
-      <section ref={heroRef} className="relative isolate overflow-hidden bg-brand px-4 py-14 text-center text-white sm:px-6 sm:py-16">
+      <section ref={heroRef} className="relative isolate bg-brand px-4 py-14 text-center text-white sm:px-6 sm:py-16">
         {/* Background photo: softly blurred (scaled up so the blur never shows a hard edge) under a brand tint that keeps the white text legible. */}
-        <img
-          src="/hero.jpg"
-          alt=""
-          aria-hidden
-          fetchPriority="high"
-          className="absolute inset-0 -z-20 h-full w-full scale-110 object-cover object-[center_35%] blur-[3px]"
-        />
+        {/* Clipping lives on this wrapper (not the section) so the search suggestions can overflow the hero. */}
+        <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden">
+          <img
+            src="/hero.jpg"
+            alt=""
+            fetchPriority="high"
+            className="h-full w-full scale-110 object-cover object-[center_35%] blur-[3px]"
+          />
+        </div>
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-dark/55 via-brand/35 to-brand-deep/60" />
         <h1 className="mx-auto mb-3 max-w-2xl text-3xl leading-tight [text-shadow:0_2px_14px_rgba(10,16,40,0.55)] sm:text-[38px]">Know what students really think.</h1>
         <p className="mx-auto mb-6 max-w-lg text-[15px] text-white/95 [text-shadow:0_1px_10px_rgba(10,16,40,0.6)]">

@@ -41,7 +41,7 @@ export function AddInstitutionModal({
   const categoriesQuery = useQuery({ queryKey: ['admin', 'categories'], queryFn: adminApi.categories, enabled: open });
 
   useEffect(() => {
-    if (open) setForm((f) => (f.name ? f : { ...f, name: initialName }));
+    if (open) setForm({ ...EMPTY, name: initialName });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
