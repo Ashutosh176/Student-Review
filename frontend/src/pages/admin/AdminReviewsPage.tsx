@@ -47,7 +47,8 @@ export function AdminReviewsPage() {
                   <td className="px-3 py-2.5">{row.institution.name}</td>
                   <td className="px-3 py-2.5">{row._count.reports}</td>
                   <td className="px-3 py-2.5">
-                    <Badge kind={row.riskScore >= 50 ? 'flagged' : 'pending'}>{row.riskScore >= 50 ? 'High' : 'Medium'}</Badge>
+                    <Badge kind={row.riskScore >= 50 ? 'flagged' : 'pending'}>{row.riskScore >= 50 ? 'High' : 'Medium'}</Badge>{' '}
+                    {row.status === 'REJECTED' && <Badge kind="flagged">Auto-rejected</Badge>}
                   </td>
                   <td className="px-3 py-2.5">
                     <button className="btn btn-sm" onClick={() => setSelected(row)}>

@@ -77,9 +77,11 @@ export async function moderateReview(input: ModerationInput, thresholds: Moderat
   }
 
   // 2. Personal information (PII) — hard reject.
-  const hasEmail = EMAIL_RE.test(body);
-  const hasPhone = PHONE_RE.test(body);
-  const hasAadhaar = AADHAAR_LIKE_RE.test(body);
+  // Fresh non-global regexes: .test() on a shared /g regex keeps lastIndex
+  // between calls, which made detection flip between submissions.
+  const hasEmail = new RegExp(EMAIL_RE.source, 'i').test(body);
+  const hasPhone = new RegExp(PHONE_RE.source).test(body);
+  const hasAadhaar = new RegExp(AADHAAR_LIKE_RE.source).test(body);
   if (hasEmail || hasPhone || hasAadhaar) {
     flags.add('Personal information');
     riskScore += 60;
