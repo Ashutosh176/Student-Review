@@ -58,8 +58,8 @@ export function AddInstitutionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-[480px] rounded-2xl border border-line bg-white p-8 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" role="dialog" aria-modal="true">
+      <div className="my-auto w-full max-w-[480px] rounded-2xl border border-line bg-white p-8 shadow-xl">
         <h2 className="mb-1 text-lg font-bold">{heading}</h2>
         <p className="mb-4 text-xs text-sub">{helperText}</p>
         <form
