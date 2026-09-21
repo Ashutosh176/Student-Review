@@ -51,7 +51,7 @@ export function CollegeReviewsPage() {
         ? 'Sign in to write a review'
         : isVerifiedHere
           ? 'Write a review'
-          : 'Verify your university email to write a review';
+          : 'Verify your student identity to write a review';
 
   const seo = collegeSeoMeta(inst, 'reviews');
 

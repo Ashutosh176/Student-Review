@@ -37,7 +37,7 @@ export async function createReview(userId: string, input: CreateReviewInput) {
   let verifiedStudent = false;
   if (type === 'EXPERIENCE') {
     if (!(await isVerified(userId, input.institutionId))) {
-      throw AppError.forbidden('You need a verified university email or an approved document for this institution before you can submit a review.');
+      throw AppError.forbidden('You need to verify your student identity for this institution before you can submit a review.');
     }
     verifiedStudent = true;
   }

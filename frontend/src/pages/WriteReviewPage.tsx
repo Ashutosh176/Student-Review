@@ -195,7 +195,7 @@ export function WriteReviewPage() {
           <OptionCard selected={kind === 'EXPERIENCE'} onClick={() => setKind('EXPERIENCE')}>
             <div>
               <div className="font-semibold">My experience as a student</div>
-              <div className="mt-0.5 text-[12px] font-normal text-sub">Placements, faculty, hostel life and more — requires verifying your college email or ID.</div>
+              <div className="mt-0.5 text-[12px] font-normal text-sub">Placements, faculty, hostel life and more — requires verifying your student identity.</div>
             </div>
           </OptionCard>
           <OptionCard selected={kind === 'ADMISSION_PROCESS'} onClick={() => setKind('ADMISSION_PROCESS')}>

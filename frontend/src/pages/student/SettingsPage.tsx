@@ -176,7 +176,7 @@ function VerificationSection() {
     <div>
       <h4 className="mb-1 text-sm">University verification</h4>
       <p className="mb-4 text-xs text-sub">
-        Verify your official university email (or upload an ID/document) to write a review for that college. This doesn't reveal your
+        Verify your student identity (with your official university email or an ID/document) to write a review for that college. This doesn't reveal your
         identity publicly — reviews always stay anonymous.
       </p>
 

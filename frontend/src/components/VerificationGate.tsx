@@ -170,7 +170,7 @@ export function VerificationGate({
   // No active attempt (first time, or previous REJECTED/EXPIRED) — offer both paths.
   return (
     <div className="card bg-surface">
-      <h4 className="mb-1 text-sm font-semibold">Verify your university email</h4>
+      <h4 className="mb-1 text-sm font-semibold">Verify your student identity</h4>
       <p className="mb-3 text-[12.5px] text-sub">Only verified students or alumni can write a review for {institutionName}.</p>
       {current?.status === 'REJECTED' && current.rejectionReason && (
         <p className="mb-3 rounded-md bg-danger/10 p-2 text-[12px] text-danger">Your last submission was rejected: {current.rejectionReason}</p>

@@ -38,7 +38,7 @@ export function CollegeLayout() {
 
   const verificationsQuery = useQuery({ queryKey: ['verifications', 'mine'], queryFn: verificationApi.mine, enabled: isLoggedIn });
   const isVerifiedHere = verificationsQuery.data?.some((v) => v.institutionId === query.data?.id && v.status === 'VERIFIED') ?? false;
-  const writeReviewLabel = !isLoggedIn ? 'Sign in to write a review' : isVerifiedHere ? 'Write a review' : 'Verify your university email to write a review';
+  const writeReviewLabel = !isLoggedIn ? 'Sign in to write a review' : isVerifiedHere ? 'Write a review' : 'Verify your student identity to write a review';
 
   async function share() {
     await navigator.clipboard.writeText(window.location.origin + `/college/${slug}`);
