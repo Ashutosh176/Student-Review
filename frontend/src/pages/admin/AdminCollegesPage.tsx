@@ -1,5 +1,5 @@
-import { Fragment, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Fragment, useEffect, useState } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { Helmet } from 'react-helmet-async';
@@ -384,10 +384,28 @@ export function AdminCollegesPage() {
   const [params, setParams] = useSearchParams();
   const status = (params.get('status') as 'PENDING' | 'APPROVED' | 'REJECTED' | null) ?? undefined;
 
+  const [search, setSearch] = useState('');
+  const [debounced, setDebounced] = useState('');
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(search.trim()), 250);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // The table itself filters live as you type; the dropdown offers quick picks
+  // (any status, so pending/rejected colleges are findable too).
   const query = useQuery({
-    queryKey: ['admin', 'institutions', status],
-    queryFn: () => adminApi.institutions({ pageSize: 30, status }),
+    queryKey: ['admin', 'institutions', status, debounced],
+    queryFn: () => adminApi.institutions({ pageSize: 30, status, q: debounced || undefined }),
+    placeholderData: keepPreviousData,
   });
+  const suggestQuery = useQuery({
+    queryKey: ['admin', 'institutions-suggest', debounced],
+    queryFn: () => adminApi.institutions({ pageSize: 6, q: debounced }),
+    enabled: debounced.length >= 2,
+    staleTime: 30_000,
+  });
+  const suggestions = debounced.length >= 2 ? (suggestQuery.data?.items ?? []) : [];
   const featureMutation = useMutation({
     mutationFn: ({ id, featured }: { id: string; featured: boolean }) => adminApi.setFeatured(id, featured),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
@@ -432,6 +450,61 @@ export function AdminCollegesPage() {
         }
       />
 
+      <div className="relative mb-3 max-w-md">
+        <input
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setSuggestOpen(true);
+          }}
+          onFocus={() => setSuggestOpen(true)}
+          onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
+          onKeyDown={(e) => e.key === 'Escape' && setSuggestOpen(false)}
+          placeholder="Search colleges by name or city…"
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={suggestOpen && suggestions.length > 0}
+          aria-autocomplete="list"
+          className="w-full rounded-md border border-line bg-white px-3 py-2 pr-8 text-[12.5px] outline-none focus:border-brand"
+        />
+        {search && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              setSearch('');
+              setSuggestOpen(false);
+            }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-sub hover:text-ink"
+          >
+            ✕
+          </button>
+        )}
+        {suggestOpen && suggestions.length > 0 && (
+          <ul role="listbox" className="absolute left-0 right-0 top-full z-20 mt-1 max-h-72 overflow-auto rounded-xl border border-line bg-white py-1 shadow-lg">
+            {suggestions.map((s) => (
+              <li key={s.id} role="option" aria-selected={false}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setSearch(s.name);
+                    setDebounced(s.name);
+                    setSuggestOpen(false);
+                  }}
+                  className="block w-full px-3 py-2 text-left hover:bg-brand/10"
+                >
+                  <span className="block text-[13px] font-semibold text-ink">{s.name}</span>
+                  <span className="block text-[11.5px] text-sub">
+                    {[s.locations[0]?.city, s.locations[0]?.state].filter(Boolean).join(', ')} · {s.status}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="mb-3 flex gap-2">
         {STATUS_TABS.map((t) => (
           <button
@@ -463,7 +536,7 @@ export function AdminCollegesPage() {
             {query.data && query.data.items.length === 0 && (
               <tr>
                 <td className="px-3 py-6 text-center text-sub" colSpan={6}>
-                  No colleges here yet.
+                  {debounced ? `No colleges match "${debounced}".` : 'No colleges here yet.'}
                 </td>
               </tr>
             )}

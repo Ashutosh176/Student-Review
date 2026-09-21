@@ -198,7 +198,7 @@ export const createCategory = asyncHandler(async (req, res) => {
 
 export const listInstitutions = asyncHandler(async (req, res) => {
   const status = req.query.status as 'PENDING' | 'APPROVED' | 'REJECTED' | undefined;
-  const result = await adminService.listInstitutionsAdmin(Number(req.query.page) || 1, Number(req.query.pageSize) || 20, status);
+  const result = await adminService.listInstitutionsAdmin(Number(req.query.page) || 1, Number(req.query.pageSize) || 20, status, req.query.q as string | undefined);
   ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });
 });
 

@@ -291,8 +291,19 @@ export async function createCategory(name: string) {
   return prisma.institutionCategory.create({ data: { name, slug } });
 }
 
-export async function listInstitutionsAdmin(page = 1, pageSize = 20, status?: 'PENDING' | 'APPROVED' | 'REJECTED') {
-  const where = status ? { status } : undefined;
+export async function listInstitutionsAdmin(page = 1, pageSize = 20, status?: 'PENDING' | 'APPROVED' | 'REJECTED', q?: string) {
+  const term = q?.trim();
+  const where = {
+    ...(status ? { status } : {}),
+    ...(term
+      ? {
+          OR: [
+            { name: { contains: term, mode: 'insensitive' as const } },
+            { locations: { some: { city: { contains: term, mode: 'insensitive' as const } } } },
+          ],
+        }
+      : {}),
+  };
   const [total, items] = await Promise.all([
     prisma.institution.count({ where }),
     prisma.institution.findMany({

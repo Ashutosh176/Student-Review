@@ -327,7 +327,7 @@ export const adminApi = {
   regenerateAiSummary: (institutionId: string) =>
     unwrap<{ aiSummary: string }>(api.post(`/admin/institutions/${institutionId}/ai-summary/regenerate`)),
 
-  institutions: async (params: { page?: number; pageSize?: number; status?: 'PENDING' | 'APPROVED' | 'REJECTED' }) => {
+  institutions: async (params: { q?: string; page?: number; pageSize?: number; status?: 'PENDING' | 'APPROVED' | 'REJECTED' }) => {
     const res = await api.get<ApiSuccess<AdminInstitutionRow[]>>('/admin/institutions', { params });
     return { items: res.data.data, total: res.data.meta?.total ?? 0 };
   },
