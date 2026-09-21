@@ -19,6 +19,18 @@ export const authLimiter = rateLimit({
   message: { success: false, message: 'Too many attempts, please try again later.' },
 });
 
+// Login only counts FAILED attempts — that is what credential stuffing looks
+// like. Counting successful logins too meant a campus/hostel network (many
+// students behind one IP) exhausted the shared limit and got locked out.
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many failed attempts, please try again in a few minutes.' },
+});
+
 // Review submission limiter — one of the primary anti-abuse levers (spec §36).
 export const reviewSubmitLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,

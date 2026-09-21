@@ -67,6 +67,12 @@ export function unwrap<T>(promise: Promise<{ data: ApiSuccess<T> }>): Promise<T>
 export function apiErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const data = err.response?.data as ApiFailure | undefined;
+    // Validation failures carry the specific reasons ("Password needs an
+    // uppercase letter") in details.fieldErrors — show those, not just the
+    // generic "Validation failed", so people know what to fix.
+    const fieldErrors = (data?.details as { fieldErrors?: Record<string, string[] | undefined> } | undefined)?.fieldErrors;
+    const reasons = fieldErrors ? Object.values(fieldErrors).flatMap((v) => v ?? []) : [];
+    if (reasons.length > 0) return reasons.join('. ');
     return data?.message ?? 'Something went wrong. Please try again.';
   }
   return 'Something went wrong. Please try again.';

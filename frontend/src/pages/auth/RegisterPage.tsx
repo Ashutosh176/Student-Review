@@ -44,7 +44,8 @@ export function RegisterPage() {
       >
         <div className="field">
           <label>Username</label>
-          <input required minLength={3} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" />
+          <input required minLength={3} maxLength={24} pattern="[a-zA-Z0-9_]+" title="Letters, numbers and underscores only" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" />
+          <span className="text-[11.5px] text-sub">3–24 characters: letters, numbers and underscores only.</span>
         </div>
         <div className="field">
           <label>Email</label>
