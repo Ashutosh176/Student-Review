@@ -19,6 +19,13 @@ export const GENERIC_EMAIL_DOMAINS = new Set([
   'gmx.com',
 ]);
 
+// "smail.iitm.ac.in" -> ["smail.iitm.ac.in", "iitm.ac.in", "ac.in"]. Public
+// suffixes are harmless in the list: nothing registers "ac.in" as an institution domain.
+export function parentDomains(domain: string): string[] {
+  const parts = domain.split('.');
+  return parts.map((_, i) => parts.slice(i).join('.')).filter((d) => d.includes('.'));
+}
+
 export function extractEmailDomain(email: string): string {
   return email.toLowerCase().split('@')[1] ?? '';
 }

@@ -3,7 +3,7 @@ import { prisma } from '../config/prisma.js';
 import { logger } from '../config/logger.js';
 import { AppError } from '../utils/AppError.js';
 import { env } from '../config/env.js';
-import { extractEmailDomain, GENERIC_EMAIL_DOMAINS } from '../utils/emailDomain.js';
+import { extractEmailDomain, GENERIC_EMAIL_DOMAINS, parentDomains } from '../utils/emailDomain.js';
 import { sendEmail } from './email.service.js';
 import { collegeOtpEmail } from './emailTemplates.js';
 import { notify } from './notification.service.js';
@@ -74,8 +74,12 @@ export async function startEmailVerification(
   if (!domain || GENERIC_EMAIL_DOMAINS.has(domain)) {
     throw AppError.badRequest('Please use your official university email address, not a personal email provider');
   }
-  const allowed = await prisma.institutionEmailDomain.findUnique({ where: { domain } });
-  if (!allowed || allowed.institutionId !== institutionId) {
+  // A registered domain also covers its subdomains (student@smail.iitm.ac.in for
+  // iitm.ac.in) — an institution controls everything under its own domain.
+  const candidates = parentDomains(domain);
+  const matches = await prisma.institutionEmailDomain.findMany({ where: { domain: { in: candidates } } });
+  const allowed = matches.find((m) => m.institutionId === institutionId);
+  if (!allowed) {
     throw AppError.badRequest('This email domain is not recognized as an official email for the selected institution');
   }
 
