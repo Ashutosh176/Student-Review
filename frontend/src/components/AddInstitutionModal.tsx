@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { adminApi, type CreateInstitutionInput } from '@/api/admin.api';
 import { apiErrorMessage } from '@/api/client';
 import { INSTITUTION_TYPES, INSTITUTION_TYPE_LABELS } from '@/utils/institutionTypes';
+import { INDIA_STATES, citiesForState } from '@/utils/indiaLocations';
 
 const EMPTY: CreateInstitutionInput = {
   name: '',
@@ -78,12 +79,36 @@ export function AddInstitutionModal({
           </div>
           <div className="mb-1 grid grid-cols-2 gap-3">
             <div className="field">
-              <label>City</label>
-              <input required value={form.city} onChange={(e) => update('city', e.target.value)} placeholder="e.g. Guwahati" />
+              <label>State / UT</label>
+              <select
+                required
+                value={form.state}
+                onChange={(e) => setForm((f) => ({ ...f, state: e.target.value, city: '' }))}
+              >
+                <option value="">Select state</option>
+                {INDIA_STATES.map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="field">
-              <label>State</label>
-              <input required value={form.state} onChange={(e) => update('state', e.target.value)} placeholder="e.g. Assam" />
+              <label>City</label>
+              <input
+                required
+                list="institution-city-options"
+                value={form.city}
+                onChange={(e) => update('city', e.target.value)}
+                placeholder={form.state ? 'Select or type a city' : 'Select a state first'}
+                disabled={!form.state}
+                autoComplete="off"
+              />
+              <datalist id="institution-city-options">
+                {citiesForState(form.state).map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </div>
           </div>
           <div className="field">

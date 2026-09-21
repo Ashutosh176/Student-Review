@@ -94,10 +94,15 @@ export async function ratingSummaryFor(institutionId: string) {
 // Backs the search page's filter sidebar with real, present-in-the-data
 // options — never a hardcoded/guessed list that could offer a state or
 // category with zero matching institutions.
-export async function listSearchFilters() {
+export async function listSearchFilters(state?: string) {
   const [states, cities, categories] = await Promise.all([
     prisma.institutionLocation.findMany({ where: { isPrimary: true }, select: { state: true }, distinct: ['state'] }),
-    prisma.institutionLocation.findMany({ where: { isPrimary: true }, select: { city: true }, distinct: ['city'] }),
+    // Cities narrow to the chosen state so the two filters can't contradict each other.
+    prisma.institutionLocation.findMany({
+      where: { isPrimary: true, ...(state ? { state: { equals: state, mode: 'insensitive' as const } } : {}) },
+      select: { city: true },
+      distinct: ['city'],
+    }),
     prisma.institutionCategory.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: 'asc' } }),
   ]);
   return {

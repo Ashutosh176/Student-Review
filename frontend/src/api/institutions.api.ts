@@ -27,8 +27,8 @@ export const institutionsApi = {
     const res = await api.get<ApiSuccess<{ institutionCount: number; verifiedReviewCount: number }>>('/institutions/stats');
     return res.data.data;
   },
-  filters: async () => {
-    const res = await api.get<ApiSuccess<SearchFilterOptions>>('/institutions/filters');
+  filters: async (state?: string) => {
+    const res = await api.get<ApiSuccess<SearchFilterOptions>>('/institutions/filters', { params: state ? { state } : undefined });
     return res.data.data;
   },
   list: async (params: ListInstitutionsParams) => {

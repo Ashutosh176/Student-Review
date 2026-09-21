@@ -1,20 +1,35 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
 import { CollegeCard } from '@/components/CollegeCard';
-import { CardSkeletonGrid, EmptyState } from '@/components/LoadingSkeleton';
+import { CollegeFilters, EMPTY_FILTERS } from '@/components/CollegeFilters';
 import { SearchBar } from '@/components/SearchBar';
+import { CardSkeletonGrid, EmptyState, ErrorState } from '@/components/LoadingSkeleton';
 import { collegesListingSeo } from '@/lib/seo/siteSeo';
 
 export function CollegesListingPage() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<'relevant' | 'rating' | 'reviews' | 'name'>('reviews');
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const pageSize = 16;
 
+  useEffect(() => setPage(1), [sort, filters]);
+
   const query = useQuery({
-    queryKey: ['institutions', 'listing', page, sort],
-    queryFn: () => institutionsApi.list({ page, pageSize, sort }),
+    queryKey: ['institutions', 'listing', page, sort, filters],
+    queryFn: () =>
+      institutionsApi.list({
+        page,
+        pageSize,
+        sort,
+        state: filters.state || undefined,
+        city: filters.city || undefined,
+        course: filters.course || undefined,
+        type: filters.type || undefined,
+        categorySlug: filters.categorySlug || undefined,
+        verifiedOnly: filters.verifiedOnly || undefined,
+      }),
   });
 
   const totalPages = query.data ? Math.max(1, Math.ceil(query.data.total / pageSize)) : 1;
@@ -40,28 +55,36 @@ export function CollegesListingPage() {
 
       <SearchBar variant="page" className="mb-5" />
 
-      {query.isLoading && <CardSkeletonGrid count={12} />}
-      {query.data && query.data.items.length === 0 && <EmptyState title="No colleges yet" />}
-      {query.data && query.data.items.length > 0 && (
-        <>
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-            {query.data.items.map((inst) => (
-              <CollegeCard key={inst.id} institution={inst} />
-            ))}
-          </div>
-          <div className="mt-6 flex items-center justify-center gap-3 text-[12.5px] text-sub">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="disabled:opacity-40">
-              ← Prev
-            </button>
-            <span>
-              Page {page} of {totalPages}
-            </span>
-            <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="disabled:opacity-40">
-              Next →
-            </button>
-          </div>
-        </>
-      )}
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[220px_1fr]">
+        <CollegeFilters value={filters} onChange={setFilters} />
+
+        <div>
+          <p className="mb-3 text-[12.5px] text-sub">{query.data?.total ?? 0} colleges</p>
+          {query.isLoading && <CardSkeletonGrid count={12} />}
+          {query.isError && <ErrorState />}
+          {query.data && query.data.items.length === 0 && <EmptyState title="No colleges match these filters" description="Try clearing some filters." />}
+          {query.data && query.data.items.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+                {query.data.items.map((inst) => (
+                  <CollegeCard key={inst.id} institution={inst} />
+                ))}
+              </div>
+              <div className="mt-6 flex items-center justify-center gap-3 text-[12.5px] text-sub">
+                <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="disabled:opacity-40">
+                  ← Prev
+                </button>
+                <span>
+                  Page {page} of {totalPages}
+                </span>
+                <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="disabled:opacity-40">
+                  Next →
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

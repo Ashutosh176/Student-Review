@@ -11,8 +11,9 @@ export const stats = asyncHandler(async (_req, res) => {
   ok(res, result);
 });
 
-export const filters = asyncHandler(async (_req, res) => {
-  const result = await institutionService.listSearchFilters();
+export const filters = asyncHandler(async (req, res) => {
+  const state = typeof req.query.state === 'string' && req.query.state ? req.query.state.slice(0, 100) : undefined;
+  const result = await institutionService.listSearchFilters(state);
   ok(res, result);
 });
 
