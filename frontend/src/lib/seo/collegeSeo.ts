@@ -17,6 +17,65 @@ function overallRating(inst: InstitutionDetail) {
   return inst.summary.ratings.find((r) => r.category === 'OVERALL');
 }
 
+// Short names people actually type ("IIT Bombay student review"). Exact map
+// for one-offs, plus prefix families that cover the IITs/NITs/IIMs/etc.
+const EXACT_SHORT_NAMES: Record<string, string> = {
+  'indian-institute-of-science': 'IISc',
+  'birla-institute-of-technology-and-science-pilani': 'BITS Pilani',
+  'vellore-institute-of-technology': 'VIT',
+  'jawaharlal-nehru-university': 'JNU',
+  'banaras-hindu-university': 'BHU',
+  'university-of-delhi': 'DU',
+  'aligarh-muslim-university': 'AMU',
+  'delhi-technological-university': 'DTU',
+  'netaji-subhas-university-of-technology': 'NSUT',
+  'lovely-professional-university': 'LPU',
+  'kalinga-institute-of-industrial-technology': 'KIIT',
+  'shri-ram-college-of-commerce': 'SRCC',
+  'lady-shri-ram-college-for-women': 'LSR',
+  'indian-school-of-business': 'ISB',
+  'tata-institute-of-social-sciences': 'TISS',
+  'christian-medical-college-vellore': 'CMC Vellore',
+  'srm-institute-of-science-and-technology': 'SRM',
+  'postgraduate-institute-of-medical-education-and-research-chandigarh': 'PGIMER Chandigarh',
+  'national-institute-of-mental-health-and-neurosciences': 'NIMHANS',
+  'indian-institute-of-foreign-trade': 'IIFT',
+  'management-development-institute-gurgaon': 'MDI Gurgaon',
+};
+const SHORT_NAME_FAMILIES: [RegExp, string][] = [
+  [/^Indian Institute of Technology\s+/, 'IIT '],
+  [/^(?:.*\s)?National Institute of Technology,?\s+/, 'NIT '],
+  [/^Indian Institute of Management\s+/, 'IIM '],
+  [/^Indian Institute of Information Technology,?\s+/, 'IIIT '],
+  [/^International Institute of Information Technology,?\s+/, 'IIIT '],
+  [/^All India Institute of Medical Sciences,?\s+/, 'AIIMS '],
+  [/^National Law University,?\s+/, 'NLU '],
+];
+
+export function collegeShortName(inst: { name: string; slug: string }): string | null {
+  const exact = EXACT_SHORT_NAMES[inst.slug];
+  if (exact) return exact;
+  for (const [re, prefix] of SHORT_NAME_FAMILIES) {
+    if (re.test(inst.name)) return inst.name.replace(re, prefix).trim();
+  }
+  return null;
+}
+
+// "IIT Bombay" when we know it, else the full name — the leading words of the title.
+export function collegeSearchName(inst: { name: string; slug: string }): string {
+  return collegeShortName(inst) ?? inst.name;
+}
+
+function overviewDescription(inst: InstitutionDetail, reviewCount: string, overall: ReturnType<typeof overallRating>): string {
+  const short = collegeShortName(inst);
+  const who = short ? `${inst.name} (${short})` : inst.name;
+  const head =
+    inst.summary.reviewCount > 0
+      ? `${reviewCount} student reviews of ${who}${overall ? ` — rated ${overall.average.toFixed(1)}/5` : ''}.`
+      : `Student reviews, ratings and admission details for ${who}.`;
+  return `${head} Placements, faculty, hostel and campus life from real students.`;
+}
+
 export function collegeSeoMeta(inst: InstitutionDetail, tab: CollegeTab): CollegeSeoMeta {
   const overall = overallRating(inst);
   const reviewCount = inst.summary.reviewCount.toLocaleString('en-IN');
@@ -25,7 +84,7 @@ export function collegeSeoMeta(inst: InstitutionDetail, tab: CollegeTab): Colleg
   switch (tab) {
     case 'reviews':
       return {
-        title: `${inst.name} Reviews — Student Experiences & Ratings — StudentReview`,
+        title: `${collegeSearchName(inst)} Reviews — Student Experiences & Ratings — StudentReview`,
         description: `Read ${reviewCount} verified student reviews of ${inst.name} — placements, faculty, hostel, campus life and admission experiences, straight from real students.`,
         path: `${base}/reviews`,
       };
@@ -64,10 +123,8 @@ export function collegeSeoMeta(inst: InstitutionDetail, tab: CollegeTab): Colleg
     case 'overview':
     default:
       return {
-        title: `${inst.name} — Reviews, Ratings & More — StudentReview`,
-        description:
-          inst.description ??
-          `${reviewCount} student reviews of ${inst.name}${overall ? ` — rated ${overall.average.toFixed(1)}/5` : ''}. Read honest, anonymous feedback on placements, faculty and campus life.`,
+        title: `${collegeSearchName(inst)} Student Reviews, Ratings & Placements — StudentReview`,
+        description: overviewDescription(inst, reviewCount, overall),
         path: base,
       };
   }

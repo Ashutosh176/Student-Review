@@ -9,7 +9,7 @@ import { RatingBar } from '@/components/RatingBar';
 import { CollegeTabs } from '@/components/CollegeTabs';
 import { ErrorState } from '@/components/LoadingSkeleton';
 import { useAuthStore } from '@/store/authStore';
-import { collegeSeoMeta, collegeStructuredData } from '@/lib/seo/collegeSeo';
+import { collegeSearchName, collegeSeoMeta, collegeStructuredData } from '@/lib/seo/collegeSeo';
 import type { InstitutionDetail } from '@/types';
 
 export function useCollegeContext() {
@@ -70,7 +70,7 @@ export function CollegeLayout() {
         <title>{seo.title}</title>
         <meta name="description" content={seo.description} />
         <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:title" content={`${inst.name} — Student Reviews & Ratings`} />
+        <meta property="og:title" content={`${collegeSearchName(inst)} — Student Reviews & Ratings`} />
         <meta property="og:description" content={seo.description} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />

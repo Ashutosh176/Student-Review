@@ -1,5 +1,6 @@
 import type { InstitutionDetail, PublicReview } from '../../types';
 import { escapeHtml } from './renderBotHtml';
+import { collegeShortName } from './collegeSeo';
 
 // Plain semantic HTML for the #root shell served to non-JS crawlers (see
 // middleware.ts) — real content, not just meta tags, so "<college> reviews"
@@ -23,7 +24,7 @@ export function collegeContentHtml(inst: InstitutionDetail, reviews: PublicRevie
     .join('\n');
 
   return `
-    <h1>${escapeHtml(inst.name)} — Student Reviews & Ratings</h1>
+    <h1>${escapeHtml(inst.name)}${collegeShortName(inst) ? ` (${escapeHtml(collegeShortName(inst) ?? '')})` : ''} — Student Reviews & Ratings</h1>
     ${location ? `<p>${escapeHtml(location.city)}, ${escapeHtml(location.state)}</p>` : ''}
     ${inst.description ? `<p>${escapeHtml(inst.description)}</p>` : ''}
     <p>${overall ? `Rated ${overall.average.toFixed(1)}/5` : 'Not yet rated'} based on ${inst.summary.reviewCount.toLocaleString('en-IN')} student reviews (${inst.summary.verifiedCount.toLocaleString('en-IN')} verified).</p>
