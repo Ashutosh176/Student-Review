@@ -42,17 +42,30 @@ async function globalMeanForCategory(category: RatingCategory): Promise<number> 
   return agg._avg.value ?? 3.5;
 }
 
-async function suspiciousPenaltyFor(institutionId: string): Promise<number> {
+// Batched form of "does this institution look like it's gaming reviews" —
+// one pair of queries covering every institution instead of a pair per
+// institution per metric. The old per-institution version, called from
+// inside scoreByCategory's loop for each of the 6 rating-based metrics, made
+// a full recompute do up to (institutions × 6 × 2) sequential round trips —
+// on a cross-region DB that's what made "Recompute rankings" in the admin
+// panel hang or time out.
+async function computeSuspiciousPenalties(): Promise<Map<string, number>> {
   const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-  const [total, flaggedOrRejected] = await Promise.all([
-    prisma.review.count({ where: { institutionId, createdAt: { gte: since } } }),
-    prisma.review.count({
-      where: { institutionId, createdAt: { gte: since }, status: { in: ['FLAGGED', 'REJECTED', 'REMOVED'] } },
+  const [totals, flaggedOrRejected] = await Promise.all([
+    prisma.review.groupBy({ by: ['institutionId'], where: { createdAt: { gte: since } }, _count: { _all: true } }),
+    prisma.review.groupBy({
+      by: ['institutionId'],
+      where: { createdAt: { gte: since }, status: { in: ['FLAGGED', 'REJECTED', 'REMOVED'] } },
+      _count: { _all: true },
     }),
   ]);
-  if (total === 0) return 1;
-  const ratio = flaggedOrRejected / total;
-  return ratio > SUSPICIOUS_FLAG_RATIO_THRESHOLD ? SUSPICIOUS_PENALTY : 1;
+  const flaggedMap = new Map(flaggedOrRejected.map((f) => [f.institutionId, f._count._all]));
+  const penalties = new Map<string, number>();
+  for (const t of totals) {
+    const ratio = (flaggedMap.get(t.institutionId) ?? 0) / t._count._all;
+    penalties.set(t.institutionId, ratio > SUSPICIOUS_FLAG_RATIO_THRESHOLD ? SUSPICIOUS_PENALTY : 1);
+  }
+  return penalties;
 }
 
 interface InstitutionScore {
@@ -61,7 +74,11 @@ interface InstitutionScore {
   sampleSize: number;
 }
 
-async function scoreByCategory(category: RatingCategory, minReviewsForRanking: number): Promise<InstitutionScore[]> {
+async function scoreByCategory(
+  category: RatingCategory,
+  minReviewsForRanking: number,
+  penalties: Map<string, number>,
+): Promise<InstitutionScore[]> {
   const globalMean = await globalMeanForCategory(category);
 
   const ratings = await prisma.reviewRating.findMany({
@@ -88,7 +105,7 @@ async function scoreByCategory(category: RatingCategory, minReviewsForRanking: n
     const rawAvg = bucket.weightSum > 0 ? bucket.weightedSum / bucket.weightSum : 0;
     const v = bucket.count;
     const bayesian = bayesianAverage(rawAvg, v, globalMean);
-    const penalty = await suspiciousPenaltyFor(institutionId);
+    const penalty = penalties.get(institutionId) ?? 1;
     results.push({ institutionId, score: Math.round(bayesian * penalty * 20 * 10) / 10, sampleSize: v });
   }
   return results;
@@ -135,16 +152,24 @@ async function scoreTrending(): Promise<InstitutionScore[]> {
     });
 }
 
-export async function computeMetricScores(metric: RankingMetric, minReviewsForRanking = 5): Promise<InstitutionScore[]> {
+export async function computeMetricScores(
+  metric: RankingMetric,
+  minReviewsForRanking = 5,
+  penalties?: Map<string, number>,
+): Promise<InstitutionScore[]> {
   const category = RATING_CATEGORY_METRICS[metric];
-  if (category) return scoreByCategory(category, minReviewsForRanking);
+  if (category) return scoreByCategory(category, minReviewsForRanking, penalties ?? (await computeSuspiciousPenalties()));
   if (metric === 'MOST_REVIEWED') return scoreMostReviewed(minReviewsForRanking);
   if (metric === 'TRENDING') return scoreTrending();
   return [];
 }
 
-export async function recomputeRankingMetric(metric: RankingMetric, minReviewsForRanking = 5): Promise<number> {
-  const scores = await computeMetricScores(metric, minReviewsForRanking);
+export async function recomputeRankingMetric(
+  metric: RankingMetric,
+  minReviewsForRanking = 5,
+  penalties?: Map<string, number>,
+): Promise<number> {
+  const scores = await computeMetricScores(metric, minReviewsForRanking, penalties);
   scores.sort((a, b) => b.score - a.score);
 
   await prisma.$transaction(
@@ -171,8 +196,9 @@ export async function recomputeAllRankings(): Promise<Record<string, number>> {
     'MOST_REVIEWED',
     'TRENDING',
   ];
+  const penalties = await computeSuspiciousPenalties();
   const out: Record<string, number> = {};
-  for (const m of metrics) out[m] = await recomputeRankingMetric(m, settings.minReviewsForRanking);
+  for (const m of metrics) out[m] = await recomputeRankingMetric(m, settings.minReviewsForRanking, penalties);
   return out;
 }
 

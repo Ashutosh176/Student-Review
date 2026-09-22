@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { Helmet } from 'react-helmet-async';
 import { rankingsApi, type RankingMetric } from '@/api/rankings.api';
-import { EmptyState, ErrorState } from '@/components/LoadingSkeleton';
+import { apiErrorMessage } from '@/api/client';
+import { CardSkeletonGrid, EmptyState, ErrorState } from '@/components/LoadingSkeleton';
 import { rankingSeo } from '@/lib/seo/siteSeo';
 
 const TABS: { slug: string; metric: RankingMetric; label: string }[] = [
@@ -53,7 +54,8 @@ export function RankingsPage() {
         ))}
       </div>
 
-      {query.isError && <ErrorState />}
+      {query.isLoading && <CardSkeletonGrid count={8} />}
+      {query.isError && <ErrorState message={apiErrorMessage(query.error)} onRetry={() => query.refetch()} />}
       {query.data && query.data.length === 0 && (
         <EmptyState title="Not enough data yet" description="This ranking needs more reviews before institutions become eligible." />
       )}
