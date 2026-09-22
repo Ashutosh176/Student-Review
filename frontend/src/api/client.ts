@@ -4,6 +4,11 @@ import { useAuthStore } from '@/store/authStore';
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
   withCredentials: true, // send the httpOnly refresh cookie
+  // The backend runs on Render's free tier and spins down after idle
+  // periods — a cold start can take 30-50s to respond. 25s gives it a fair
+  // shot per attempt while still surfacing a retryable error instead of
+  // hanging forever if the network genuinely drops.
+  timeout: 25_000,
 });
 
 api.interceptors.request.use((config) => {

@@ -63,32 +63,78 @@ export async function submitInstitution(
 }
 
 export async function ratingSummaryFor(institutionId: string) {
+  const map = await ratingSummariesFor([institutionId]);
+  return map.get(institutionId)!;
+}
+
+// Batched form of ratingSummaryFor — one pair of queries covering every
+// institution in `institutionIds` instead of a pair per institution. Listing
+// pages used to call ratingSummaryFor per row (an N+1: up to pageSize * ~4
+// round trips), which is what made /colleges slow to load and, combined with
+// a cold Render instance, made it look like it wasn't loading at all.
+export async function ratingSummariesFor(institutionIds: string[]) {
+  type Summary = { reviewCount: number; verifiedCount: number; ratings: { category: RatingCategory; average: number; count: number }[] };
+  const result = new Map<string, Summary>();
+  const emptySummary = (): Summary => ({
+    reviewCount: 0,
+    verifiedCount: 0,
+    ratings: ALL_CATEGORIES.map((category) => ({ category, average: 0, count: 0 })),
+  });
+  for (const id of institutionIds) result.set(id, emptySummary());
+  if (institutionIds.length === 0) return result;
+
   // type: 'EXPERIENCE' — admission-process reviews carry no ratings (they
   // describe an interview, not placements/faculty/hostel) and shouldn't
   // count toward "reviewCount" here either, which means "reviews about
   // actually attending" everywhere else it's shown.
-  const grouped = await prisma.reviewRating.groupBy({
-    by: ['category'],
-    where: { review: { institutionId, ...publicReviewWhere(), type: 'EXPERIENCE' } },
-    _avg: { value: true },
-    _count: { _all: true },
+  const reviews = await prisma.review.findMany({
+    where: { institutionId: { in: institutionIds }, ...publicReviewWhere(), type: 'EXPERIENCE' },
+    select: { id: true, institutionId: true, verifiedStudent: true },
   });
-  const map = new Map(grouped.map((g) => [g.category, { average: g._avg.value ?? 0, count: g._count._all }]));
 
-  const [reviewCount, verifiedCount] = await Promise.all([
-    prisma.review.count({ where: { institutionId, ...publicReviewWhere(), type: 'EXPERIENCE' } }),
-    prisma.review.count({ where: { institutionId, ...publicReviewWhere(), verifiedStudent: true, type: 'EXPERIENCE' } }),
-  ]);
+  const reviewCounts = new Map<string, { total: number; verified: number }>();
+  for (const r of reviews) {
+    const c = reviewCounts.get(r.institutionId) ?? { total: 0, verified: 0 };
+    c.total += 1;
+    if (r.verifiedStudent) c.verified += 1;
+    reviewCounts.set(r.institutionId, c);
+  }
 
-  return {
-    reviewCount,
-    verifiedCount,
-    ratings: ALL_CATEGORIES.map((category) => ({
-      category,
-      average: Math.round((map.get(category)?.average ?? 0) * 10) / 10,
-      count: map.get(category)?.count ?? 0,
-    })),
-  };
+  const reviewIdToInstitutionId = new Map(reviews.map((r) => [r.id, r.institutionId]));
+  const ratings =
+    reviews.length > 0
+      ? await prisma.reviewRating.findMany({
+          where: { reviewId: { in: reviews.map((r) => r.id) } },
+          select: { reviewId: true, category: true, value: true },
+        })
+      : [];
+
+  const ratingSums = new Map<string, Map<RatingCategory, { sum: number; count: number }>>();
+  for (const rating of ratings) {
+    const institutionId = reviewIdToInstitutionId.get(rating.reviewId);
+    if (!institutionId) continue;
+    const byCategory = ratingSums.get(institutionId) ?? new Map<RatingCategory, { sum: number; count: number }>();
+    const agg = byCategory.get(rating.category) ?? { sum: 0, count: 0 };
+    agg.sum += rating.value;
+    agg.count += 1;
+    byCategory.set(rating.category, agg);
+    ratingSums.set(institutionId, byCategory);
+  }
+
+  for (const id of institutionIds) {
+    const counts = reviewCounts.get(id) ?? { total: 0, verified: 0 };
+    const byCategory = ratingSums.get(id);
+    result.set(id, {
+      reviewCount: counts.total,
+      verifiedCount: counts.verified,
+      ratings: ALL_CATEGORIES.map((category) => {
+        const agg = byCategory?.get(category);
+        return { category, average: agg ? Math.round((agg.sum / agg.count) * 10) / 10 : 0, count: agg?.count ?? 0 };
+      }),
+    });
+  }
+
+  return result;
 }
 
 // Backs the search page's filter sidebar with real, present-in-the-data
@@ -165,9 +211,8 @@ export async function listInstitutions(params: {
     }),
   ]);
 
-  const withSummaries = await Promise.all(
-    institutions.map(async (inst) => ({ ...serializePublicInstitution(inst), summary: await ratingSummaryFor(inst.id) })),
-  );
+  const summaries = await ratingSummariesFor(institutions.map((inst) => inst.id));
+  const withSummaries = institutions.map((inst) => ({ ...serializePublicInstitution(inst), summary: summaries.get(inst.id)! }));
 
   if (params.sort === 'rating') {
     withSummaries.sort((a, b) => {
@@ -221,9 +266,8 @@ export async function getCompareData(slugs: string[]) {
   });
   if (institutions.length < 2) throw AppError.badRequest('At least 2 valid institutions are required to compare');
 
-  const withSummaries = await Promise.all(
-    institutions.map(async (inst) => ({ ...serializePublicInstitution(inst), summary: await ratingSummaryFor(inst.id) })),
-  );
+  const summaries = await ratingSummariesFor(institutions.map((inst) => inst.id));
+  const withSummaries = institutions.map((inst) => ({ ...serializePublicInstitution(inst), summary: summaries.get(inst.id)! }));
   // Preserve requested order for a stable shareable comparison URL.
   return slugs
     .map((slug) => withSummaries.find((i) => i.slug === slug))

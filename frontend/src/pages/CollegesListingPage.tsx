@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
+import { apiErrorMessage } from '@/api/client';
 import { CollegeCard } from '@/components/CollegeCard';
 import { CollegeFilters, EMPTY_FILTERS } from '@/components/CollegeFilters';
 import { SearchBar } from '@/components/SearchBar';
@@ -12,6 +13,7 @@ export function CollegesListingPage() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<'relevant' | 'rating' | 'reviews' | 'name'>('reviews');
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [slowLoad, setSlowLoad] = useState(false);
   const pageSize = 16;
 
   useEffect(() => setPage(1), [sort, filters]);
@@ -33,6 +35,18 @@ export function CollegesListingPage() {
   });
 
   const totalPages = query.data ? Math.max(1, Math.ceil(query.data.total / pageSize)) : 1;
+
+  // The backend can be cold (Render free tier spins down when idle) and take
+  // a while to answer the very first request — after a few seconds, say so
+  // instead of leaving a bare skeleton that looks stuck or broken.
+  useEffect(() => {
+    if (!query.isLoading) {
+      setSlowLoad(false);
+      return;
+    }
+    const timer = setTimeout(() => setSlowLoad(true), 4000);
+    return () => clearTimeout(timer);
+  }, [query.isLoading]);
 
   return (
     <div className="px-4 py-6 sm:px-7">
@@ -60,8 +74,17 @@ export function CollegesListingPage() {
 
         <div>
           <p className="mb-3 text-[12.5px] text-sub">{query.data?.total ?? 0} colleges</p>
-          {query.isLoading && <CardSkeletonGrid count={12} />}
-          {query.isError && <ErrorState />}
+          {query.isLoading && (
+            <>
+              {slowLoad && (
+                <p className="mb-3 text-[12.5px] text-sub">
+                  Still loading — the server may be waking up after being idle, this can take up to a minute.
+                </p>
+              )}
+              <CardSkeletonGrid count={12} />
+            </>
+          )}
+          {query.isError && <ErrorState message={apiErrorMessage(query.error)} onRetry={() => query.refetch()} />}
           {query.data && query.data.items.length === 0 && <EmptyState title="No colleges match these filters" description="Try clearing some filters." />}
           {query.data && query.data.items.length > 0 && (
             <>

@@ -44,11 +44,25 @@ export function EmptyState({
   );
 }
 
-export function ErrorState({ message = 'Something went wrong. Please try again.' }: { message?: string }) {
+export function ErrorState({
+  message = 'Something went wrong. Please try again.',
+  onRetry,
+}: {
+  message?: string;
+  onRetry?: () => void;
+}) {
   return (
     <div className="card flex flex-col items-center border-danger/30 bg-danger-bg py-10 text-center text-danger">
       <div className="mb-2 text-2xl">⚠️</div>
       <p className="text-sm font-medium">{message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="mt-3 rounded-md border border-danger/30 bg-white px-3 py-1.5 text-[12.5px] font-medium text-danger hover:bg-danger-bg"
+        >
+          Try again
+        </button>
+      )}
     </div>
   );
 }

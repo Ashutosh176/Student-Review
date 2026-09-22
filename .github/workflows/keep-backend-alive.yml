@@ -1,0 +1,19 @@
+name: Keep backend alive
+
+# The Render backend runs on the free plan, which spins the instance down
+# after ~15 minutes of no traffic. The next visitor then eats a 30-60s cold
+# start (and can hit a 502 while it's waking up), which is what made the
+# college list on the site look slow or broken on a first visit. Pinging
+# /health regularly keeps the instance warm so real visitors never pay that
+# cost.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /health
+        run: curl -fsS --max-time 60 https://api.studentreview.in/health
