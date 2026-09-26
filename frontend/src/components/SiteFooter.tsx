@@ -20,6 +20,9 @@ export function SiteFooter() {
           <Link to="/faq" className="mb-1.5 block text-[#4B4F5E]">
             FAQ
           </Link>
+          <Link to="/guides" className="mb-1.5 block text-[#4B4F5E]">
+            Guides
+          </Link>
           <Link to="/pricing" className="mb-1.5 block text-[#4B4F5E]">
             Pricing
           </Link>

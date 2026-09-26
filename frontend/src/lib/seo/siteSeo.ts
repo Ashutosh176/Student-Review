@@ -52,3 +52,39 @@ export function rankingSeo(label: string) {
     description: `${label} colleges in India, ranked from verified student reviews. See which institutions students rate highest for ${label.toLowerCase()}.`,
   };
 }
+
+// ---- guides (mirrored in middleware.ts — keep the two in sync) ----
+
+export const guidesIndexSeo = {
+  title: 'College Admission Guides for Indian Students — StudentReview',
+  description:
+    'Practical guides to choosing a college in India: approval checks, JoSAA counselling, IIT vs NIT vs IIIT, and how to spot fake college reviews.',
+};
+
+export function guideSeo(guide: { title: string; description: string }) {
+  return { title: `${guide.title} — StudentReview`, description: guide.description };
+}
+
+export function guideStructuredData(guide: { slug: string; title: string; description: string; updatedAt: string }, origin: string) {
+  const url = `${origin}/guides/${guide.slug}`;
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: guide.title,
+      description: guide.description,
+      dateModified: guide.updatedAt,
+      mainEntityOfPage: url,
+      author: { '@type': 'Organization', name: 'StudentReview', url: origin },
+      publisher: { '@type': 'Organization', name: 'StudentReview', logo: { '@type': 'ImageObject', url: `${origin}/logo.svg` } },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Guides', item: `${origin}/guides` },
+        { '@type': 'ListItem', position: 2, name: guide.title, item: url },
+      ],
+    },
+  ];
+}

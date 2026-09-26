@@ -64,6 +64,8 @@ import { AdminJobsPage } from '@/pages/admin/AdminJobsPage';
 import { AdminPaymentsPage } from '@/pages/admin/AdminPaymentsPage';
 import { AdminAnalyticsPage } from '@/pages/admin/AdminAnalyticsPage';
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage';
+import { GuidesIndexPage } from '@/pages/guides/GuidesIndexPage';
+import { GuidePage } from '@/pages/guides/GuidePage';
 import { AdminReviewCoveragePage } from '@/pages/admin/AdminReviewCoveragePage';
 
 import { AboutPage } from '@/pages/legal/AboutPage';
@@ -107,6 +109,8 @@ export default function App() {
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/rankings/:metric" element={<RankingsPage />} />
+          <Route path="/guides" element={<GuidesIndexPage />} />
+          <Route path="/guides/:slug" element={<GuidePage />} />
 
           <Route path="/college/:slug" element={<CollegeLayout />}>
             <Route index element={<CollegeOverviewPage />} />

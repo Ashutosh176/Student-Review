@@ -23,6 +23,7 @@ import contactRoutes from './routes/contact.routes.js';
 import sitemapRoutes from './routes/sitemap.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import faqRoutes from './routes/faq.routes.js';
+import guideRoutes from './routes/guide.routes.js';
 import verificationRoutes from './routes/verification.routes.js';
 
 export function createApp() {
@@ -94,6 +95,7 @@ export function createApp() {
   app.use('/api/contact', contactRoutes);
   app.use('/api/webhooks', webhookRoutes);
   app.use('/api/faqs', faqRoutes);
+  app.use('/api/guides', guideRoutes);
   app.use('/api/verifications', verificationRoutes);
 
   app.use(notFoundHandler);

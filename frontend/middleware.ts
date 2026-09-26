@@ -30,7 +30,7 @@ import type { InstitutionDetail, PublicReview } from './src/types';
 // change the SEO copy in src/lib/seo/*, mirror the change here too.
 
 export const config = {
-  matcher: ['/', '/colleges', '/rankings', '/rankings/:metric', '/college/:slug', '/college/:slug/:tab'],
+  matcher: ['/', '/colleges', '/rankings', '/rankings/:metric', '/college/:slug', '/college/:slug/:tab', '/guides', '/guides/:slug'],
 };
 
 const API_BASE = process.env.VITE_API_BASE_URL?.startsWith('http')
@@ -240,6 +240,16 @@ function collegeStructuredData(inst: InstitutionDetail, origin: string) {
 
 // ---- src/lib/seo/collegeContent.ts (inlined) ----
 
+// Labelled exactly as on the page: team-written, never presented as a review.
+function editorialOverviewHtml(inst: InstitutionDetail): string {
+  if (!inst.editorialOverview) return '';
+  const paragraphs = inst.editorialOverview
+    .split(/\n{2,}/)
+    .map((p) => `<p>${escapeHtml(p)}</p>`)
+    .join('');
+  return `<h2>Editor's overview</h2>${paragraphs}<p><em>Written by the StudentReview team from publicly available information. Not a student review.</em></p>`;
+}
+
 function collegeContentHtml(inst: InstitutionDetail, reviews: PublicReview[]): string {
   const overall = overallRating(inst);
   const location = inst.locations[0];
@@ -260,6 +270,7 @@ function collegeContentHtml(inst: InstitutionDetail, reviews: PublicReview[]): s
     <h1>${escapeHtml(inst.name)}${collegeShortName(inst) ? ` (${escapeHtml(collegeShortName(inst) ?? '')})` : ''} — Student Reviews & Ratings</h1>
     ${location ? `<p>${escapeHtml(location.city)}, ${escapeHtml(location.state)}</p>` : ''}
     ${inst.description ? `<p>${escapeHtml(inst.description)}</p>` : ''}
+    ${editorialOverviewHtml(inst)}
     <p>${overall ? `Rated ${overall.average.toFixed(1)}/5` : 'Not yet rated'} based on ${inst.summary.reviewCount.toLocaleString('en-IN')} student reviews (${inst.summary.verifiedCount.toLocaleString('en-IN')} verified).</p>
     <h2>Student Reviews</h2>
     ${reviewsHtml || '<p>No reviews yet — be the first to share your experience.</p>'}
@@ -318,6 +329,78 @@ function rankingSeo(label: string) {
     title: `${label} Colleges in India — Rankings & Reviews — StudentReview`,
     description: `${label} colleges in India, ranked from verified student reviews. See which institutions students rate highest for ${label.toLowerCase()}.`,
   };
+}
+
+// ---- guides: src/lib/seo/siteSeo.ts guide helpers (inlined) ----
+
+type GuideBlock = { type: 'h2' | 'p'; text: string } | { type: 'ul' | 'ol'; items: string[] };
+interface GuideSummary {
+  slug: string;
+  title: string;
+  description: string;
+  updatedAt: string;
+}
+interface Guide extends GuideSummary {
+  blocks: GuideBlock[];
+  relatedColleges: { slug: string; name: string; city: string | null }[];
+}
+
+const guidesIndexSeo = {
+  title: 'College Admission Guides for Indian Students — StudentReview',
+  description:
+    'Practical guides to choosing a college in India: approval checks, JoSAA counselling, IIT vs NIT vs IIIT, and how to spot fake college reviews.',
+};
+
+function guideStructuredData(guide: GuideSummary, origin: string) {
+  const url = `${origin}/guides/${guide.slug}`;
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: guide.title,
+      description: guide.description,
+      dateModified: guide.updatedAt,
+      mainEntityOfPage: url,
+      author: { '@type': 'Organization', name: 'StudentReview', url: origin },
+      publisher: { '@type': 'Organization', name: 'StudentReview', logo: { '@type': 'ImageObject', url: `${origin}/logo.svg` } },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Guides', item: `${origin}/guides` },
+        { '@type': 'ListItem', position: 2, name: guide.title, item: url },
+      ],
+    },
+  ];
+}
+
+function guideBlockHtml(block: GuideBlock): string {
+  if ('text' in block) return block.type === 'h2' ? `<h2>${escapeHtml(block.text)}</h2>` : `<p>${escapeHtml(block.text)}</p>`;
+  const tag = block.type;
+  return `<${tag}>${block.items.map((i) => `<li>${escapeHtml(i)}</li>`).join('')}</${tag}>`;
+}
+
+function guideContentHtml(guide: Guide): string {
+  const related = guide.relatedColleges.length
+    ? `<h2>Read what students say</h2><ul>${guide.relatedColleges
+        .map((c) => `<li><a href="/college/${escapeHtml(c.slug)}">${escapeHtml(c.name)}</a></li>`)
+        .join('')}</ul>`
+    : '';
+  return `
+    <p><a href="/guides">Guides</a></p>
+    <h1>${escapeHtml(guide.title)}</h1>
+    <p>By the StudentReview team. Updated ${escapeHtml(guide.updatedAt)}.</p>
+    ${guide.blocks.map(guideBlockHtml).join('\n')}
+    ${related}
+  `;
+}
+
+function guidesIndexContentHtml(guides: GuideSummary[]): string {
+  return `
+    <h1>Guides</h1>
+    <ul>${guides.map((g) => `<li><a href="/guides/${escapeHtml(g.slug)}">${escapeHtml(g.title)}</a> — ${escapeHtml(g.description)}</li>`).join('')}</ul>
+  `;
 }
 
 // ---- route handlers ----
@@ -395,6 +478,32 @@ async function handleRankings(request: Request, origin: string, metricSlug?: str
   return botResponse(html);
 }
 
+async function handleGuidesIndex(request: Request, origin: string): Promise<Response | undefined> {
+  const res = await fetch(`${API_BASE}/guides`);
+  if (!res.ok) return undefined;
+  const guides = ((await res.json()) as { data: GuideSummary[] }).data;
+  const html = injectHead(await fetchIndexHtml(request), {
+    title: guidesIndexSeo.title,
+    description: guidesIndexSeo.description,
+    canonical: `${origin}/guides`,
+  });
+  return botResponse(injectRootContent(html, guidesIndexContentHtml(guides)));
+}
+
+async function handleGuide(request: Request, origin: string, slug: string): Promise<Response | undefined> {
+  const res = await fetch(`${API_BASE}/guides/${encodeURIComponent(slug)}`);
+  if (!res.ok) return undefined; // unknown guide — let the SPA render its not-found state
+  const guide = ((await res.json()) as { data: Guide }).data;
+  const html = injectHead(await fetchIndexHtml(request), {
+    title: `${guide.title} — StudentReview`,
+    description: guide.description,
+    canonical: `${origin}/guides/${guide.slug}`,
+    ogTitle: guide.title,
+    structuredData: guideStructuredData(guide, origin),
+  });
+  return botResponse(injectRootContent(html, guideContentHtml(guide)));
+}
+
 export default async function middleware(request: Request) {
   const ua = request.headers.get('user-agent') ?? '';
   if (!isbot(ua)) return next();
@@ -413,6 +522,10 @@ export default async function middleware(request: Request) {
       response = await handleRankings(request, origin, parts[1]);
     } else if (parts[0] === 'college' && parts.length <= 3) {
       response = await handleCollege(request, origin, parts[1], parts[2]);
+    } else if (parts[0] === 'guides' && parts.length === 1) {
+      response = await handleGuidesIndex(request, origin);
+    } else if (parts[0] === 'guides' && parts.length === 2) {
+      response = await handleGuide(request, origin, parts[1]);
     }
     return response ?? next();
   } catch {

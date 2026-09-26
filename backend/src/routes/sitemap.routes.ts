@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { env } from '../config/env.js';
 import { prisma } from '../config/prisma.js';
+import { GUIDES } from '../data/guides.js';
 
 // Dynamic sitemap (spec §29). Served at the API root so it can be proxied to
 // `/sitemap.xml` on the public domain in production (see README deployment
@@ -10,9 +11,11 @@ const router = Router();
 
 router.get('/sitemap.xml', async (req, res, next) => {
   try {
-    const [institutions] = await Promise.all([prisma.institution.findMany({ select: { slug: true, updatedAt: true } })]);
+    // Only publicly visible colleges: pending/rejected ones 404 on the site,
+    // and 404s listed in a sitemap count against it in Search Console.
+    const institutions = await prisma.institution.findMany({ where: { status: 'APPROVED' }, select: { slug: true, updatedAt: true } });
 
-    const staticPaths = ['/', '/search', '/colleges', '/compare', '/rankings', '/about', '/contact', '/privacy', '/terms', '/community-guidelines'];
+    const staticPaths = ['/', '/search', '/colleges', '/compare', '/rankings', '/guides', '/about', '/contact', '/privacy', '/terms', '/community-guidelines', '/trust'];
 
     // Each college's sub-tabs are distinct, indexable content (reviews,
     // placements, admissions) with their own title/description — not just
@@ -22,6 +25,7 @@ router.get('/sitemap.xml', async (req, res, next) => {
     const origin = env.clientOrigin; // never derive from the Host header
     const urls = [
       ...staticPaths.map((p) => `<url><loc>${origin}${p}</loc></url>`),
+      ...GUIDES.map((g) => `<url><loc>${origin}/guides/${g.slug}</loc><lastmod>${g.updatedAt}</lastmod></url>`),
       ...institutions.flatMap((i) =>
         collegeSubPaths.map((p) => `<url><loc>${origin}/college/${i.slug}${p}</loc><lastmod>${i.updatedAt.toISOString()}</lastmod></url>`),
       ),
