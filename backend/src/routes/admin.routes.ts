@@ -141,6 +141,7 @@ router.post(
 );
 
 router.post('/rankings/recompute', authorize('ADMIN'), adminController.recomputeRankings);
+router.get('/review-coverage', adminController.reviewCoverage);
 
 router.get('/payments', validate({ query: paginationQuerySchema }), adminController.listPayments);
 

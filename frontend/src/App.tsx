@@ -64,6 +64,7 @@ import { AdminJobsPage } from '@/pages/admin/AdminJobsPage';
 import { AdminPaymentsPage } from '@/pages/admin/AdminPaymentsPage';
 import { AdminAnalyticsPage } from '@/pages/admin/AdminAnalyticsPage';
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage';
+import { AdminReviewCoveragePage } from '@/pages/admin/AdminReviewCoveragePage';
 
 import { AboutPage } from '@/pages/legal/AboutPage';
 import { FaqPage } from '@/pages/FaqPage';
@@ -177,6 +178,7 @@ export default function App() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/colleges" element={<AdminCollegesPage />} />
             <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+            <Route path="/admin/review-coverage" element={<AdminReviewCoveragePage />} />
             <Route path="/admin/reports" element={<AdminReportsPage />} />
             <Route path="/admin/organizations" element={<AdminOrganizationsPage />} />
             <Route path="/admin/verifications" element={<AdminVerificationsPage />} />

@@ -123,6 +123,11 @@ export function CollegeReviewsPage() {
               ? 'Share what your interview or application process was like — admitted, waitlisted, or rejected, it all helps future applicants.'
               : 'Be the first to share your honest experience at this college.'
           }
+          action={
+            <button onClick={() => navigate(`/write-review?college=${inst.slug}&type=${kind}`)} className="btn btn-primary btn-sm" type="button">
+              {kind === 'ADMISSION_PROCESS' ? 'Share your admission experience' : 'Write the first review'}
+            </button>
+          }
         />
       )}
       {query.data && query.data.items.length > 0 && (

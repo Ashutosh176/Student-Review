@@ -11,6 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
+    "seed:overviews": "tsx prisma/seed-editorial-overviews.ts",
     "prisma:studio": "prisma studio",
     "jobs:rankings": "tsx src/jobs/recomputeRankings.job.ts",
     "jobs:ai-summaries": "tsx src/jobs/generateCollegeSummaries.job.ts",

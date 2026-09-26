@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, Outlet, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
@@ -8,6 +9,7 @@ import { Badge } from '@/components/Badge';
 import { RatingBar } from '@/components/RatingBar';
 import { CollegeTabs } from '@/components/CollegeTabs';
 import { ErrorState } from '@/components/LoadingSkeleton';
+import { ShareCollegeModal } from '@/components/ShareCollegeModal';
 import { useAuthStore } from '@/store/authStore';
 import { collegeSearchName, collegeSeoMeta, collegeStructuredData } from '@/lib/seo/collegeSeo';
 import type { InstitutionDetail } from '@/types';
@@ -40,10 +42,7 @@ export function CollegeLayout() {
   const isVerifiedHere = verificationsQuery.data?.some((v) => v.institutionId === query.data?.id && v.status === 'VERIFIED') ?? false;
   const writeReviewLabel = !isLoggedIn ? 'Sign in to write a review' : isVerifiedHere ? 'Write a review' : 'Verify your student identity to write a review';
 
-  async function share() {
-    await navigator.clipboard.writeText(window.location.origin + `/college/${slug}`);
-    alert('Link copied to clipboard');
-  }
+  const [shareOpen, setShareOpen] = useState(false);
 
   if (query.isLoading) {
     return <div className="animate-pulse px-4 py-6 sm:px-7">Loading college profile…</div>;
@@ -117,7 +116,7 @@ export function CollegeLayout() {
             >
               {isSaved ? '★ Saved' : '☆ Save'}
             </button>
-            <button type="button" onClick={share} className="btn btn-ghost btn-sm">
+            <button type="button" onClick={() => setShareOpen(true)} className="btn btn-ghost btn-sm">
               Share
             </button>
           </div>
@@ -143,6 +142,8 @@ export function CollegeLayout() {
             ))}
         </div>
       </div>
+
+      <ShareCollegeModal open={shareOpen} onClose={() => setShareOpen(false)} slug={inst.slug} name={inst.name} />
 
       <CollegeTabs slug={inst.slug} />
 

@@ -177,6 +177,7 @@ export interface AdminInstitutionRow {
   website?: string | null;
   establishedYear?: number | null;
   admissionProcess?: string | null;
+  editorialOverview?: string | null;
   categoryId?: string | null;
 }
 
@@ -189,6 +190,7 @@ export interface CreateInstitutionInput {
   website?: string;
   description?: string;
   admissionProcess?: string;
+  editorialOverview?: string;
   categoryId?: string;
 }
 
@@ -324,6 +326,8 @@ export const adminApi = {
     unwrap<AdminAdmissionCutoffRow>(api.post(`/admin/institutions/${institutionId}/admission-cutoffs`, input)),
   deleteAdmissionCutoff: (id: string) => unwrap(api.delete(`/admin/admission-cutoffs/${id}`)),
 
+  reviewCoverage: (q?: string) => unwrap<ReviewCoverage>(api.get('/admin/review-coverage', { params: q ? { q } : undefined })),
+
   regenerateAiSummary: (institutionId: string) =>
     unwrap<{ aiSummary: string }>(api.post(`/admin/institutions/${institutionId}/ai-summary/regenerate`)),
 
@@ -375,3 +379,19 @@ export const adminApi = {
   platformSettings: () => unwrap<PlatformSettings>(api.get('/admin/settings')),
   updatePlatformSettings: (input: Partial<PlatformSettings>) => unwrap<PlatformSettings>(api.patch('/admin/settings', input)),
 };
+
+export interface ReviewCoverageRow {
+  id: string;
+  slug: string;
+  name: string;
+  location: { city: string; state: string } | null;
+  reviewCount: number;
+  verifiedCount: number;
+  lastReviewAt: string | null;
+}
+
+export interface ReviewCoverage {
+  target: number;
+  totals: { institutions: number; atTarget: number; withNoReviews: number };
+  items: ReviewCoverageRow[];
+}

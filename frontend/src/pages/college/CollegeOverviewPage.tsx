@@ -29,10 +29,38 @@ export function CollegeOverviewPage() {
             </p>
           </div>
         )}
+        {inst.summary.reviewCount === 0 && (
+          <div className="card mb-3 border-brand/30 bg-brand-light">
+            <h4 className="mb-1 text-sm">Be the first to review {inst.name}</h4>
+            <p className="mb-3 text-[12.5px] text-sub">
+              No student has reviewed this college yet. If you study or studied here, your anonymous review helps the next batch decide.
+            </p>
+            <Link to={`/write-review?college=${inst.slug}`} className="btn btn-primary btn-sm">
+              Write the first review
+            </Link>
+          </div>
+        )}
         <div className="card mb-3">
           <h4 className="mb-2 text-sm">About</h4>
           <p className="text-[13.5px] leading-relaxed text-sub">{inst.description ?? 'No description has been added for this institution yet.'}</p>
         </div>
+        {inst.editorialOverview && (
+          <div className="card mb-3">
+            <h4 className="mb-2 text-sm">Editor's overview</h4>
+            {inst.editorialOverview.split(/\n{2,}/).map((para, i) => (
+              <p key={i} className="mb-2 text-[13.5px] leading-relaxed text-sub last:mb-0">
+                {para}
+              </p>
+            ))}
+            <p className="mt-2.5 border-t border-line pt-2 text-[11px] text-sub">
+              Written by the StudentReview team from publicly available information. This is not a student review and doesn't
+              affect this college's rating or ranking.{' '}
+              <Link to={`/college/${inst.slug}/reviews`} className="text-brand">
+                Read student reviews
+              </Link>
+            </p>
+          </div>
+        )}
         {reviewsQuery.data && reviewsQuery.data.items.length > 0 && (
           <div className="card">
             <h4 className="mb-2.5 text-sm">Popular review</h4>

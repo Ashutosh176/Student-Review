@@ -31,6 +31,7 @@ const ITEMS: Record<DashboardKind, { icon: string; label: string; to: string }[]
     { icon: '👤', label: 'Users', to: '/admin/users' },
     { icon: '🏛', label: 'Colleges', to: '/admin/colleges' },
     { icon: '💬', label: 'Reviews', to: '/admin/reviews' },
+    { icon: '🎯', label: 'Review coverage', to: '/admin/review-coverage' },
     { icon: '🚩', label: 'Reports', to: '/admin/reports' },
     { icon: '🏢', label: 'Organizations', to: '/admin/organizations' },
     { icon: '✅', label: 'Verifications', to: '/admin/verifications' },

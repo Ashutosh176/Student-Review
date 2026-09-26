@@ -685,6 +685,7 @@ export function AdminCollegesPage() {
                 website: editing.website ?? '',
                 description: editing.description ?? '',
                 admissionProcess: editing.admissionProcess ?? '',
+                editorialOverview: editing.editorialOverview ?? '',
                 categoryId: editing.categoryId ?? undefined,
               }
             : undefined

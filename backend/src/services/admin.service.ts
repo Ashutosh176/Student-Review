@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError.js';
 import { toSlug } from '../utils/slug.js';
 import { notify, notifySavedCollegeReviewers } from './notification.service.js';
 import { getOrCreateRole } from './role.util.js';
+import { publicReviewWhere } from '../utils/publishing.js';
 import { getPlatformSettings, updatePlatformSettings, type PlatformSettingsInput } from './settings.service.js';
 import type { AdminActionType, InstitutionType, ReviewStatus, RoleName } from '@prisma/client';
 
@@ -252,6 +253,7 @@ export async function updateInstitution(
     website?: string;
     description?: string;
     admissionProcess?: string;
+    editorialOverview?: string;
     categoryId?: string | null;
   },
 ) {
@@ -268,6 +270,7 @@ export async function updateInstitution(
       website: input.website || null,
       description: input.description || null,
       admissionProcess: input.admissionProcess || null,
+      editorialOverview: input.editorialOverview || null,
       categoryId: input.categoryId || null,
       locations: primary
         ? { update: { where: { id: primary.id }, data: { city: input.city, state: input.state } } }
@@ -476,4 +479,48 @@ export async function writePlatformSettings(adminUserId: string, input: Platform
     },
   });
   return updated;
+}
+
+// How many real, public student reviews each approved college has, so the
+// team can see where outreach is needed. Only publicly visible EXPERIENCE
+// reviews count — the same numbers students see on the college page.
+export const REVIEW_COVERAGE_TARGET = 7;
+
+export async function reviewCoverage(q?: string) {
+  const [institutions, grouped, verifiedGrouped, latest] = await Promise.all([
+    prisma.institution.findMany({
+      where: { status: 'APPROVED', ...(q ? { name: { contains: q, mode: 'insensitive' as const } } : {}) },
+      select: { id: true, slug: true, name: true, featured: true, locations: { where: { isPrimary: true }, take: 1, select: { city: true, state: true } } },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.review.groupBy({ by: ['institutionId'], where: { ...publicReviewWhere(), type: 'EXPERIENCE' }, _count: { _all: true } }),
+    prisma.review.groupBy({ by: ['institutionId'], where: { ...publicReviewWhere(), type: 'EXPERIENCE', verifiedStudent: true }, _count: { _all: true } }),
+    prisma.review.groupBy({ by: ['institutionId'], where: { ...publicReviewWhere(), type: 'EXPERIENCE' }, _max: { createdAt: true } }),
+  ]);
+  const counts = new Map(grouped.map((g) => [g.institutionId, g._count._all]));
+  const verified = new Map(verifiedGrouped.map((g) => [g.institutionId, g._count._all]));
+  const lastAt = new Map(latest.map((g) => [g.institutionId, g._max.createdAt]));
+
+  const items = institutions
+    .map((inst) => ({
+      id: inst.id,
+      slug: inst.slug,
+      name: inst.name,
+      location: inst.locations[0] ?? null,
+      reviewCount: counts.get(inst.id) ?? 0,
+      verifiedCount: verified.get(inst.id) ?? 0,
+      lastReviewAt: lastAt.get(inst.id) ?? null,
+    }))
+    // Furthest from target first, so the list reads as an outreach to-do.
+    .sort((a, b) => a.reviewCount - b.reviewCount || a.name.localeCompare(b.name));
+
+  return {
+    target: REVIEW_COVERAGE_TARGET,
+    totals: {
+      institutions: items.length,
+      atTarget: items.filter((i) => i.reviewCount >= REVIEW_COVERAGE_TARGET).length,
+      withNoReviews: items.filter((i) => i.reviewCount === 0).length,
+    },
+    items,
+  };
 }

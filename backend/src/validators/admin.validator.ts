@@ -53,6 +53,7 @@ export const updateInstitutionSchema = z.object({
   website: z.string().url().optional().or(z.literal('')),
   description: z.string().max(3000).optional(),
   admissionProcess: z.string().max(5000).optional(),
+  editorialOverview: z.string().max(5000).optional(),
   categoryId: z.string().uuid().optional().or(z.literal('')).nullable(),
 });
 

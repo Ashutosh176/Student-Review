@@ -33,11 +33,17 @@ export function CollegeCard({ institution, trending = false }: { institution: In
         {institution.verified && <Badge kind="verified">Verified</Badge>}
         {trending && <Badge kind="trending">Trending</Badge>}
       </div>
-      <div className="mt-2.5 flex items-center gap-1.5 text-sm">
-        <Stars value={overall?.average ?? 0} />
-        <span>{(overall?.average ?? 0).toFixed(1)}</span>
-        <span className="text-xs text-sub">· {institution.summary.reviewCount.toLocaleString('en-IN')} reviews</span>
-      </div>
+      {institution.summary.reviewCount > 0 ? (
+        <div className="mt-2.5 flex items-center gap-1.5 text-sm">
+          <Stars value={overall?.average ?? 0} />
+          <span>{(overall?.average ?? 0).toFixed(1)}</span>
+          <span className="text-xs text-sub">
+            · {institution.summary.reviewCount.toLocaleString('en-IN')} {institution.summary.reviewCount === 1 ? 'review' : 'reviews'}
+          </span>
+        </div>
+      ) : (
+        <div className="mt-2.5 text-xs text-sub">No reviews yet · be the first</div>
+      )}
     </Link>
   );
 }

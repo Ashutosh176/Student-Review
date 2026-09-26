@@ -276,3 +276,7 @@ export const updatePlatformSettings = asyncHandler(async (req, res) => {
   const settings = await adminService.writePlatformSettings(req.user!.id, req.body);
   ok(res, settings);
 });
+
+export const reviewCoverage = asyncHandler(async (req, res) => {
+  ok(res, await adminService.reviewCoverage((req.query.q as string | undefined)?.trim() || undefined));
+});

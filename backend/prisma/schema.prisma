@@ -408,6 +408,10 @@ model Institution {
   // aiSummary.service.ts) — a supplementary reading aid, never a
   // substitute for or counted as a review itself. Null until enough
   // reviews exist and ANTHROPIC_API_KEY is configured.
+  // Editor-written overview compiled from public information (programs,
+  // campus, admissions) — clearly labelled on the page, never shown as or
+  // counted toward reviews, ratings, or rankings. Admin-editable.
+  editorialOverview  String?
   aiSummary          String?
   aiSummaryUpdatedAt DateTime?
   createdAt          DateTime          @default(now())

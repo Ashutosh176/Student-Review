@@ -80,6 +80,7 @@ export interface InstitutionDetail extends InstitutionSummary {
   entranceExams: string[];
   admissionProcess?: string | null;
   admissionCutoffs: AdmissionCutoff[];
+  editorialOverview?: string | null;
   aiSummary?: string | null;
   aiSummaryUpdatedAt?: string | null;
 }

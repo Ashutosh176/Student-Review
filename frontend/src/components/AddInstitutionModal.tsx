@@ -151,6 +151,16 @@ export function AddInstitutionModal({
               <textarea rows={4} value={form.admissionProcess ?? ''} onChange={(e) => update('admissionProcess', e.target.value)} />
             </div>
           )}
+          {showAdmissionProcess && (
+            <div className="field">
+              <label>Editor's overview</label>
+              <textarea rows={5} value={form.editorialOverview ?? ''} onChange={(e) => update('editorialOverview', e.target.value)} />
+              <p className="mt-1 text-[11px] text-sub">
+                Shown on the Overview tab, labelled as written by the StudentReview team. Keep it factual. It never counts as a review or
+                affects ratings.
+              </p>
+            </div>
+          )}
           {Boolean(error) && <p className="mb-3 text-xs text-danger">{apiErrorMessage(error)}</p>}
           <div className="mt-1.5 flex gap-2">
             <button type="button" className="btn btn-ghost flex-1 justify-center" onClick={onClose}>
