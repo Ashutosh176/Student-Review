@@ -48,6 +48,17 @@ can't register as "trending."
 
 ## Recompute cadence
 
-`recomputeAllRankings()` walks every metric and upserts `institution_ranking_scores`. For the
-MVP this runs via the `npm run jobs:rankings` script (see `backend/src/jobs`); production
-should move this to a scheduled job (cron/queue) rather than running it inline on request.
+`recomputeAllRankings()` walks every metric, upserts `institution_ranking_scores`, and deletes
+rows for institutions that are no longer eligible (e.g. stopped trending), so stale ranks never
+linger. The API server runs it in-process 30s after boot (which also covers Render cold starts)
+and then hourly — see `backend/src/server.ts`. `npm run jobs:rankings` and Admin → Settings →
+"Recompute now" trigger it on demand. Like every other public read, it only counts reviews past
+the publication batch cutoff (`publicReviewWhere()`), so rankings can't reveal a review early.
+
+## Homepage / listing sorts
+
+`GET /institutions?sort=` (`institution.service.ts`) ranks across the whole result set, then pages:
+`rating` uses the same Bayesian adjustment on the OVERALL rating (live, unweighted by recency);
+`reviews` is public review count; `trending` is reviews in the last 30 days with the last 7 days
+counted double, and lists only colleges with recent activity. Ties fall back to featured →
+verified → name.

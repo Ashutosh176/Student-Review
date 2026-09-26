@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError.js';
 import { toSlug } from '../utils/slug.js';
 import { publicReviewWhere } from '../utils/publishing.js';
 import { serializePublicInstitution } from '../utils/serializers.js';
+import { bayesianAverage } from '../modules/ranking/ranking.service.js';
 import type { InstitutionType, RatingCategory } from '@prisma/client';
 
 const ALL_CATEGORIES: RatingCategory[] = [
@@ -166,7 +167,7 @@ export async function listInstitutions(params: {
   type?: string;
   categorySlug?: string;
   verifiedOnly?: boolean;
-  sort: 'relevant' | 'rating' | 'reviews' | 'name';
+  sort: 'relevant' | 'rating' | 'reviews' | 'trending' | 'name';
   page: number;
   pageSize: number;
 }) {
@@ -193,38 +194,102 @@ export async function listInstitutions(params: {
     };
   }
 
-  const orderBy =
-    params.sort === 'name'
-      ? { name: 'asc' as const }
-      : params.sort === 'reviews'
-        ? undefined // handled post-fetch via review counts, see below
-        : undefined;
+  const include = { locations: { where: { isPrimary: true }, take: 1 }, category: true };
+  const skip = (params.page - 1) * params.pageSize;
+  // Stable fallback so ties (and colleges with no reviews yet) come out in a
+  // meaningful, deterministic order instead of whatever Postgres returns.
+  const fallbackOrder = [{ featured: 'desc' as const }, { verified: 'desc' as const }, { name: 'asc' as const }];
 
-  const [total, institutions] = await Promise.all([
-    prisma.institution.count({ where }),
-    prisma.institution.findMany({
-      where,
-      orderBy,
-      skip: (params.page - 1) * params.pageSize,
-      take: params.pageSize,
-      include: { locations: { where: { isPrimary: true }, take: 1 }, category: true },
-    }),
-  ]);
+  let total: number;
+  let institutions: Awaited<ReturnType<typeof prisma.institution.findMany<{ where: typeof where; include: typeof include }>>>;
 
-  const summaries = await ratingSummariesFor(institutions.map((inst) => inst.id));
-  const withSummaries = institutions.map((inst) => ({ ...serializePublicInstitution(inst), summary: summaries.get(inst.id)! }));
+  if (params.sort === 'rating' || params.sort === 'reviews' || params.sort === 'trending') {
+    // Review-driven sorts must rank across the WHOLE result set, then page.
+    // (Sorting only the fetched page made "Top rated" on the homepage just
+    // the first 4 colleges alphabetically, re-ordered among themselves.)
+    const candidates = await prisma.institution.findMany({ where, select: { id: true }, orderBy: fallbackOrder });
+    const scores = await reviewSortScores(params.sort);
+    let ordered = candidates.map((c, idx) => ({ id: c.id, idx, score: scores.get(c.id) ?? 0 }));
+    // Trending only lists colleges with recent activity — a college nobody
+    // has reviewed lately isn't "trending" no matter how it sorts.
+    if (params.sort === 'trending') ordered = ordered.filter((o) => o.score > 0);
+    ordered.sort((a, b) => b.score - a.score || a.idx - b.idx);
 
-  if (params.sort === 'rating') {
-    withSummaries.sort((a, b) => {
-      const av = a.summary.ratings.find((r) => r.category === 'OVERALL')?.average ?? 0;
-      const bv = b.summary.ratings.find((r) => r.category === 'OVERALL')?.average ?? 0;
-      return bv - av;
-    });
-  } else if (params.sort === 'reviews') {
-    withSummaries.sort((a, b) => b.summary.reviewCount - a.summary.reviewCount);
+    total = ordered.length;
+    const pageIds = ordered.slice(skip, skip + params.pageSize).map((o) => o.id);
+    const rows = await prisma.institution.findMany({ where: { id: { in: pageIds } }, include });
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    institutions = pageIds.map((id) => byId.get(id)).filter((r): r is NonNullable<typeof r> => Boolean(r));
+  } else {
+    [total, institutions] = await Promise.all([
+      prisma.institution.count({ where }),
+      prisma.institution.findMany({
+        where,
+        orderBy: params.sort === 'name' ? { name: 'asc' as const } : fallbackOrder,
+        skip,
+        take: params.pageSize,
+        include,
+      }),
+    ]);
   }
 
-  return { total, page: params.page, pageSize: params.pageSize, items: withSummaries };
+  const summaries = await ratingSummariesFor(institutions.map((inst) => inst.id));
+  const items = institutions.map((inst) => ({ ...serializePublicInstitution(inst), summary: summaries.get(inst.id)! }));
+
+  return { total, page: params.page, pageSize: params.pageSize, items };
+}
+
+const TRENDING_WINDOW_DAYS = 30;
+const TRENDING_THIS_WEEK_WEIGHT = 2;
+
+// Per-institution sort key for the review-driven listing sorts, computed in
+// one pass over public EXPERIENCE reviews (institutions absent from the map
+// score 0 and fall back to the stable default order).
+//  - reviews:  public review count.
+//  - rating:   Bayesian-adjusted OVERALL average (same formula as the
+//              rankings), so one 5-star review can't top "Top rated".
+//  - trending: reviews in the last 30 days, with the last 7 days counted
+//              double — recent activity, not all-time volume.
+async function reviewSortScores(sort: 'rating' | 'reviews' | 'trending'): Promise<Map<string, number>> {
+  const scores = new Map<string, number>();
+  const visible = { ...publicReviewWhere(), type: 'EXPERIENCE' as const };
+
+  if (sort === 'reviews') {
+    const grouped = await prisma.review.groupBy({ by: ['institutionId'], where: visible, _count: { _all: true } });
+    for (const g of grouped) scores.set(g.institutionId, g._count._all);
+    return scores;
+  }
+
+  if (sort === 'trending') {
+    const now = Date.now();
+    const weekAgo = new Date(now - 7 * 86_400_000);
+    const windowStart = new Date(now - TRENDING_WINDOW_DAYS * 86_400_000);
+    const recent = await prisma.review.findMany({
+      where: { ...visible, createdAt: { ...visible.createdAt, gte: windowStart } },
+      select: { institutionId: true, createdAt: true },
+    });
+    for (const r of recent) {
+      const w = r.createdAt >= weekAgo ? TRENDING_THIS_WEEK_WEIGHT : 1;
+      scores.set(r.institutionId, (scores.get(r.institutionId) ?? 0) + w);
+    }
+    return scores;
+  }
+
+  const ratings = await prisma.reviewRating.findMany({
+    where: { category: 'OVERALL', review: visible },
+    select: { value: true, review: { select: { institutionId: true } } },
+  });
+  if (ratings.length === 0) return scores;
+  const globalMean = ratings.reduce((sum, r) => sum + r.value, 0) / ratings.length;
+  const agg = new Map<string, { sum: number; count: number }>();
+  for (const r of ratings) {
+    const a = agg.get(r.review.institutionId) ?? { sum: 0, count: 0 };
+    a.sum += r.value;
+    a.count += 1;
+    agg.set(r.review.institutionId, a);
+  }
+  for (const [id, a] of agg) scores.set(id, bayesianAverage(a.sum / a.count, a.count, globalMean));
+  return scores;
 }
 
 export async function searchInstitutions(q: string, limit: number) {

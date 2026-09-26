@@ -15,7 +15,7 @@ export const listInstitutionsQuerySchema = z.object({
   type: z.string().max(50).optional(),
   categorySlug: z.string().max(100).optional(),
   verifiedOnly: booleanQueryParam,
-  sort: z.enum(['relevant', 'rating', 'reviews', 'name']).optional().default('relevant'),
+  sort: z.enum(['relevant', 'rating', 'reviews', 'trending', 'name']).optional().default('relevant'),
   page: z.coerce.number().int().min(1).optional().default(1),
   pageSize: z.coerce.number().int().min(1).max(50).optional().default(20),
 });

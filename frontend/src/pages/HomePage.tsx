@@ -19,7 +19,7 @@ export function HomePage() {
 
   const trendingQuery = useQuery({
     queryKey: ['institutions', 'trending'],
-    queryFn: () => institutionsApi.list({ sort: 'reviews', pageSize: 4 }),
+    queryFn: () => institutionsApi.list({ sort: 'trending', pageSize: 4 }),
   });
   const topRatedQuery = useQuery({
     queryKey: ['institutions', 'top-rated'],
@@ -80,7 +80,17 @@ export function HomePage() {
         <h3 className="mb-4 text-lg">Trending this week</h3>
         {trendingQuery.isLoading && <CardSkeletonGrid />}
         {trendingQuery.data && trendingQuery.data.items.length === 0 && (
-          <EmptyState title="No trending colleges yet" description="Check back once more reviews come in." />
+          <div className="mb-9">
+            <EmptyState
+              title="Nothing trending this week yet"
+              description="Colleges trend here when students review them. Studied somewhere? Yours could be first."
+              action={
+                <Link to="/write-review" className="btn btn-primary btn-sm">
+                  Write a review
+                </Link>
+              }
+            />
+          </div>
         )}
         {trendingQuery.data && trendingQuery.data.items.length > 0 && (
           <div className="mb-9 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">

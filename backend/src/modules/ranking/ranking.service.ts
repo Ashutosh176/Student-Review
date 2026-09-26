@@ -1,6 +1,7 @@
 import type { RankingMetric, RatingCategory } from '@prisma/client';
 import { prisma } from '../../config/prisma.js';
 import { getPlatformSettings } from '../../services/settings.service.js';
+import { publicCutoff, publicReviewWhere } from '../../utils/publishing.js';
 
 // Full algorithm write-up lives in docs/ranking-algorithm.md — keep the two
 // in sync. Summary: a Bayesian-adjusted, recency- and verification-weighted
@@ -36,7 +37,7 @@ export function bayesianAverage(rawAvg: number, sampleSize: number, globalMean: 
 
 async function globalMeanForCategory(category: RatingCategory): Promise<number> {
   const agg = await prisma.reviewRating.aggregate({
-    where: { category, review: { status: 'APPROVED' } },
+    where: { category, review: publicReviewWhere() },
     _avg: { value: true },
   });
   return agg._avg.value ?? 3.5;
@@ -82,7 +83,7 @@ async function scoreByCategory(
   const globalMean = await globalMeanForCategory(category);
 
   const ratings = await prisma.reviewRating.findMany({
-    where: { category, review: { status: 'APPROVED' } },
+    where: { category, review: publicReviewWhere() },
     select: {
       value: true,
       review: { select: { institutionId: true, createdAt: true, verifiedStudent: true } },
@@ -116,7 +117,7 @@ async function scoreMostReviewed(minReviewsForRanking: number): Promise<Institut
   // actually attended", not inflated by admission-process reviews.
   const grouped = await prisma.review.groupBy({
     by: ['institutionId'],
-    where: { status: 'APPROVED', type: 'EXPERIENCE' },
+    where: { ...publicReviewWhere(), type: 'EXPERIENCE' },
     _count: { _all: true },
   });
   return grouped
@@ -132,7 +133,7 @@ async function scoreTrending(): Promise<InstitutionScore[]> {
   const [recent, previous] = await Promise.all([
     prisma.review.groupBy({
       by: ['institutionId'],
-      where: { status: 'APPROVED', type: 'EXPERIENCE', createdAt: { gte: last30 } },
+      where: { status: 'APPROVED', type: 'EXPERIENCE', createdAt: { gte: last30, lt: publicCutoff() } },
       _count: { _all: true },
     }),
     prisma.review.groupBy({
@@ -172,15 +173,21 @@ export async function recomputeRankingMetric(
   const scores = await computeMetricScores(metric, minReviewsForRanking, penalties);
   scores.sort((a, b) => b.score - a.score);
 
-  await prisma.$transaction(
-    scores.map((s, idx) =>
+  // Drop rows for institutions no longer eligible (stopped trending, fell
+  // under the minimum-review gate) — otherwise their stale rank lingers
+  // forever and collides with the fresh ranks written below.
+  await prisma.$transaction([
+    prisma.institutionRankingScore.deleteMany({
+      where: { metric, institutionId: { notIn: scores.map((s) => s.institutionId) } },
+    }),
+    ...scores.map((s, idx) =>
       prisma.institutionRankingScore.upsert({
         where: { institutionId_metric: { institutionId: s.institutionId, metric } },
         create: { institutionId: s.institutionId, metric, score: s.score, rank: idx + 1 },
         update: { score: s.score, rank: idx + 1, computedAt: new Date() },
       }),
     ),
-  );
+  ]);
   return scores.length;
 }
 

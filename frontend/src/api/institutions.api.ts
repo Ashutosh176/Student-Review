@@ -11,7 +11,7 @@ export interface ListInstitutionsParams {
   type?: string;
   categorySlug?: string;
   verifiedOnly?: boolean;
-  sort?: 'relevant' | 'rating' | 'reviews' | 'name';
+  sort?: 'relevant' | 'rating' | 'reviews' | 'trending' | 'name';
   page?: number;
   pageSize?: number;
 }
