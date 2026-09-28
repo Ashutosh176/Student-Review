@@ -173,6 +173,7 @@ export default function App() {
             <Route path="internships" element={<OrgJobsPage />} />
             <Route path="team" element={<OrgTeamPage />} />
             <Route path="settings" element={<OrgSettingsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
 
@@ -190,6 +191,7 @@ export default function App() {
             <Route path="/admin/payments" element={<AdminPaymentsPage />} />
             <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             <Route path="/admin/settings" element={<AdminSettingsPage />} />
+            <Route path="/admin/notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
 

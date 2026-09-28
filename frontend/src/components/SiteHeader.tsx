@@ -4,7 +4,7 @@ import { Logo } from './Logo';
 import { SearchBar } from './SearchBar';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/api/auth.api';
-import { defaultDashboardPath } from '@/utils/roles';
+import { defaultDashboardPath, notificationsPath } from '@/utils/roles';
 import { useHeroVisibilityStore } from '@/store/heroVisibilityStore';
 import { useElementWidth } from '@/hooks/useElementWidth';
 
@@ -37,7 +37,7 @@ function AccountControls({ onLogout }: { onLogout: () => void }) {
     <div className="ml-auto flex flex-none items-center gap-2.5">
       {user ? (
         <>
-          <Link to="/notifications" className="hidden text-base sm:inline" title="Notifications">
+          <Link to={notificationsPath(user.roles)} className="hidden text-base sm:inline" title="Notifications">
             🔔
           </Link>
           <Link to="/saved-colleges" className="hidden text-base sm:inline" title="Saved colleges">

@@ -8,3 +8,11 @@ export function defaultDashboardPath(roles: RoleName[]): string {
   if (roles.includes('ORGANIZATION')) return '/organization/dashboard';
   return '/dashboard';
 }
+
+// Notifications render inside whichever dashboard the user lands in, so the
+// header bell keeps an admin/org user in their own panel.
+export function notificationsPath(roles: RoleName[]): string {
+  if (roles.includes('ADMIN') || roles.includes('MODERATOR')) return '/admin/notifications';
+  if (roles.includes('ORGANIZATION')) return '/organization/notifications';
+  return '/notifications';
+}

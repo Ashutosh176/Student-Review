@@ -24,6 +24,7 @@ const ITEMS: Record<DashboardKind, { icon: string; label: string; to: string }[]
     { icon: '😊', label: 'Sentiment', to: '/organization/sentiment' },
     { icon: '💼', label: 'Jobs', to: '/organization/jobs' },
     { icon: '👥', label: 'Team', to: '/organization/team' },
+    { icon: '🔔', label: 'Notifications', to: '/organization/notifications' },
     { icon: '⚙️', label: 'Settings', to: '/organization/settings' },
   ],
   admin: [
@@ -38,6 +39,7 @@ const ITEMS: Record<DashboardKind, { icon: string; label: string; to: string }[]
     { icon: '💼', label: 'Jobs', to: '/admin/jobs' },
     { icon: '💳', label: 'Payments', to: '/admin/payments' },
     { icon: '📈', label: 'Analytics', to: '/admin/analytics' },
+    { icon: '🔔', label: 'Notifications', to: '/admin/notifications' },
     { icon: '⚙️', label: 'Settings', to: '/admin/settings' },
   ],
 };
