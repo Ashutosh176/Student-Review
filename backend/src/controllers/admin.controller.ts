@@ -222,7 +222,16 @@ export const setInstitutionFeatured = asyncHandler(async (req, res) => {
   ok(res, institution);
 });
 
-export const setInstitutionVerified = asyncHandler(async (req, res) => {
+export const setInstitutionLogo = asyncHandler(async (req, res) => {
+  if (!req.file) throw AppError.badRequest('Choose an image to upload');
+  ok(res, await adminService.setInstitutionLogo(req.user!.id, req.params.id, req.file));
+});
+
+export const removeInstitutionLogo = asyncHandler(async (req, res) => {
+  ok(res, await adminService.setInstitutionLogo(req.user!.id, req.params.id, null));
+});
+
+export const setInstitutionVerified =asyncHandler(async (req, res) => {
   const institution = await adminService.setInstitutionVerified(req.user!.id, req.params.id, req.body.verified, req.body.reason);
   ok(res, institution);
 });

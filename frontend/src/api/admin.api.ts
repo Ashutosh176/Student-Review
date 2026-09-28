@@ -166,6 +166,7 @@ export interface AdminInstitutionRow {
   type: string;
   verified: boolean;
   featured: boolean;
+  logoUrl?: string | null;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string | null;
   submittedBy?: { username: string; email: string } | null;
@@ -338,6 +339,12 @@ export const adminApi = {
   },
   setFeatured: (id: string, featured: boolean) => unwrap(api.patch(`/admin/institutions/${id}/featured`, { featured })),
   setVerified: (id: string, verified: boolean) => unwrap(api.patch(`/admin/institutions/${id}/verified`, { verified })),
+  uploadLogo: (id: string, file: File) => {
+    const body = new FormData();
+    body.append('logo', file);
+    return unwrap<{ id: string; logoUrl: string | null }>(api.post(`/admin/institutions/${id}/logo`, body, { headers: { 'Content-Type': 'multipart/form-data' } }));
+  },
+  removeLogo: (id: string) => unwrap<{ id: string; logoUrl: string | null }>(api.delete(`/admin/institutions/${id}/logo`)),
   createInstitution: (input: CreateInstitutionInput) => unwrap<AdminInstitutionRow>(api.post('/admin/institutions', input)),
   updateInstitution: (id: string, input: CreateInstitutionInput) =>
     unwrap<AdminInstitutionRow>(

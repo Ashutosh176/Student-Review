@@ -11,6 +11,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': 'http://localhost:4000',
+      // Mirrors the /institution-logos rewrite in vercel.json.
+      '/institution-logos': {
+        target: 'http://localhost:4000',
+        rewrite: (p) => p.replace(/^\/institution-logos/, '/api/institutions/logos'),
+      },
     },
   },
 });

@@ -5,6 +5,7 @@ import * as institutionService from '../services/institution.service.js';
 import * as reviewService from '../services/review.service.js';
 import * as jobService from '../services/job.service.js';
 import * as questionService from '../services/question.service.js';
+import { sendLogoImage } from '../middlewares/upload.js';
 
 export const stats = asyncHandler(async (_req, res) => {
   const result = await institutionService.platformStats();
@@ -31,6 +32,10 @@ export const search = asyncHandler(async (req, res) => {
   const { q, limit } = req.query as unknown as { q: string; limit: number };
   const results = await institutionService.searchInstitutions(q, limit);
   ok(res, results);
+});
+
+export const logo = asyncHandler(async (req, res) => {
+  await sendLogoImage(res, req.params.id);
 });
 
 export const getBySlug = asyncHandler(async (req, res) => {

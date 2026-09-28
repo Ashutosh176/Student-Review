@@ -8,6 +8,7 @@ import { apiErrorMessage } from '@/api/client';
 import { DashboardTopbar } from '@/layouts/DashboardLayout';
 import { Badge } from '@/components/Badge';
 import { AddInstitutionModal } from '@/components/AddInstitutionModal';
+import { CollegeLogoField } from '@/components/CollegeLogoField';
 
 const STATUS_TABS = [
   { value: undefined, label: 'All' },
@@ -692,6 +693,7 @@ export function AdminCollegesPage() {
         submitLabel="Save changes"
         submittingLabel="Saving…"
         showAdmissionProcess
+        topSlot={editing && <CollegeLogoField institutionId={editing.id} name={editing.name} initialLogoUrl={editing.logoUrl} />}
         initialValues={
           editing
             ? {

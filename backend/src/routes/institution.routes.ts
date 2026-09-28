@@ -23,6 +23,7 @@ router.get('/stats', institutionController.stats);
 router.get('/filters', institutionController.filters);
 router.get('/search', validate({ query: searchQuerySchema }), institutionController.search);
 router.get('/compare', validate({ query: compareQuerySchema }), institutionController.compare);
+router.get('/logos/:id', validate({ params: idParamSchema }), institutionController.logo);
 router.get('/:slug', validate({ params: slugParamSchema }), institutionController.getBySlug);
 router.get('/:slug/reviews', validate({ params: slugParamSchema, query: reviewsQuerySchema }), institutionController.institutionReviews);
 router.get('/:slug/jobs', validate({ params: slugParamSchema }), institutionController.institutionJobs);

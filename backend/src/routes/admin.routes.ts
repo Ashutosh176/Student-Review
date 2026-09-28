@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { uploadLogo } from '../middlewares/upload.js';
 import * as adminController from '../controllers/admin.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
@@ -94,6 +95,8 @@ router.patch(
   validate({ params: idParamSchema, body: setFeaturedSchema }),
   adminController.setInstitutionFeatured,
 );
+router.post('/institutions/:id/logo', authorize('ADMIN'), uploadLogo, validate({ params: idParamSchema }), adminController.setInstitutionLogo);
+router.delete('/institutions/:id/logo', authorize('ADMIN'), validate({ params: idParamSchema }), adminController.removeInstitutionLogo);
 router.patch(
   '/institutions/:id/verified',
   authorize('ADMIN'),

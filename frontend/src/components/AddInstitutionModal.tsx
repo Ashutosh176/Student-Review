@@ -28,6 +28,7 @@ export function AddInstitutionModal({
   initialName = '',
   initialValues,
   showAdmissionProcess = false,
+  topSlot,
 }: {
   open: boolean;
   onClose: () => void;
@@ -42,6 +43,8 @@ export function AddInstitutionModal({
   // Edit mode: start from an existing institution's values instead of a blank form.
   initialValues?: Partial<CreateInstitutionInput>;
   showAdmissionProcess?: boolean;
+  // Rendered above the form fields (edit mode uses it for the logo uploader).
+  topSlot?: React.ReactNode;
 }) {
   const [form, setForm] = useState<CreateInstitutionInput>(EMPTY);
   const categoriesQuery = useQuery({ queryKey: ['admin', 'categories'], queryFn: adminApi.categories, enabled: open });
@@ -62,6 +65,7 @@ export function AddInstitutionModal({
       <div className="my-auto w-full max-w-[480px] rounded-2xl border border-line bg-white p-8 shadow-xl">
         <h2 className="mb-1 text-lg font-bold">{heading}</h2>
         <p className="mb-4 text-xs text-sub">{helperText}</p>
+        {topSlot}
         <form
           onSubmit={(e) => {
             e.preventDefault();

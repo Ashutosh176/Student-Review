@@ -4,6 +4,7 @@ import { toSlug } from '../utils/slug.js';
 import { notify, notifySavedCollegeReviewers, notifyWithEmail } from './notification.service.js';
 import { CLARIFICATION_PREFIX, clarificationRequestOf } from '../utils/clarification.js';
 import { getOrCreateRole } from './role.util.js';
+import { deleteLogoImage, storeLogoImage } from '../middlewares/upload.js';
 import { publicReviewWhere } from '../utils/publishing.js';
 import { getPlatformSettings, updatePlatformSettings, type PlatformSettingsInput } from './settings.service.js';
 import type { AdminActionType, InstitutionType, ReviewStatus, RoleName } from '@prisma/client';
@@ -281,6 +282,22 @@ export async function createInstitution(input: {
     },
     include: { locations: { where: { isPrimary: true }, take: 1 }, _count: { select: { reviews: true } } },
   });
+}
+
+// Replaces (or with file=null, removes) an institution's logo. The old image is
+// deleted only after the new URL is saved, so the page never points at a
+// missing file.
+export async function setInstitutionLogo(adminUserId: string, institutionId: string, file: Express.Multer.File | null) {
+  const existing = await prisma.institution.findUnique({ where: { id: institutionId }, select: { logoUrl: true } });
+  if (!existing) throw AppError.notFound('Institution not found');
+
+  const logoUrl = file ? await storeLogoImage(file) : null;
+  const updated = await prisma.institution.update({ where: { id: institutionId }, data: { logoUrl }, select: { id: true, logoUrl: true } });
+  await deleteLogoImage(existing.logoUrl);
+  await prisma.adminAction.create({
+    data: { adminUserId, targetType: 'Institution', targetId: institutionId, action: file ? 'APPROVE' : 'REMOVE', reason: file ? 'Logo updated' : 'Logo removed' },
+  });
+  return updated;
 }
 
 export async function updateInstitution(
