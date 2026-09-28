@@ -222,6 +222,11 @@ export const setInstitutionFeatured = asyncHandler(async (req, res) => {
   ok(res, institution);
 });
 
+export const setInstitutionVerified = asyncHandler(async (req, res) => {
+  const institution = await adminService.setInstitutionVerified(req.user!.id, req.params.id, req.body.verified, req.body.reason);
+  ok(res, institution);
+});
+
 export const recomputeRankings = asyncHandler(async (_req, res) => {
   const counts = await recomputeAllRankings();
   ok(res, counts);

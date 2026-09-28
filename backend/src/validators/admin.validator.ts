@@ -68,6 +68,8 @@ export const createCategorySchema = z.object({
 
 export const setFeaturedSchema = z.object({ featured: z.boolean() });
 
+export const setVerifiedSchema = z.object({ verified: z.boolean(), reason: z.string().max(500).optional() });
+
 export const setJobStatusSchema = z.object({ status: z.enum(['PUBLISHED', 'CLOSED']) });
 
 export const paginationQuerySchema = z.object({

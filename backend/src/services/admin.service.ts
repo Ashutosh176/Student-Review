@@ -369,6 +369,22 @@ export async function setInstitutionFeatured(institutionId: string, featured: bo
   return prisma.institution.update({ where: { id: institutionId }, data: { featured } });
 }
 
+// Manual override for the "✓ Verified" badge, for colleges an admin has
+// confirmed some other way (phone, official site, in person). Approving an
+// organization claim still sets it too (organization.service decideClaim).
+// Unverifying leaves `claimed` and any org membership untouched.
+export async function setInstitutionVerified(adminUserId: string, institutionId: string, verified: boolean, reason?: string) {
+  const institution = await prisma.institution.findUnique({ where: { id: institutionId }, select: { status: true } });
+  if (!institution) throw AppError.notFound('Institution not found');
+  if (verified && institution.status !== 'APPROVED') throw AppError.badRequest('Approve this college before verifying it');
+
+  const updated = await prisma.institution.update({ where: { id: institutionId }, data: { verified } });
+  await prisma.adminAction.create({
+    data: { adminUserId, targetType: 'Institution', targetId: institutionId, action: verified ? 'APPROVE' : 'REVOKE', reason: reason ?? (verified ? 'Marked verified' : 'Verification removed') },
+  });
+  return updated;
+}
+
 export async function decideInstitutionSubmission(
   institutionId: string,
   adminUserId: string,

@@ -337,6 +337,7 @@ export const adminApi = {
     return { items: res.data.data, total: res.data.meta?.total ?? 0 };
   },
   setFeatured: (id: string, featured: boolean) => unwrap(api.patch(`/admin/institutions/${id}/featured`, { featured })),
+  setVerified: (id: string, verified: boolean) => unwrap(api.patch(`/admin/institutions/${id}/verified`, { verified })),
   createInstitution: (input: CreateInstitutionInput) => unwrap<AdminInstitutionRow>(api.post('/admin/institutions', input)),
   updateInstitution: (id: string, input: CreateInstitutionInput) =>
     unwrap<AdminInstitutionRow>(

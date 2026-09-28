@@ -18,6 +18,7 @@ import {
   revokeSchema,
   setEntranceExamsSchema,
   setFeaturedSchema,
+  setVerifiedSchema,
   setJobStatusSchema,
   setUserRoleSchema,
   setUserStatusSchema,
@@ -92,6 +93,12 @@ router.patch(
   authorize('ADMIN'),
   validate({ params: idParamSchema, body: setFeaturedSchema }),
   adminController.setInstitutionFeatured,
+);
+router.patch(
+  '/institutions/:id/verified',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: setVerifiedSchema }),
+  adminController.setInstitutionVerified,
 );
 router.get('/institutions/:id/email-domains', validate({ params: idParamSchema }), adminController.listEmailDomains);
 router.post(

@@ -410,6 +410,10 @@ export function AdminCollegesPage() {
     mutationFn: ({ id, featured }: { id: string; featured: boolean }) => adminApi.setFeatured(id, featured),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
   });
+  const verifyMutation = useMutation({
+    mutationFn: ({ id, verified }: { id: string; verified: boolean }) => adminApi.setVerified(id, verified),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
+  });
   const createMutation = useMutation({
     mutationFn: (input: CreateInstitutionInput) => adminApi.createInstitution(input),
     onSuccess: () => {
@@ -582,6 +586,20 @@ export function AdminCollegesPage() {
                         <button onClick={() => featureMutation.mutate({ id: inst.id, featured: !inst.featured })} className="text-brand hover:underline">
                           {inst.featured ? 'Unfeature' : 'Feature'}
                         </button>{' '}
+                        {inst.status === 'APPROVED' && (
+                          <>
+                            <button
+                              disabled={verifyMutation.isPending}
+                              onClick={() => {
+                                if (inst.verified && !confirm(`Remove the Verified badge from ${inst.name}?`)) return;
+                                verifyMutation.mutate({ id: inst.id, verified: !inst.verified });
+                              }}
+                              className={clsx('hover:underline', inst.verified ? 'text-danger' : 'text-brand')}
+                            >
+                              {inst.verified ? 'Unverify' : 'Verify'}
+                            </button>{' '}
+                          </>
+                        )}
                         <button
                           onClick={() => setDomainsOpenId(domainsOpenId === inst.id ? null : inst.id)}
                           className="text-brand hover:underline"
