@@ -6,7 +6,7 @@ import { env } from '../config/env.js';
 import { extractEmailDomain, GENERIC_EMAIL_DOMAINS, parentDomains } from '../utils/emailDomain.js';
 import { sendEmail } from './email.service.js';
 import { collegeOtpEmail } from './emailTemplates.js';
-import { notify } from './notification.service.js';
+import { notify, notifyWithEmail } from './notification.service.js';
 import type { RelationshipType } from '@prisma/client';
 
 const OTP_TTL_MS = 10 * 60 * 1000;
@@ -239,7 +239,10 @@ export async function decideDocumentVerification(
   decision: 'APPROVED' | 'REJECTED',
   reason?: string,
 ) {
-  const verification = await prisma.studentVerification.findUnique({ where: { id: verificationId } });
+  const verification = await prisma.studentVerification.findUnique({
+    where: { id: verificationId },
+    include: { institution: { select: { name: true, slug: true } } },
+  });
   if (!verification) throw AppError.notFound('Verification request not found');
   if (verification.status !== 'PENDING') throw AppError.conflict('This request has already been decided');
 
@@ -265,10 +268,38 @@ export async function decideDocumentVerification(
     },
   });
 
+  const collegeName = verification.institution.name;
   if (decision === 'APPROVED') {
-    await notify(verification.userId, 'VERIFICATION_APPROVED', 'Your university verification was approved', 'You can now write a review for this institution.');
+    await notifyWithEmail({
+      userId: verification.userId,
+      type: 'VERIFICATION_APPROVED',
+      title: 'Your university verification was approved',
+      body: `You're verified at ${collegeName} — you can now write your review.`,
+      link: `/write-review?college=${verification.institution.slug}`,
+      email: {
+        paragraphs: [
+          `Good news — your document was reviewed and you're now a verified student at ${collegeName}.`,
+          'Your review will carry a Verified Student badge. Pick up where you left off and share your experience — it only takes a few minutes.',
+        ],
+        ctaLabel: 'Write your review',
+      },
+    });
   } else {
-    await notify(verification.userId, 'VERIFICATION_REJECTED', 'Your university verification was not approved', reason);
+    await notifyWithEmail({
+      userId: verification.userId,
+      type: 'VERIFICATION_REJECTED',
+      title: 'Your university verification was not approved',
+      body: reason,
+      link: `/write-review?college=${verification.institution.slug}`,
+      email: {
+        paragraphs: [
+          `We couldn't verify your student status at ${collegeName} from the document you uploaded.`,
+          ...(reason ? [`Reason: ${reason}`] : []),
+          'You can try again with a clearer or more recent document (college ID card, fee receipt or bonafide certificate), or verify with your official college email instead.',
+        ],
+        ctaLabel: 'Try again',
+      },
+    });
   }
 
   return updated;

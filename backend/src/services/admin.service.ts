@@ -1,7 +1,8 @@
 import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { toSlug } from '../utils/slug.js';
-import { notify, notifySavedCollegeReviewers } from './notification.service.js';
+import { notify, notifySavedCollegeReviewers, notifyWithEmail } from './notification.service.js';
+import { CLARIFICATION_PREFIX, clarificationRequestOf } from '../utils/clarification.js';
 import { getOrCreateRole } from './role.util.js';
 import { publicReviewWhere } from '../utils/publishing.js';
 import { getPlatformSettings, updatePlatformSettings, type PlatformSettingsInput } from './settings.service.js';
@@ -89,7 +90,7 @@ export async function moderationQueue(page = 1, pageSize = 20) {
       include: { institution: { select: { name: true, slug: true } }, _count: { select: { reports: true } } },
     }),
   ]);
-  return { total, page, pageSize, items };
+  return { total, page, pageSize, items: items.map((r) => ({ ...r, clarificationRequest: clarificationRequestOf(r) })) };
 }
 
 export async function moderateReviewAction(
@@ -107,19 +108,59 @@ export async function moderateReviewAction(
     REMOVE: 'REMOVED',
     REQUEST_CLARIFICATION: 'PENDING',
   };
-  const updated = await prisma.review.update({ where: { id: reviewId }, data: { status: statusMap[action], moderationNotes: reason } });
+  if (action === 'REQUEST_CLARIFICATION' && !reason?.trim()) {
+    throw AppError.badRequest('Tell the author what needs clarifying');
+  }
+
+  const updated = await prisma.review.update({
+    where: { id: reviewId },
+    data: {
+      status: statusMap[action],
+      moderationNotes: action === 'REQUEST_CLARIFICATION' ? `${CLARIFICATION_PREFIX}${reason!.trim()}` : reason,
+    },
+  });
 
   await prisma.adminAction.create({
     data: { adminUserId, targetType: 'Review', targetId: reviewId, action: action as AdminActionType, reason },
   });
 
-  await notify(
-    review.userId,
-    action === 'APPROVE' ? 'REVIEW_APPROVED' : 'REVIEW_REJECTED',
-    action === 'APPROVE' ? 'Your review was approved' : 'Your review required moderator action',
-    reason,
-    undefined,
-  );
+  const collegeName = review.institution.name;
+  if (action === 'APPROVE') {
+    if (review.status !== 'APPROVED') {
+      await notifyWithEmail({
+        userId: review.userId,
+        type: 'REVIEW_APPROVED',
+        title: 'Your review is now live',
+        body: `Your review of ${collegeName} was approved and published.`,
+        link: `/college/${review.institution.slug}/reviews`,
+        email: {
+          paragraphs: [
+            `Your review of ${collegeName} was approved and is now published on StudentReview.`,
+            'Thanks for helping other students make a better-informed decision.',
+          ],
+          ctaLabel: 'See your review',
+        },
+      });
+    }
+  } else if (action === 'REQUEST_CLARIFICATION') {
+    await notifyWithEmail({
+      userId: review.userId,
+      type: 'SYSTEM',
+      title: 'A moderator has a question about your review',
+      body: reason!.trim(),
+      link: '/my-reviews',
+      email: {
+        paragraphs: [
+          `Before your review of ${collegeName} can be published, a moderator needs a little more detail:`,
+          `"${reason!.trim()}"`,
+          'Open My Reviews, edit your review to address this, and it will go back to the moderator.',
+        ],
+        ctaLabel: 'Update your review',
+      },
+    });
+  } else {
+    await notify(review.userId, 'REVIEW_REJECTED', 'Your review required moderator action', reason, '/my-reviews');
+  }
 
   if (action === 'APPROVE' && review.status !== 'APPROVED') {
     await notifySavedCollegeReviewers(review.institution.id, review.institution.name, review.institution.slug, review.userId);
@@ -355,15 +396,36 @@ export async function decideInstitutionSubmission(
 
   if (institution.submittedByUserId) {
     if (decision === 'APPROVED') {
-      await notify(
-        institution.submittedByUserId,
-        'INSTITUTION_APPROVED',
-        'Your college submission was approved',
-        `${institution.name} is now live on StudentReview — you can write your review now.`,
-        `/college/${institution.slug}`,
-      );
+      await notifyWithEmail({
+        userId: institution.submittedByUserId,
+        type: 'INSTITUTION_APPROVED',
+        title: 'Your college submission was approved',
+        body: `${institution.name} is now live on StudentReview — you can write your review now.`,
+        link: `/write-review?college=${institution.slug}`,
+        email: {
+          paragraphs: [
+            `Thanks for adding ${institution.name} — it's been approved and is now live on StudentReview.`,
+            "You can now continue with your review. Since it's new on the site, yours will be one of the first — it helps every student who looks it up next.",
+          ],
+          ctaLabel: 'Continue writing your review',
+        },
+      });
     } else {
-      await notify(institution.submittedByUserId, 'INSTITUTION_REJECTED', 'Your college submission was not approved', reason);
+      await notifyWithEmail({
+        userId: institution.submittedByUserId,
+        type: 'INSTITUTION_REJECTED',
+        title: 'Your college submission was not approved',
+        body: reason,
+        link: '/write-review',
+        email: {
+          paragraphs: [
+            `We weren't able to add ${institution.name} to StudentReview.`,
+            ...(reason ? [`Reason: ${reason}`] : []),
+            "It may already be listed under a different name — try searching for it before submitting again.",
+          ],
+          ctaLabel: 'Search colleges',
+        },
+      });
     }
   }
 

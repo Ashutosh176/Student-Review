@@ -65,6 +65,8 @@ export const env = {
       resetPassword: process.env.MSG91_TEMPLATE_RESET_PASSWORD ?? '',
       collegeOtp: process.env.MSG91_TEMPLATE_COLLEGE_OTP ?? '',
       savedCollegeReview: process.env.MSG91_TEMPLATE_SAVED_COLLEGE_REVIEW ?? '',
+      // Generic status update — variables: HEADING, MESSAGE, LINK.
+      notice: process.env.MSG91_TEMPLATE_NOTICE ?? '',
     },
   },
 

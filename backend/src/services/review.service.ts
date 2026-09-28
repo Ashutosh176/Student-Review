@@ -2,7 +2,8 @@ import { prisma } from '../config/prisma.js';
 import { AppError } from '../utils/AppError.js';
 import { moderateReview } from '../modules/moderation/moderation.service.js';
 import { classifySentiment, extractTopics } from '../modules/moderation/sentiment.service.js';
-import { notify, notifySavedCollegeReviewers } from './notification.service.js';
+import { notify, notifySavedCollegeReviewers, notifyWithEmail } from './notification.service.js';
+import { clarificationRequestOf } from '../utils/clarification.js';
 import { getPlatformSettings } from './settings.service.js';
 import { isVerified } from './verification.service.js';
 import { MIN_COHORT_FOR_BATCH_YEAR, publicReviewWhere } from '../utils/publishing.js';
@@ -97,17 +98,30 @@ export async function createReview(userId: string, input: CreateReviewInput) {
     },
   });
 
-  await notify(
-    userId,
-    status === 'APPROVED' ? 'REVIEW_APPROVED' : status === 'REJECTED' ? 'REVIEW_REJECTED' : 'SYSTEM',
-    status === 'APPROVED'
-      ? 'Your review was approved and will be published shortly'
-      : status === 'REJECTED'
-        ? 'Your review could not be published'
-        : 'Your review is under moderation review',
-    status === 'REJECTED' ? moderation.notes : undefined,
-    `/college/${institution.slug}/reviews`,
-  );
+  if (status === 'APPROVED') {
+    await notifyWithEmail({
+      userId,
+      type: 'REVIEW_APPROVED',
+      title: 'Your review is now live',
+      body: `Your review of ${institution.name} was approved and published.`,
+      link: `/college/${institution.slug}/reviews`,
+      email: {
+        paragraphs: [
+          `Your review of ${institution.name} was approved and is now published on StudentReview.`,
+          'Thanks for helping other students make a better-informed decision.',
+        ],
+        ctaLabel: 'See your review',
+      },
+    });
+  } else {
+    await notify(
+      userId,
+      status === 'REJECTED' ? 'REVIEW_REJECTED' : 'SYSTEM',
+      status === 'REJECTED' ? 'Your review could not be published' : 'Your review is under moderation review',
+      status === 'REJECTED' ? moderation.notes : undefined,
+      `/college/${institution.slug}/reviews`,
+    );
+  }
 
   if (status === 'APPROVED') {
     await notifySavedCollegeReviewers(institution.id, institution.name, institution.slug, userId);
@@ -190,9 +204,19 @@ export async function updateOwnReview(
 
   if (input.body !== undefined) {
     const moderation = await moderateReview({ userId, institutionId: review.institutionId, body: input.body });
+    const clarificationAsked = clarificationRequestOf(review);
+    // An edit answering a moderator's clarification request goes back to that
+    // moderator (stays PENDING) instead of being auto-approved past them.
     const status: ReviewStatus =
-      moderation.decision === 'APPROVE' ? 'APPROVED' : moderation.decision === 'FLAG' ? 'FLAGGED' : 'REJECTED';
-    await prisma.review.update({ where: { id: reviewId }, data: { status, riskScore: moderation.riskScore } });
+      moderation.decision === 'APPROVE' ? (clarificationAsked ? 'PENDING' : 'APPROVED') : moderation.decision === 'FLAG' ? 'FLAGGED' : 'REJECTED';
+    await prisma.review.update({
+      where: { id: reviewId },
+      data: {
+        status,
+        riskScore: moderation.riskScore,
+        ...(clarificationAsked ? { moderationNotes: `Author edited after clarification request ("${clarificationAsked}"). ${moderation.notes ?? ''}`.trim() } : {}),
+      },
+    });
   }
 
   return updated;
@@ -267,11 +291,12 @@ export async function listLatestReviews(limit = 6) {
 }
 
 export async function listOwnReviews(userId: string) {
-  return prisma.review.findMany({
+  const reviews = await prisma.review.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
     include: { ratings: true, institution: { select: { name: true, slug: true } } },
   });
+  return reviews.map((r) => ({ ...r, clarificationRequest: clarificationRequestOf(r) }));
 }
 
 // Institutions with enough public reviews that cohort fields (batch year)

@@ -28,6 +28,7 @@ export interface AdminModerationRow {
   status: string;
   riskScore: number;
   moderationNotes?: string | null;
+  clarificationRequest?: string | null;
   createdAt: string;
   institution: { name: string; slug: string };
   _count: { reports: number };

@@ -2,6 +2,7 @@ import { prisma } from '../config/prisma.js';
 import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
 import { sendEmail } from './email.service.js';
+import { noticeEmail } from './emailTemplates.js';
 import type { NotificationType } from '@prisma/client';
 
 // Which per-user preference column gates each notification type. Toggling a
@@ -34,6 +35,47 @@ export async function notify(userId: string, type: NotificationType, title: stri
   });
   if (!prefs || prefs[PREFERENCE_FIELD[type]] === false) return null;
   return prisma.notification.create({ data: { userId, type, title, body, link } });
+}
+
+// notify() + an email for status changes the user is actively waiting on
+// (document verified, college approved, review approved / needs
+// clarification). Same preference gate as notify(): no in-app row, no email.
+// `link` is a site path; the email CTA points at the absolute URL.
+export async function notifyWithEmail(input: {
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body?: string;
+  link?: string;
+  email: { paragraphs: string[]; ctaLabel?: string };
+}) {
+  const created = await notify(input.userId, input.type, input.title, input.body, input.link);
+  if (!created) return null;
+
+  const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { email: true, username: true } });
+  if (!user) return created;
+
+  const ctaUrl = input.link ? `${env.clientOrigin}${input.link}` : undefined;
+  const { html, text } = noticeEmail({
+    heading: input.title,
+    paragraphs: [`Hi ${user.username},`, ...input.email.paragraphs],
+    ctaLabel: input.email.ctaLabel,
+    ctaUrl,
+  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: input.title,
+      text,
+      html,
+      template: { key: 'notice', variables: { HEADING: input.title, MESSAGE: input.email.paragraphs.join('\n\n'), LINK: ctaUrl ?? env.clientOrigin } },
+    });
+  } catch (err) {
+    // The status change itself already happened — a mail failure must not
+    // turn the admin's approve/reject into an error.
+    logger.warn({ err, userId: input.userId, type: input.type }, 'Failed to send notification email');
+  }
+  return created;
 }
 
 export async function listNotifications(userId: string, page = 1, pageSize = 20) {

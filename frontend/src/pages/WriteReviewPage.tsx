@@ -33,6 +33,18 @@ const RELATIONSHIP_LABEL: Record<'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT'
   FORMER_STUDENT: 'Former Student',
 };
 
+const MIN_YEAR = 1950;
+
+// batchYear means different things per relationship: a current student
+// gives the year they were admitted, alumni/former students the year they
+// graduated (or left).
+function yearStepCopy(kind: ReviewKind, relationship: 'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT' | null) {
+  if (kind === 'ADMISSION_PROCESS') return { heading: 'When did you apply?', helper: 'The year you applied or interviewed.' };
+  if (relationship === 'CURRENT_STUDENT') return { heading: 'What is your admission year?', helper: 'The year you joined this college.' };
+  if (relationship === 'FORMER_STUDENT') return { heading: 'What is your graduation year?', helper: 'The year you graduated from (or left) this college.' };
+  return { heading: 'What is your graduation year?', helper: 'The year you graduated from this college.' };
+}
+
 const OUTCOMES: { value: AdmissionOutcome; helper: string }[] = [
   { value: 'ADMITTED', helper: "You got in — whether or not you enrolled" },
   { value: 'REJECTED', helper: "Your application wasn't accepted" },
@@ -59,7 +71,7 @@ const STEP_LABELS: Record<StepKey, string> = {
   college: 'Your college',
   relationship: 'Your relationship',
   outcome: 'Outcome',
-  course: 'Course / program',
+  course: 'Program',
   year: 'Year',
   ratings: 'Ratings',
   recommend: 'Recommendation',
@@ -86,6 +98,7 @@ export function WriteReviewPage() {
   const [relationship, setRelationship] = useState<'CURRENT_STUDENT' | 'ALUMNI' | 'FORMER_STUDENT' | null>(null);
   const [admissionOutcome, setAdmissionOutcome] = useState<AdmissionOutcome | null>(null);
   const [courseId, setCourseId] = useState<string | undefined>(undefined);
+  const [programQuery, setProgramQuery] = useState('');
   const [batchYear, setBatchYear] = useState(new Date().getFullYear());
   const [ratings, setRatings] = useState<Record<RatingCategory, number>>({
     OVERALL: 0,
@@ -128,7 +141,15 @@ export function WriteReviewPage() {
     enabled: Boolean(institutionSlug),
   });
 
-  const submitInstitutionMutation = useMutation({
+  const courses = institutionDetail.data?.courses ?? [];
+  const programNeedle = programQuery.trim().toLowerCase();
+  const matchingCourses = programNeedle ? courses.filter((c) => c.id === courseId || c.name.toLowerCase().includes(programNeedle)) : courses;
+
+  const yearCopy = yearStepCopy(kind, relationship);
+  const yearMax = new Date().getFullYear(); // an admission or graduation year can't be in the future
+  const yearValid = Number.isInteger(batchYear) && batchYear >= MIN_YEAR && batchYear <= yearMax;
+
+  const submitInstitutionMutation =useMutation({
     mutationFn: (input: CreateInstitutionInput) => institutionsApi.submit(input),
     onSuccess: (inst) => {
       setAddCollegeOpen(false);
@@ -337,15 +358,26 @@ export function WriteReviewPage() {
 
       {currentKey === 'course' && (
         <div>
-          <h2 className="mb-2 text-xl">Which course or program?</h2>
+          <h2 className="mb-2 text-xl">Write your program</h2>
           <p className="mb-5 text-[13.5px] text-sub">
-            {kind === 'ADMISSION_PROCESS' ? 'Which program did you apply to?' : 'Optional, but helps other students filter reviews relevant to them.'}
+            {kind === 'ADMISSION_PROCESS'
+              ? 'Type the program you applied to and pick it from the list.'
+              : 'Type your course or program and pick it from the list. Optional, but helps other students filter reviews relevant to them.'}
           </p>
-          {(institutionDetail.data?.courses ?? []).map((c) => (
+          <input
+            value={programQuery}
+            onChange={(e) => setProgramQuery(e.target.value)}
+            placeholder="e.g. B.Tech Computer Science"
+            className="mb-3 w-full rounded-md border border-line px-3 py-2.5 text-sm outline-none focus:border-brand"
+          />
+          {matchingCourses.map((c) => (
             <OptionCard key={c.id} selected={courseId === c.id} onClick={() => setCourseId(c.id)}>
               {c.name}
             </OptionCard>
           ))}
+          {programNeedle && matchingCourses.length === 0 && (
+            <p className="mb-2 text-[12.5px] text-sub">No listed program matches "{programQuery.trim()}" at this college — you can continue without one.</p>
+          )}
           <OptionCard selected={courseId === undefined} onClick={() => setCourseId(undefined)}>
             Prefer not to specify
           </OptionCard>
@@ -362,23 +394,22 @@ export function WriteReviewPage() {
 
       {currentKey === 'year' && (
         <div>
-          <h2 className="mb-2 text-xl">{kind === 'ADMISSION_PROCESS' ? 'When did you apply?' : 'What year or batch?'}</h2>
-          <p className="mb-5 text-[13.5px] text-sub">
-            {kind === 'ADMISSION_PROCESS' ? 'The year you applied or interviewed.' : 'Your admission or graduation year.'}
-          </p>
+          <h2 className="mb-2 text-xl">{yearCopy.heading}</h2>
+          <p className="mb-5 text-[13.5px] text-sub">{yearCopy.helper}</p>
           <input
             type="number"
             value={batchYear}
             onChange={(e) => setBatchYear(Number(e.target.value))}
-            min={1950}
-            max={new Date().getFullYear() + 10}
+            min={MIN_YEAR}
+            max={yearMax}
             className="w-full rounded-md border border-line px-3 py-2.5 text-sm outline-none focus:border-brand"
           />
+          {!yearValid && <p className="mt-1.5 text-xs text-danger">Enter a year between {MIN_YEAR} and {yearMax}.</p>}
           <div className="mt-6 flex justify-between">
             <button onClick={back} className="btn btn-ghost">
               Back
             </button>
-            <button onClick={next} className="btn btn-primary">
+            <button disabled={!yearValid} onClick={next} className="btn btn-primary">
               Continue
             </button>
           </div>
@@ -486,7 +517,7 @@ export function WriteReviewPage() {
             <div className="my-2 text-[12.5px] text-sub">
               {institutionName} ·{' '}
               {kind === 'ADMISSION_PROCESS' ? (admissionOutcome ? admissionOutcomeLabel(admissionOutcome) : '') : relationship ? RELATIONSHIP_LABEL[relationship] : ''} ·{' '}
-              {batchYear}
+              {kind === 'EXPERIENCE' ? `${relationship === 'CURRENT_STUDENT' ? 'Joined' : 'Graduated'} ${batchYear}` : batchYear}
             </div>
             {kind === 'EXPERIENCE' && <div className="text-brand">{'★★★★★'.slice(0, ratings.OVERALL)}</div>}
             <p className="mt-2 text-sm leading-relaxed">"{body}"</p>

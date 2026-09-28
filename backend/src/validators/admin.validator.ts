@@ -5,10 +5,15 @@ export const setUserStatusSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
-export const moderateReviewActionSchema = z.object({
-  action: z.enum(['APPROVE', 'HIDE', 'REMOVE', 'REQUEST_CLARIFICATION']),
-  reason: z.string().max(500).optional(),
-});
+export const moderateReviewActionSchema = z
+  .object({
+    action: z.enum(['APPROVE', 'HIDE', 'REMOVE', 'REQUEST_CLARIFICATION']),
+    reason: z.string().max(500).optional(),
+  })
+  .refine((d) => d.action !== 'REQUEST_CLARIFICATION' || Boolean(d.reason?.trim()), {
+    path: ['reason'],
+    message: 'Tell the author what needs clarifying',
+  });
 
 export const decisionSchema = z.object({
   decision: z.enum(['APPROVED', 'REJECTED']),

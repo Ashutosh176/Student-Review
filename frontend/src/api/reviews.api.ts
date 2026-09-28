@@ -18,7 +18,8 @@ export interface CreateReviewInput {
 export const reviewsApi = {
   latest: (limit = 6) => unwrap<(PublicReview & { institution: { name: string; slug: string } })[]>(api.get('/reviews/latest', { params: { limit } })),
   create: (input: CreateReviewInput) => unwrap<PublicReview>(api.post('/reviews', input)),
-  mine: () => unwrap<(PublicReview & { institution: { name: string; slug: string } })[]>(api.get('/reviews/mine')),
+  mine: () =>
+    unwrap<(PublicReview & { institution: { name: string; slug: string }; clarificationRequest?: string | null })[]>(api.get('/reviews/mine')),
   update: (id: string, input: Partial<CreateReviewInput>) => unwrap<PublicReview>(api.patch(`/reviews/${id}`, input)),
   remove: (id: string) => unwrap<{ deleted: boolean }>(api.delete(`/reviews/${id}`)),
   report: (id: string, reason: string, details?: string) => unwrap(api.post(`/reviews/${id}/report`, { reason, details })),

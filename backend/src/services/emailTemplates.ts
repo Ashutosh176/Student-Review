@@ -113,3 +113,30 @@ export function collegeOtpEmail(input: { code: string }): { html: string; text: 
   const text = `Your StudentReview college verification code is:\n\n${input.code}\n\nThis code expires in 10 minutes. Do not share this code with anyone.`;
   return { html, text };
 }
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Generic status-update email (review approved, verification approved,
+// college approved, clarification requested, ...). Paragraphs are plain
+// text and escaped here — callers may pass admin-written reasons.
+export function noticeEmail(input: {
+  heading: string;
+  paragraphs: string[];
+  ctaLabel?: string;
+  ctaUrl?: string;
+}): { html: string; text: string } {
+  const html = shell({
+    previewText: input.heading,
+    heading: escapeHtml(input.heading),
+    bodyHtml: input.paragraphs.map((p) => `<p style="margin:0 0 12px;white-space:pre-line;">${escapeHtml(p)}</p>`).join(''),
+    ctaLabel: input.ctaLabel,
+    ctaUrl: input.ctaUrl,
+    footerNote: "You're getting this because of activity on your StudentReview account. You can turn these emails off anytime in Settings → Notifications.",
+  });
+  const text = [input.heading, ...input.paragraphs, input.ctaUrl ? `${input.ctaLabel ?? 'Open'}: ${input.ctaUrl}` : '']
+    .filter(Boolean)
+    .join('\n\n');
+  return { html, text };
+}
