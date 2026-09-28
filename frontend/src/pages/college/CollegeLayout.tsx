@@ -6,6 +6,7 @@ import { institutionsApi } from '@/api/institutions.api';
 import { usersApi } from '@/api/users.api';
 import { verificationApi } from '@/api/verification.api';
 import { Badge } from '@/components/Badge';
+import { CollegeLogo } from '@/components/CollegeLogo';
 import { RatingBar } from '@/components/RatingBar';
 import { CollegeTabs } from '@/components/CollegeTabs';
 import { ErrorState } from '@/components/LoadingSkeleton';
@@ -82,9 +83,7 @@ export function CollegeLayout() {
 
       <div className="card mb-4 flex flex-col justify-between gap-4 sm:flex-row">
         <div className="flex gap-4">
-          <div className="flex h-14 w-14 flex-none items-center justify-center rounded-[13px] bg-brand-light font-heading text-lg font-extrabold text-brand">
-            {inst.name.slice(0, 3).toUpperCase()}
-          </div>
+          <CollegeLogo name={inst.name} logoUrl={inst.logoUrl} className="h-14 w-14 rounded-[13px] text-lg" />
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-xl sm:text-[22px]">{inst.name}</h1>

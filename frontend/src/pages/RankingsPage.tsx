@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
+import { CollegeLogo } from '@/components/CollegeLogo';
 import clsx from 'clsx';
 import { Helmet } from 'react-helmet-async';
 import { rankingsApi, type RankingMetric } from '@/api/rankings.api';
@@ -76,9 +77,7 @@ export function RankingsPage() {
                   <td className="px-2 py-2.5 font-semibold">{row.rank}</td>
                   <td className="px-2 py-2.5">
                     <Link to={`/college/${row.institution.slug}`} className="flex items-center gap-2 font-semibold hover:text-brand">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-light font-heading text-[10px] font-bold text-brand">
-                        {row.institution.name.slice(0, 2).toUpperCase()}
-                      </span>
+                      <CollegeLogo name={row.institution.name} logoUrl={row.institution.logoUrl} className="h-7 w-7 rounded-md text-[10px]" />
                       {row.institution.name}
                     </Link>
                   </td>
