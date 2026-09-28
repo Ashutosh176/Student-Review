@@ -7,6 +7,7 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ScrollToTop } from '@/components/ScrollToTop';
 
 import { HomePage } from '@/pages/HomePage';
 import { SearchPage } from '@/pages/SearchPage';
@@ -101,6 +102,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthHydrator />
+      <ScrollToTop />
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
