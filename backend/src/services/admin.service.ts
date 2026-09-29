@@ -5,6 +5,7 @@ import { notify, notifySavedCollegeReviewers, notifyWithEmail } from './notifica
 import { CLARIFICATION_PREFIX, clarificationRequestOf } from '../utils/clarification.js';
 import { getOrCreateRole } from './role.util.js';
 import { deleteLogoImage, storeLogoImage } from '../middlewares/upload.js';
+import { parseOutreachEmails } from './outreach.service.js';
 import { publicReviewWhere } from '../utils/publishing.js';
 import { getPlatformSettings, updatePlatformSettings, type PlatformSettingsInput } from './settings.service.js';
 import type { AdminActionType, InstitutionType, ReviewStatus, RoleName } from '@prisma/client';
@@ -313,6 +314,7 @@ export async function updateInstitution(
     admissionProcess?: string;
     editorialOverview?: string;
     categoryId?: string | null;
+    outreachEmail?: string;
   },
 ) {
   const existing = await prisma.institution.findUnique({ where: { id: institutionId }, include: { locations: { where: { isPrimary: true }, take: 1 } } });
@@ -330,6 +332,7 @@ export async function updateInstitution(
       admissionProcess: input.admissionProcess || null,
       editorialOverview: input.editorialOverview || null,
       categoryId: input.categoryId || null,
+      ...(input.outreachEmail !== undefined ? { outreachEmail: parseOutreachEmails(input.outreachEmail).join(', ') || null } : {}),
       locations: primary
         ? { update: { where: { id: primary.id }, data: { city: input.city, state: input.state } } }
         : { create: { city: input.city, state: input.state, isPrimary: true } },

@@ -9,9 +9,14 @@ const DEFAULTS = {
   minReviewsForRanking: 5,
   proPlanPriceInr: 4999,
   businessPlanPriceInr: 12999,
+  outreachEnabled: false,
+  outreachProOfferMonths: 12,
 };
 
-export type PlatformSettingsInput = Partial<typeof DEFAULTS>;
+export type PlatformSettingsInput = Partial<typeof DEFAULTS> & {
+  outreachContactPhone?: string | null;
+  outreachContactEmail?: string | null;
+};
 
 // Upsert-on-read: the row is created with defaults the first time anything
 // asks for it, so there's no seed step and the table is always readable.

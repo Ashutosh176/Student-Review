@@ -29,6 +29,7 @@ export function AddInstitutionModal({
   initialValues,
   showAdmissionProcess = false,
   topSlot,
+  outreachNote,
 }: {
   open: boolean;
   onClose: () => void;
@@ -45,6 +46,8 @@ export function AddInstitutionModal({
   showAdmissionProcess?: boolean;
   // Rendered above the form fields (edit mode uses it for the logo uploader).
   topSlot?: React.ReactNode;
+  // Edit mode: current first-review outreach status, shown under that field.
+  outreachNote?: string;
 }) {
   const [form, setForm] = useState<CreateInstitutionInput>(EMPTY);
   const categoriesQuery = useQuery({ queryKey: ['admin', 'categories'], queryFn: adminApi.categories, enabled: open });
@@ -153,6 +156,21 @@ export function AddInstitutionModal({
             <div className="field">
               <label>Admission process</label>
               <textarea rows={4} value={form.admissionProcess ?? ''} onChange={(e) => update('admissionProcess', e.target.value)} />
+            </div>
+          )}
+          {showAdmissionProcess && (
+            <div className="field">
+              <label>Outreach email</label>
+              <input
+                value={form.outreachEmail ?? ''}
+                onChange={(e) => update('outreachEmail', e.target.value)}
+                placeholder="info@college.edu.in, admissions@college.edu.in"
+              />
+              <p className="mt-1 text-[11px] text-sub">
+                The college's official contact address(es), comma-separated. When its first review goes public, they get one invitation email
+                with a QR poster link and the free Pro offer.
+                {outreachNote && <b className="mt-0.5 block text-ink">{outreachNote}</b>}
+              </p>
             </div>
           )}
           {showAdmissionProcess && (

@@ -8,6 +8,7 @@ import { extractEmailDomain, GENERIC_EMAIL_DOMAINS } from '../utils/emailDomain.
 import { notify } from './notification.service.js';
 import { sendEmail } from './email.service.js';
 import { getOrCreateRole } from './role.util.js';
+import { grantOfferedPro } from './outreach.service.js';
 
 export async function submitClaim(
   userId: string,
@@ -116,6 +117,8 @@ export async function decideClaim(claimId: string, adminUserId: string, decision
       'You now have organization dashboard access.',
       '/organization/dashboard',
     );
+    // Honour the free Pro promised in the first-review outreach email, if any.
+    await grantOfferedPro(claim.institutionId, orgProfile.id, claim.userId);
   } else {
     await notify(claim.userId, 'CLAIM_REJECTED', 'Your institution claim was not approved', reason);
   }

@@ -5,6 +5,7 @@ import { prisma } from './config/prisma.js';
 import { verifySmtpConnection } from './services/email.service.js';
 import { ensureAdminAccount } from './services/adminBootstrap.service.js';
 import { recomputeAllRankings } from './modules/ranking/ranking.service.js';
+import { expireComplimentarySubscriptions, runFirstReviewOutreach } from './services/outreach.service.js';
 
 const app = createApp();
 
@@ -32,9 +33,22 @@ async function recomputeRankingsInBackground() {
     logger.error({ err }, 'Scheduled ranking recompute failed');
   }
 }
+// First-review outreach emails and complimentary-plan expiry ride the same
+// hourly in-process schedule (see services/outreach.service.ts).
+async function outreachInBackground() {
+  try {
+    const outreach = await runFirstReviewOutreach();
+    const expired = await expireComplimentarySubscriptions();
+    if (outreach.sent || outreach.needsContact || outreach.failed || expired) logger.info({ outreach, expired }, 'Outreach run');
+  } catch (err) {
+    logger.error({ err }, 'Scheduled outreach run failed');
+  }
+}
 if (env.nodeEnv !== 'test') {
   setTimeout(() => void recomputeRankingsInBackground(), 30_000).unref();
   setInterval(() => void recomputeRankingsInBackground(), RANKING_RECOMPUTE_INTERVAL_MS).unref();
+  setTimeout(() => void outreachInBackground(), 60_000).unref();
+  setInterval(() => void outreachInBackground(), RANKING_RECOMPUTE_INTERVAL_MS).unref();
 }
 
 async function shutdown(signal: string) {

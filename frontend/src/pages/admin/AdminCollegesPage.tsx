@@ -373,6 +373,19 @@ function AiSummaryPanel({ institutionId, aiSummary, aiSummaryUpdatedAt }: { inst
   );
 }
 
+function outreachStatusNote(inst: AdminInstitutionRow): string {
+  switch (inst.firstReviewOutreachStatus) {
+    case 'SENT':
+      return `Outreach email sent${inst.firstReviewOutreachAt ? ` on ${new Date(inst.firstReviewOutreachAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}.`;
+    case 'NEEDS_CONTACT':
+      return 'First review is live: add an address and the email goes out within the hour.';
+    case 'SKIPPED':
+      return 'Not sent automatically: this college already had reviews (or was claimed) before outreach started.';
+    default:
+      return "Waiting for this college's first public review.";
+  }
+}
+
 export function AdminCollegesPage() {
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
@@ -694,6 +707,7 @@ export function AdminCollegesPage() {
         submittingLabel="Saving…"
         showAdmissionProcess
         topSlot={editing && <CollegeLogoField institutionId={editing.id} name={editing.name} initialLogoUrl={editing.logoUrl} />}
+        outreachNote={editing ? outreachStatusNote(editing) : undefined}
         initialValues={
           editing
             ? {
@@ -707,6 +721,7 @@ export function AdminCollegesPage() {
                 admissionProcess: editing.admissionProcess ?? '',
                 editorialOverview: editing.editorialOverview ?? '',
                 categoryId: editing.categoryId ?? undefined,
+                outreachEmail: editing.outreachEmail ?? '',
               }
             : undefined
         }

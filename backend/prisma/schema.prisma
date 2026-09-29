@@ -345,6 +345,13 @@ model PlatformSettings {
   // plain rupees avoids a ×100 mistake in the settings UI.
   proPlanPriceInr              Int      @default(4999)
   businessPlanPriceInr         Int      @default(12999)
+  // First-review outreach emails to colleges (off until an admin enables it).
+  // The contact details are the sender's, shown in the email and used as its
+  // Reply-To; kept here rather than in env/repo so they never land in git.
+  outreachEnabled              Boolean  @default(false)
+  outreachContactPhone         String?
+  outreachContactEmail         String?
+  outreachProOfferMonths       Int      @default(12)
   updatedAt                    DateTime @updatedAt
 
   @@map("platform_settings")
@@ -414,6 +421,18 @@ model Institution {
   editorialOverview  String?
   aiSummary          String?
   aiSummaryUpdatedAt DateTime?
+  // First-review outreach (services/outreach.service.ts): once a college's
+  // first review is publicly visible, its contact address gets one invitation
+  // email (QR poster link + free Pro offer). outreachEmail is admin-entered and
+  // may hold several comma-separated addresses. Status is null until then,
+  // NEEDS_CONTACT while waiting for an address, SENT once emailed, SKIPPED for
+  // colleges that already had reviews (or were claimed) before this existed.
+  outreachEmail             String?
+  firstReviewOutreachStatus String?
+  firstReviewOutreachAt     DateTime?
+  // Months of complimentary Pro promised in that email, granted automatically
+  // when the college's claim is approved (organization.service decideClaim).
+  proOfferMonths            Int?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 

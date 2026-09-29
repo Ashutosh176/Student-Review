@@ -167,6 +167,9 @@ export interface AdminInstitutionRow {
   verified: boolean;
   featured: boolean;
   logoUrl?: string | null;
+  outreachEmail?: string | null;
+  firstReviewOutreachStatus?: 'SENT' | 'SKIPPED' | 'NEEDS_CONTACT' | null;
+  firstReviewOutreachAt?: string | null;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string | null;
   submittedBy?: { username: string; email: string } | null;
@@ -194,6 +197,8 @@ export interface CreateInstitutionInput {
   admissionProcess?: string;
   editorialOverview?: string;
   categoryId?: string;
+  // Admin edit only: official address(es) for the first-review outreach email.
+  outreachEmail?: string;
 }
 
 export interface PlatformSettings {
@@ -203,6 +208,10 @@ export interface PlatformSettings {
   minReviewsForRanking: number;
   proPlanPriceInr: number;
   businessPlanPriceInr: number;
+  outreachEnabled: boolean;
+  outreachContactPhone: string | null;
+  outreachContactEmail: string | null;
+  outreachProOfferMonths: number;
 }
 
 export interface AdminFaqRow {

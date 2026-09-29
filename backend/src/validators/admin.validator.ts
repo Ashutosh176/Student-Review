@@ -60,6 +60,16 @@ export const updateInstitutionSchema = z.object({
   admissionProcess: z.string().max(5000).optional(),
   editorialOverview: z.string().max(5000).optional(),
   categoryId: z.string().uuid().optional().or(z.literal('')).nullable(),
+  // Official contact address(es) for the first-review outreach email;
+  // several may be separated by commas.
+  outreachEmail: z
+    .string()
+    .max(500)
+    .optional()
+    .refine(
+      (v) => !v || v.split(/[,;\s]+/).filter(Boolean).every((e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)),
+      'Enter valid email addresses, separated by commas',
+    ),
 });
 
 export const createCategorySchema = z.object({
@@ -105,6 +115,10 @@ export const updatePlatformSettingsSchema = z.object({
   minReviewsForRanking: z.coerce.number().int().min(1).max(100).optional(),
   proPlanPriceInr: z.coerce.number().int().min(0).max(1_000_000).optional(),
   businessPlanPriceInr: z.coerce.number().int().min(0).max(1_000_000).optional(),
+  outreachEnabled: z.boolean().optional(),
+  outreachContactPhone: z.string().trim().max(40).nullable().optional().transform((v) => v || null),
+  outreachContactEmail: z.string().trim().email().nullable().optional().or(z.literal('').transform(() => null)),
+  outreachProOfferMonths: z.coerce.number().int().min(0).max(36).optional(),
 });
 
 export const revokeSchema = z.object({

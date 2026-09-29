@@ -16,6 +16,7 @@ import { ComparePage } from '@/pages/ComparePage';
 import { RankingsPage } from '@/pages/RankingsPage';
 import { WriteReviewPage } from '@/pages/WriteReviewPage';
 import { ClaimProfilePage } from '@/pages/ClaimProfilePage';
+import { PosterPage } from '@/pages/PosterPage';
 import { QuestionDetailPage } from '@/pages/QuestionDetailPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -149,6 +150,7 @@ export default function App() {
         </Route>
 
         <Route path="/claim/:slug" element={<ClaimProfilePage />} />
+        <Route path="/poster/:slug" element={<PosterPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/write-review" element={<WriteReviewPage />} />

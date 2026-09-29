@@ -7,18 +7,20 @@ import { DashboardTopbar } from '@/layouts/DashboardLayout';
 import { EmptyState } from '@/components/LoadingSkeleton';
 import { Toggle } from '@/components/Toggle';
 
+type NumericSettingKey = { [K in keyof PlatformSettings]: PlatformSettings[K] extends number ? K : never }[keyof PlatformSettings];
+
 const ROLE_OPTIONS = ['STUDENT', 'ORGANIZATION', 'MODERATOR', 'ADMIN'] as const;
 
-const SECTIONS = ['Moderation', 'Pricing', 'Categories', 'Rankings', 'Content & FAQs', 'Roles & Permissions', 'Security'] as const;
+const SECTIONS = ['Moderation', 'Pricing', 'Outreach', 'Categories', 'Rankings', 'Content & FAQs', 'Roles & Permissions', 'Security'] as const;
 
-const THRESHOLD_FIELDS: { key: keyof PlatformSettings; label: string; suffix: string; min: number; max: number }[] = [
+const THRESHOLD_FIELDS: { key: NumericSettingKey; label: string; suffix: string; min: number; max: number }[] = [
   { key: 'reportAutoFlagThreshold', label: 'Auto-flag after N reports', suffix: 'reports', min: 1, max: 50 },
   { key: 'rapidSubmissionWindowMinutes', label: 'Rapid-submission window', suffix: 'minutes', min: 1, max: 1440 },
   { key: 'rapidSubmissionCount', label: 'Rapid-submission review count', suffix: 'reviews', min: 1, max: 50 },
   { key: 'minReviewsForRanking', label: 'Minimum reviews to appear in rankings', suffix: 'reviews', min: 1, max: 100 },
 ];
 
-const PRICING_FIELDS: { key: keyof PlatformSettings; label: string }[] = [
+const PRICING_FIELDS: { key: NumericSettingKey; label: string }[] = [
   { key: 'proPlanPriceInr', label: 'Pro plan (₹ / month)' },
   { key: 'businessPlanPriceInr', label: 'Business plan (₹ / month)' },
 ];
@@ -124,6 +126,87 @@ function PricingSection() {
         className="btn btn-primary btn-sm mt-4"
         disabled={mutation.isPending}
         onClick={() => mutation.mutate({ proPlanPriceInr: values.proPlanPriceInr, businessPlanPriceInr: values.businessPlanPriceInr })}
+      >
+        {mutation.isPending ? 'Saving…' : mutation.isSuccess ? 'Saved ✓' : 'Save changes'}
+      </button>
+    </>
+  );
+}
+
+function OutreachSection() {
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: ['admin', 'settings'], queryFn: adminApi.platformSettings });
+  const [form, setForm] = useState<PlatformSettings | null>(null);
+  const values = form ?? query.data;
+
+  const mutation = useMutation({
+    mutationFn: (input: Partial<PlatformSettings>) => adminApi.updatePlatformSettings(input),
+    onSuccess: (updated) => {
+      setForm(updated);
+      qc.invalidateQueries({ queryKey: ['admin', 'settings'] });
+    },
+  });
+
+  if (!values) return null;
+
+  return (
+    <>
+      <h4 className="mb-1 text-[13px]">First-review outreach email</h4>
+      <p className="mb-3 text-[11.5px] text-sub">
+        When a college's first review becomes public (approved, and past its 12-hour publication batch), the address in Admin → Colleges →
+        Edit → "Outreach email" gets one invitation: a link to its printable QR poster at <code>/poster/&lt;college&gt;</code>, the claim link,
+        and the free Pro offer. Checked hourly. If a college has no outreach email yet, you get a notification to add one. Colleges that had
+        reviews before this existed are skipped. Pro is granted automatically when that college's claim is approved, and expires on its own.
+      </p>
+      <Toggle
+        checked={values.outreachEnabled}
+        onChange={(v) => setForm({ ...values, outreachEnabled: v })}
+        label="Send outreach emails automatically"
+        description="Off: nothing is sent, and colleges keep waiting until you turn it on."
+      />
+      <div className="field mt-2">
+        <label>Your phone / WhatsApp (shown in the email)</label>
+        <input
+          value={values.outreachContactPhone ?? ''}
+          onChange={(e) => setForm({ ...values, outreachContactPhone: e.target.value })}
+          placeholder="+91 …"
+        />
+      </div>
+      <div className="field">
+        <label>Your email (shown in the email, and where replies go)</label>
+        <input
+          type="email"
+          value={values.outreachContactEmail ?? ''}
+          onChange={(e) => setForm({ ...values, outreachContactEmail: e.target.value })}
+          placeholder="you@example.com"
+        />
+      </div>
+      <div className="flex items-center justify-between border-b border-line py-2 text-[12.5px]">
+        <span>Free Pro offered (0 = no offer)</span>
+        <span className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={36}
+            value={values.outreachProOfferMonths}
+            onChange={(e) => setForm({ ...values, outreachProOfferMonths: Number(e.target.value) })}
+            className="w-20 rounded-md border border-line px-2 py-1 text-right text-[12.5px]"
+          />
+          <span className="text-sub">months</span>
+        </span>
+      </div>
+      {mutation.isError && <p className="mt-3 text-xs text-danger">{apiErrorMessage(mutation.error)}</p>}
+      <button
+        className="btn btn-primary btn-sm mt-4"
+        disabled={mutation.isPending}
+        onClick={() =>
+          mutation.mutate({
+            outreachEnabled: values.outreachEnabled,
+            outreachContactPhone: values.outreachContactPhone || null,
+            outreachContactEmail: values.outreachContactEmail || null,
+            outreachProOfferMonths: values.outreachProOfferMonths,
+          })
+        }
       >
         {mutation.isPending ? 'Saving…' : mutation.isSuccess ? 'Saved ✓' : 'Save changes'}
       </button>
@@ -459,6 +542,7 @@ export function AdminSettingsPage() {
         <div className="card">
           {section === 'Moderation' && <ModerationSection />}
           {section === 'Pricing' && <PricingSection />}
+          {section === 'Outreach' && <OutreachSection />}
           {section === 'Categories' && <CategoriesSection />}
           {section === 'Rankings' && <RankingsSection />}
           {section === 'Content & FAQs' && <ContentFaqsSection />}
