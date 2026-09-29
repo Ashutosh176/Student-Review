@@ -27,6 +27,12 @@ export default {
         heading: ['Manrope', 'system-ui', 'sans-serif'],
         body: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
       },
+      // Tailwind 3's default scale stops its half-steps at 3.5; the Figma
+      // spacing uses 18px (mb-4.5, gap-4.5, the toggle knob's h/w-4.5), which
+      // were silently generating no CSS without this.
+      spacing: {
+        4.5: '1.125rem',
+      },
       borderRadius: {
         card: '10px',
       },
