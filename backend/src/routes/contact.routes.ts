@@ -26,7 +26,14 @@ router.post(
     await prisma.auditLog.create({
       data: { action: 'CONTACT_FORM_SUBMITTED', entityType: 'ContactMessage', metadata: { name, email, subject, message } },
     });
-    await sendEmail({ to: env.contactTo, subject: `[Contact] ${subject} — ${name}`, text: message });
+    // Include who wrote it (the body used to be the message alone, so there was
+    // no way to answer), and set Reply-To so replying goes straight to them.
+    await sendEmail({
+      to: env.contactTo,
+      replyTo: email,
+      subject: `[Contact] ${subject} — ${name}`,
+      text: `From: ${name} <${email}>\nSubject: ${subject}\n\n${message}\n\n(Reply to this email to answer ${name} directly.)`,
+    });
     ok(res, { received: true }, 201);
   }),
 );

@@ -49,9 +49,9 @@ export function RefundPolicyPage() {
 
       <h2>How to request a refund</h2>
       <p>
-        Use the <Link to="/contact" className="font-semibold text-brand">Contact</Link> page (choose "Institution inquiry") or email{' '}
-        <a href="mailto:no-reply@studentreview.in" className="font-semibold text-brand">no-reply@studentreview.in</a> from the organisation's
-        registered email, with the payment ID from your receipt. We reply within 3 business days.
+        Use the <Link to="/contact?subject=institution" className="font-semibold text-brand">Contact</Link> page (choose "Institution
+        inquiry"), give the organisation's registered email address, and include the payment ID from your receipt. We reply within 3 business
+        days.
       </p>
 
       <h2>When you will get the money</h2>

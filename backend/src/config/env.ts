@@ -23,11 +23,13 @@ export const env = {
     refreshTtl: process.env.JWT_REFRESH_TTL ?? '30d',
   },
 
+  // Where /api/contact messages are delivered. Falls back to the site owner's
+  // ADMIN_EMAIL, never to the no-reply sender address (a message sent there
+  // is simply lost).
+  contactTo: process.env.CONTACT_TO || process.env.ADMIN_EMAIL || 'no-reply@studentreview.in',
+
   // Hours between public-visibility batches for approved reviews (see
   // utils/publishing.ts). 0 disables batching (dev default).
-  // Where /api/contact messages are delivered.
-  contactTo: process.env.CONTACT_TO ?? 'no-reply@studentreview.in',
-
   reviewPublishBatchHours: Number(process.env.REVIEW_PUBLISH_BATCH_HOURS ?? (process.env.NODE_ENV === 'production' ? 12 : 0)),
 
   cookieSecret: required('COOKIE_SECRET', 'dev-cookie-secret-change-me'),

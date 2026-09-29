@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '@/api/client';
 import { apiErrorMessage } from '@/api/client';
 
+const SUBJECTS = ['General question', 'Report a problem', 'Institution inquiry'] as const;
+
 export function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', subject: 'General question', message: '' });
+  // ?subject=institution preselects "Institution inquiry" (used in college outreach emails).
+  const [params] = useSearchParams();
+  const initialSubject = params.get('subject') === 'institution' ? 'Institution inquiry' : 'General question';
+  const [form, setForm] = useState({ name: '', email: '', subject: initialSubject, message: '' });
   const mutation = useMutation({ mutationFn: () => api.post('/contact', form) });
 
   if (mutation.isSuccess) {
@@ -27,7 +33,7 @@ export function ContactPage() {
       <p className="mb-4.5 text-[13px] leading-relaxed text-sub">
         StudentReview (studentreview.in) is operated by Ashutosh Sharma, India.
         <br />
-        Email: <a href="mailto:no-reply@studentreview.in" className="font-semibold text-brand">no-reply@studentreview.in</a> · We reply within 3 business days.
+        Send us a message below and we'll reply to the email you give, usually within 3 business days.
       </p>
       <form
         onSubmit={(e) => {
@@ -46,9 +52,9 @@ export function ContactPage() {
         <div className="field">
           <label>Subject</label>
           <select value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}>
-            <option>General question</option>
-            <option>Report a problem</option>
-            <option>Institution inquiry</option>
+            {SUBJECTS.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
         </div>
         <div className="field">

@@ -20,6 +20,9 @@ interface SendEmailInput {
   subject: string;
   text: string;
   html?: string;
+  // Where "Reply" goes (e.g. the person who filled in the contact form), since
+  // the From address is no-reply.
+  replyTo?: string;
   template?: {
     key: Msg91TemplateKey;
     variables: Record<string, string>;
@@ -116,6 +119,7 @@ async function sendViaSmtp(input: SendEmailInput): Promise<void> {
     await getSmtpTransporter().sendMail({
       from: `StudentReview <${env.smtp.from}>`,
       to: input.to,
+      replyTo: input.replyTo,
       subject: input.subject,
       text: input.text,
       html: input.html,
@@ -155,6 +159,7 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
     const { error } = await getResendClient().emails.send({
       from: `StudentReview <${env.email.from}>`,
       to: input.to,
+      replyTo: input.replyTo,
       subject: input.subject,
       text: input.text,
       html: input.html,
