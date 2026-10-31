@@ -305,6 +305,188 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: 'private-deemed-state-autonomous-college-types',
+    title: 'Private, Deemed, State or Autonomous? What College Labels Mean in India',
+    description:
+      'Central, state, private and deemed universities, institutes of national importance, affiliated and autonomous colleges, and PGDM institutes, explained.',
+    updatedAt: '2026-10-31',
+    relatedColleges: [],
+    blocks: [
+      {
+        type: 'p',
+        text: 'Indian colleges carry labels like "deemed to be university", "autonomous" or "affiliated to". They are not marketing words. They decide who awards your degree, who sets your syllabus and exams, and which regulator you can turn to if something goes wrong.',
+      },
+      { type: 'h2', text: 'Universities: the bodies that award degrees' },
+      {
+        type: 'ul',
+        items: [
+          'Central university: set up by an Act of Parliament and funded by the central government.',
+          'State university: set up by an Act of a state legislature. Many state universities also affiliate colleges and award the degrees for them.',
+          'Private university: set up by an Act of a state legislature with a private sponsoring body. It awards its own degrees, but generally cannot affiliate other colleges.',
+          'Deemed to be university: an institution the central government, on the advice of UGC, has declared a university under Section 3 of the UGC Act. It awards its own degrees.',
+          'Institute of National Importance: declared by an Act of Parliament, such as the IITs, NITs and AIIMS. These award their own degrees.',
+        ],
+      },
+      { type: 'h2', text: 'Colleges: where many students actually study' },
+      {
+        type: 'ul',
+        items: [
+          "Affiliated college: teaches the program, but the affiliating university sets the syllabus, conducts the exams and awards the degree. Your degree carries the university's name.",
+          'Autonomous college: still affiliated, and the degree still comes from the university, but the college sets its own syllabus and conducts its own exams.',
+          'Constituent college: a college run by the university itself, usually on or near its campus.',
+        ],
+      },
+      { type: 'h2', text: 'PGDM institutes: a diploma, not a degree' },
+      {
+        type: 'p',
+        text: 'Many business schools are standalone institutes approved by AICTE. They award a Post Graduate Diploma in Management (PGDM) rather than an MBA degree. A PGDM from a well-regarded institute is widely accepted by employers, but check whether it has the equivalence you need if you plan to pursue a PhD or a government job that asks for a degree.',
+      },
+      { type: 'h2', text: 'What the labels do not tell you' },
+      {
+        type: 'p',
+        text: 'Legal status says nothing about quality. A small affiliated college can teach better than a large private university, and the reverse is just as common. NAAC accreditation, NIRF data and what current students say are better guides to quality. The label only tells you who is responsible for your degree.',
+      },
+      { type: 'h2', text: 'How to check a college yourself' },
+      {
+        type: 'ol',
+        items: [
+          "Find the university on UGC's official list of universities, and check that it is not on UGC's list of fake universities.",
+          'For an affiliated or autonomous college, confirm the affiliation on the university\'s own website, not just the college\'s.',
+          'For engineering, management, pharmacy and similar programs, confirm the exact program is approved by the relevant regulator, such as AICTE.',
+          'Check the NAAC grade and its validity date. Accreditation expires and has to be renewed.',
+          'Read what current students say about how exams, results and degree certificates are actually handled.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'how-to-check-college-placement-claims',
+    title: "How to Check a College's Placement Claims",
+    description:
+      'Highest package, average package and "100% placement" explained, and the questions and data that show what placements really look like.',
+    updatedAt: '2026-10-31',
+    relatedColleges: [],
+    blocks: [
+      {
+        type: 'p',
+        text: 'Placement numbers are the most advertised and least explained figures in Indian admissions. A banner with one large package says very little about what happens to a typical student. These checks help you get from the headline to the real picture.',
+      },
+      { type: 'h2', text: 'Why the headline numbers mislead' },
+      {
+        type: 'ul',
+        items: [
+          'The highest package describes one student, often from one branch, and is sometimes an international offer converted at a favourable exchange rate.',
+          'An average can be pulled up by a few very large offers. The median, the package of the student in the middle, is far more useful.',
+          '"100% placement" usually counts only students who registered for placements, and may leave out those who opted out, did not meet eligibility criteria or did not get an offer.',
+          'Counting offers instead of students inflates the numbers when one student receives several offers.',
+          'A CTC figure can include joining bonuses, relocation allowances, performance pay and stock options that are not part of the monthly salary.',
+        ],
+      },
+      { type: 'h2', text: 'Questions to ask the placement cell' },
+      {
+        type: 'ol',
+        items: [
+          'How many students were in the graduating batch, how many registered for placements, and how many unique students got at least one offer?',
+          'What was the median package, for my branch or specialisation specifically?',
+          'Which companies hired, how many students did each hire, and for what roles?',
+          'How much of the quoted CTC is fixed pay?',
+          'Are internship-to-job conversions and offers from companies linked to the college included?',
+          'Can I see the full placement report rather than a brochure page?',
+        ],
+      },
+      { type: 'h2', text: 'Cross-check against NIRF data' },
+      {
+        type: 'p',
+        text: "Colleges that take part in NIRF submit placement data for their graduating batches, including the number of students placed, the number who went on to higher studies, and the median salary. This data is published with the rankings. Compare it with the college's own claims. Large gaps between the two are worth asking about.",
+      },
+      { type: 'h2', text: 'Talk to the people who were placed (or were not)' },
+      {
+        type: 'ul',
+        items: [
+          "Use the Alumni tab on the college's LinkedIn page to see where recent graduates of your branch actually work.",
+          'Ask final-year students how many of their classmates are still looking for a job.',
+          'Read student reviews for how the placement cell treats students outside the top of the batch.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'questions-to-ask-current-students',
+    title: 'Questions to Ask Current Students Before You Take Admission',
+    description:
+      'What to ask current students about academics, attendance, hostels, safety, hidden fees and placements, and where to find students to ask.',
+    updatedAt: '2026-10-31',
+    relatedColleges: [],
+    blocks: [
+      {
+        type: 'p',
+        text: 'A brochure tells you what a college wants you to know. Current students can tell you what it is like to live there. Twenty minutes with two or three students is one of the most useful things you can do before you accept a seat. These questions help you use that time well.',
+      },
+      { type: 'h2', text: 'Academics' },
+      {
+        type: 'ul',
+        items: [
+          'How many classes are actually taught by permanent faculty?',
+          'What is the attendance rule, and how strictly is it enforced?',
+          'Are exams and results on time, or are there regular delays?',
+          'How easy is it to change branch, pick electives or take a minor?',
+        ],
+      },
+      { type: 'h2', text: 'Hostel, food and daily life' },
+      {
+        type: 'ul',
+        items: [
+          'Is a hostel room guaranteed for every year, and how many students share a room?',
+          'How is the mess food, and can you opt out of it?',
+          'What are the hostel rules on timings, visitors and leaving campus?',
+          'How reliable are the water supply, electricity and internet?',
+        ],
+      },
+      { type: 'h2', text: 'Safety and support' },
+      {
+        type: 'ul',
+        items: [
+          'Is ragging taken seriously, and what happens when someone reports it?',
+          'Who do students go to with a complaint, and does anything change?',
+          'Is there a counsellor or student support cell that students actually use?',
+        ],
+      },
+      { type: 'h2', text: 'Money' },
+      {
+        type: 'ul',
+        items: [
+          'Beyond tuition, what did you pay in the first year for hostel, mess, exams, uniforms, transport and events?',
+          'Did fees go up partway through the course?',
+          'How long did scholarships or refunds take to arrive?',
+        ],
+      },
+      { type: 'h2', text: 'Placements and internships' },
+      {
+        type: 'ul',
+        items: [
+          'How many students in your branch got a job or internship through the college last year?',
+          'Does the placement cell help everyone, or mainly the top of the batch?',
+          'Do students get time off for internships?',
+        ],
+      },
+      { type: 'h2', text: 'The one question to end with' },
+      {
+        type: 'p',
+        text: 'Ask: "If you were choosing again, would you pick this college?" The pause before the answer often tells you as much as the answer itself.',
+      },
+      { type: 'h2', text: 'Where to find students to ask' },
+      {
+        type: 'ul',
+        items: [
+          "The Alumni tab on the college's LinkedIn page, filtered by your branch and recent years.",
+          'A campus visit on a working day, outside the admission office.',
+          'The questions section on the college\'s page here, where current students and alumni answer applicants anonymously.',
+          'Student reviews, which cover many of these questions already. Read several and look for patterns.',
+        ],
+      },
+    ],
+  },
 ];
 
 export function guideSummaries() {

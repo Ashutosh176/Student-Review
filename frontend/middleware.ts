@@ -348,7 +348,7 @@ interface Guide extends GuideSummary {
 const guidesIndexSeo = {
   title: 'College Admission Guides for Indian Students — StudentReview',
   description:
-    'Practical guides to choosing a college in India: approval checks, JoSAA counselling, IIT vs NIT vs IIIT, and how to spot fake college reviews.',
+    'Practical guides to choosing a college in India: approval checks, JoSAA counselling, IIT vs NIT vs IIIT, college types, placement claims and spotting fake reviews.',
 };
 
 function guideStructuredData(guide: GuideSummary, origin: string) {
