@@ -22,7 +22,7 @@ export function RegisterPage() {
     mutationFn: () => authApi.register({ username, email, password, agreedToTerms: true }),
     onSuccess: (res) => {
       setAccessToken(res.accessToken, res.user);
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     },
   });
 

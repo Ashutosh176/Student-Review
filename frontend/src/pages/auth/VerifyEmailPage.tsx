@@ -41,8 +41,8 @@ export function VerifyEmailPage() {
         <>
           <h2 className="mb-2 text-lg">Email verified</h2>
           <p className="text-sm text-sub">Your email address has been confirmed.</p>
-          <Link to="/dashboard" className="btn btn-primary mt-4 w-full justify-center">
-            Go to dashboard
+          <Link to="/" className="btn btn-primary mt-4 w-full justify-center">
+            Continue to StudentReview
           </Link>
         </>
       )}

@@ -21,7 +21,10 @@ export function LoginPage() {
     onSuccess: (res) => {
       setAccessToken(res.accessToken, res.user);
       const from = (location.state as { from?: { pathname?: string; search?: string } })?.from;
-      const target = from?.pathname ? `${from.pathname}${from.search ?? ''}` : '/';
+      // Land on the home page, except when a protected page (e.g. writing a
+      // review) sent them here: then go back to it. Dashboards never count.
+      const isDashboard = /^\/(dashboard|admin|organization)(\/|$)/.test(from?.pathname ?? '');
+      const target = from?.pathname && !isDashboard ? `${from.pathname}${from.search ?? ''}` : '/';
       navigate(target, { replace: true });
     },
   });
