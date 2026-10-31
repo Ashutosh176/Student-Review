@@ -42,7 +42,7 @@ export const env = {
     resendApiKey: process.env.RESEND_API_KEY ?? '',
     // Sender for outreach emails to colleges (outreach.service.ts). The
     // address is a free alias on the no-reply mailbox, which SMTP accepts.
-    outreachFrom: process.env.OUTREACH_FROM ?? 'Student Review <info@studentreview.in>',
+    outreachFrom: process.env.OUTREACH_FROM ?? 'StudentReview.in <info@studentreview.in>',
   },
 
   // GoDaddy/Titan (or any standard) SMTP — EMAIL_PROVIDER=smtp. Never logged;
@@ -63,7 +63,7 @@ export const env = {
     // The domain added + verified under Email → Domains in the MSG91 panel.
     domain: process.env.MSG91_DOMAIN ?? '',
     fromEmail: process.env.MSG91_FROM_EMAIL ?? '',
-    fromName: process.env.MSG91_FROM_NAME ?? 'StudentReview',
+    fromName: process.env.MSG91_FROM_NAME ?? 'StudentReview.in',
     // Each is a separately approved template ID from Email → Templates.
     templates: {
       verifyEmail: process.env.MSG91_TEMPLATE_VERIFY_EMAIL ?? '',

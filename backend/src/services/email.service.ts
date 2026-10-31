@@ -121,7 +121,7 @@ async function sendViaSmtp(input: SendEmailInput): Promise<void> {
   }
   try {
     await getSmtpTransporter().sendMail({
-      from: input.from ?? `StudentReview <${env.smtp.from}>`,
+      from: input.from ?? `StudentReview.in <${env.smtp.from}>`,
       to: input.to,
       replyTo: input.replyTo,
       subject: input.subject,
@@ -161,7 +161,7 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       return;
     }
     const { error } = await getResendClient().emails.send({
-      from: input.from ?? `StudentReview <${env.email.from}>`,
+      from: input.from ?? `StudentReview.in <${env.email.from}>`,
       to: input.to,
       replyTo: input.replyTo,
       subject: input.subject,
