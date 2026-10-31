@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { authApi } from '@/api/auth.api';
@@ -10,7 +10,6 @@ import { AuthCard } from '@/layouts/AuthLayout';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,12 +19,8 @@ export function LoginPage() {
     mutationFn: () => authApi.login({ email, password, rememberMe }),
     onSuccess: (res) => {
       setAccessToken(res.accessToken, res.user);
-      const from = (location.state as { from?: { pathname?: string; search?: string } })?.from;
-      // Land on the home page, except when a protected page (e.g. writing a
-      // review) sent them here: then go back to it. Dashboards never count.
-      const isDashboard = /^\/(dashboard|admin|organization)(\/|$)/.test(from?.pathname ?? '');
-      const target = from?.pathname && !isDashboard ? `${from.pathname}${from.search ?? ''}` : '/';
-      navigate(target, { replace: true });
+      // Always land on the home page after logging in.
+      navigate('/', { replace: true });
     },
   });
 
