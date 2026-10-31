@@ -114,6 +114,7 @@ async function issueOtp(studentVerificationId: string, email: string): Promise<v
   // through startEmailVerification (only resendOtp can recover it).
   void sendEmail({
     to: email,
+    otp: true,
     subject: 'StudentReview College Verification Code',
     text: otpEmailContent.text,
     html: otpEmailContent.html,

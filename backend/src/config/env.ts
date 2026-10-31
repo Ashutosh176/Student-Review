@@ -23,10 +23,9 @@ export const env = {
     refreshTtl: process.env.JWT_REFRESH_TTL ?? '30d',
   },
 
-  // Where /api/contact messages are delivered. Falls back to the site owner's
-  // ADMIN_EMAIL, never to the no-reply sender address (a message sent there
-  // is simply lost).
-  contactTo: process.env.CONTACT_TO || process.env.ADMIN_EMAIL || 'no-reply@studentreview.in',
+  // Where /api/contact messages are delivered: the info@ inbox unless
+  // CONTACT_TO / ADMIN_EMAIL say otherwise. no-reply@ is for one-time codes only.
+  contactTo: process.env.CONTACT_TO || process.env.ADMIN_EMAIL || 'info@studentreview.in',
 
   // Hours between public-visibility batches for approved reviews (see
   // utils/publishing.ts). 0 disables batching (dev default).
@@ -40,9 +39,9 @@ export const env = {
     // once a custom domain is verified in the Resend dashboard.
     from: process.env.EMAIL_FROM ?? 'onboarding@resend.dev',
     resendApiKey: process.env.RESEND_API_KEY ?? '',
-    // Sender for outreach emails to colleges (outreach.service.ts). The
-    // address is a free alias on the no-reply mailbox, which SMTP accepts.
-    outreachFrom: process.env.OUTREACH_FROM ?? 'StudentReview.in <info@studentreview.in>',
+    // Sender for everything except one-time codes (see sendEmail's `otp`).
+    // info@ is a free alias on the no-reply mailbox, which SMTP accepts.
+    infoFrom: process.env.EMAIL_INFO_FROM ?? 'StudentReview.in <info@studentreview.in>',
   },
 
   // GoDaddy/Titan (or any standard) SMTP — EMAIL_PROVIDER=smtp. Never logged;

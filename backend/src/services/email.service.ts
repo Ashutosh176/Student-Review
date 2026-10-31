@@ -20,13 +20,14 @@ interface SendEmailInput {
   subject: string;
   text: string;
   html?: string;
-  // Where "Reply" goes (e.g. the person who filled in the contact form), since
-  // the From address is no-reply.
+  // Where "Reply" goes when it shouldn't be the sender (e.g. the person who
+  // filled in the contact form).
   replyTo?: string;
-  // Full sender ("Name <address>"), for mail that shouldn't come from the
-  // default no-reply sender. Only resend/smtp honour it; the address must be
-  // one the provider lets this account send as (e.g. a mailbox alias).
-  from?: string;
+  // One-time codes and links (OTP, email verification, password reset) are
+  // the only mail sent from the no-reply address; everything else comes from
+  // info@ (env.email.infoFrom) so recipients can reply. Only resend/smtp use
+  // this; MSG91 sends from its own configured address.
+  otp?: boolean;
   template?: {
     key: Msg91TemplateKey;
     variables: Record<string, string>;
@@ -121,7 +122,7 @@ async function sendViaSmtp(input: SendEmailInput): Promise<void> {
   }
   try {
     await getSmtpTransporter().sendMail({
-      from: input.from ?? `StudentReview.in <${env.smtp.from}>`,
+      from: input.otp ? `StudentReview.in <${env.smtp.from}>` : env.email.infoFrom,
       to: input.to,
       replyTo: input.replyTo,
       subject: input.subject,
@@ -161,7 +162,7 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       return;
     }
     const { error } = await getResendClient().emails.send({
-      from: input.from ?? `StudentReview.in <${env.email.from}>`,
+      from: input.otp ? `StudentReview.in <${env.email.from}>` : env.email.infoFrom,
       to: input.to,
       replyTo: input.replyTo,
       subject: input.subject,

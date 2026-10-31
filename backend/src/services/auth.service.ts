@@ -63,6 +63,7 @@ export async function register(input: { username: string; email: string; passwor
   try {
     await sendEmail({
       to: user.email,
+      otp: true,
       subject: 'Verify your StudentReview account',
       text: verifyEmailContent.text,
       html: verifyEmailContent.html,
@@ -147,6 +148,7 @@ export async function forgotPassword(email: string) {
   try {
     await sendEmail({
       to: user.email,
+      otp: true,
       subject: 'Reset your StudentReview password',
       text: resetEmailContent.text,
       html: resetEmailContent.html,
