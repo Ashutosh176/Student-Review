@@ -40,6 +40,9 @@ export const env = {
     // once a custom domain is verified in the Resend dashboard.
     from: process.env.EMAIL_FROM ?? 'onboarding@resend.dev',
     resendApiKey: process.env.RESEND_API_KEY ?? '',
+    // Sender for outreach emails to colleges (outreach.service.ts). The
+    // address is a free alias on the no-reply mailbox, which SMTP accepts.
+    outreachFrom: process.env.OUTREACH_FROM ?? 'Student Review <info@studentreview.in>',
   },
 
   // GoDaddy/Titan (or any standard) SMTP — EMAIL_PROVIDER=smtp. Never logged;

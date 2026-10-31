@@ -91,6 +91,7 @@ export async function runFirstReviewOutreach(): Promise<{ sent: number; needsCon
 
     try {
       await sendEmail({
+        from: env.email.outreachFrom,
         to: recipients.join(', '),
         replyTo: settings.outreachContactEmail ?? undefined,
         subject: email.subject,
@@ -171,6 +172,7 @@ export async function runInviteOutreach(now: Date = new Date()): Promise<{ sent:
 
     try {
       await sendEmail({
+        from: env.email.outreachFrom,
         to: recipients.join(', '),
         replyTo: settings.outreachContactEmail ?? undefined,
         subject: email.subject,
