@@ -11,6 +11,7 @@ const DEFAULTS = {
   businessPlanPriceInr: 12999,
   outreachEnabled: false,
   outreachProOfferMonths: 12,
+  outreachInviteEnabled: false,
 };
 
 export type PlatformSettingsInput = Partial<typeof DEFAULTS> & {

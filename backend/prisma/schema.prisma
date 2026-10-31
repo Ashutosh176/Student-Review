@@ -352,6 +352,9 @@ model PlatformSettings {
   outreachContactPhone         String?
   outreachContactEmail         String?
   outreachProOfferMonths       Int      @default(12)
+  // "Be the first" invitations to colleges that have an outreach email but no
+  // public review yet (outreach.service runInviteOutreach). Separate switch.
+  outreachInviteEnabled        Boolean  @default(false)
   updatedAt                    DateTime @updatedAt
 
   @@map("platform_settings")
@@ -433,6 +436,10 @@ model Institution {
   // Months of complimentary Pro promised in that email, granted automatically
   // when the college's claim is approved (organization.service decideClaim).
   proOfferMonths            Int?
+  // When the one-time "be the first" invitation went out (before any review).
+  // Independent of firstReviewOutreachStatus: an invited college still gets
+  // the first-review email once a review goes live.
+  inviteOutreachAt          DateTime?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 

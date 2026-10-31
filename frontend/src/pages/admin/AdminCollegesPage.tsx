@@ -374,6 +374,13 @@ function AiSummaryPanel({ institutionId, aiSummary, aiSummaryUpdatedAt }: { inst
 }
 
 function outreachStatusNote(inst: AdminInstitutionRow): string {
+  const invited = inst.inviteOutreachAt
+    ? `"Be the first" invitation sent on ${new Date(inst.inviteOutreachAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}. `
+    : '';
+  return invited + firstReviewStatusNote(inst);
+}
+
+function firstReviewStatusNote(inst: AdminInstitutionRow): string {
   switch (inst.firstReviewOutreachStatus) {
     case 'SENT':
       return `Outreach email sent${inst.firstReviewOutreachAt ? ` on ${new Date(inst.firstReviewOutreachAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}.`;

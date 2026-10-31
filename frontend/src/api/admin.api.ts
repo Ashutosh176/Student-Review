@@ -170,6 +170,7 @@ export interface AdminInstitutionRow {
   outreachEmail?: string | null;
   firstReviewOutreachStatus?: 'SENT' | 'SKIPPED' | 'NEEDS_CONTACT' | null;
   firstReviewOutreachAt?: string | null;
+  inviteOutreachAt?: string | null;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string | null;
   submittedBy?: { username: string; email: string } | null;
@@ -212,6 +213,7 @@ export interface PlatformSettings {
   outreachContactPhone: string | null;
   outreachContactEmail: string | null;
   outreachProOfferMonths: number;
+  outreachInviteEnabled: boolean;
 }
 
 export interface AdminFaqRow {

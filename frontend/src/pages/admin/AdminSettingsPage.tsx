@@ -164,6 +164,12 @@ function OutreachSection() {
         label="Send outreach emails automatically"
         description="Off: nothing is sent, and colleges keep waiting until you turn it on."
       />
+      <Toggle
+        checked={values.outreachInviteEnabled}
+        onChange={(v) => setForm({ ...values, outreachInviteEnabled: v })}
+        label={'Also invite colleges before their first review'}
+        description={'Colleges with an outreach email but no public review get one "be the first" email (same poster, claim link and Pro offer). Up to 4 an hour, Mon–Sat 10:00–17:00 IST.'}
+      />
       <div className="field mt-2">
         <label>Your phone / WhatsApp (shown in the email)</label>
         <input
@@ -205,6 +211,7 @@ function OutreachSection() {
             outreachContactPhone: values.outreachContactPhone || null,
             outreachContactEmail: values.outreachContactEmail || null,
             outreachProOfferMonths: values.outreachProOfferMonths,
+            outreachInviteEnabled: values.outreachInviteEnabled,
           })
         }
       >

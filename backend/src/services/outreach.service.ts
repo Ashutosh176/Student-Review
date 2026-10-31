@@ -3,7 +3,7 @@ import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
 import { publicReviewWhere } from '../utils/publishing.js';
 import { sendEmail } from './email.service.js';
-import { firstReviewOutreachEmail } from './emailTemplates.js';
+import { firstReviewOutreachEmail, inviteOutreachEmail } from './emailTemplates.js';
 import { notifyWithEmail } from './notification.service.js';
 import { getPlatformSettings } from './settings.service.js';
 
@@ -120,6 +120,79 @@ export async function runFirstReviewOutreach(): Promise<{ sent: number; needsCon
       `${inst.name}'s first review went live, so the invitation email (QR poster link and ${settings.outreachProOfferMonths} months of Pro free) was sent to ${recipients.join(', ')}.`,
       `/college/${inst.slug}`,
     );
+    result.sent++;
+  }
+
+  return result;
+}
+
+// "Be the first" invitations: colleges with an outreach email but no public
+// review yet get one email (QR poster + claim link + Pro offer). These are cold
+// emails, so they're throttled for deliverability and only go out on Indian
+// working hours (Mon–Sat, 10:00–17:00 IST), oldest-entered address first.
+export const INVITES_PER_RUN = 4;
+
+export function isInviteSendingWindow(now: Date = new Date()): boolean {
+  const ist = new Date(now.getTime() + 330 * 60 * 1000); // UTC+5:30, read via getUTC*
+  const hour = ist.getUTCHours();
+  return ist.getUTCDay() !== 0 && hour >= 10 && hour < 17;
+}
+
+export async function runInviteOutreach(now: Date = new Date()): Promise<{ sent: number; failed: number }> {
+  const result = { sent: 0, failed: 0 };
+  const settings = await getPlatformSettings();
+  if (!settings.outreachInviteEnabled || !isInviteSendingWindow(now)) return result;
+
+  const candidates = await prisma.institution.findMany({
+    where: {
+      status: 'APPROVED',
+      claimed: false,
+      inviteOutreachAt: null,
+      firstReviewOutreachStatus: null,
+      outreachEmail: { not: null },
+      reviews: { none: publicReviewWhere() },
+    },
+    orderBy: { updatedAt: 'asc' },
+    take: INVITES_PER_RUN,
+    select: { id: true, name: true, slug: true, type: true, website: true, verified: true, outreachEmail: true },
+  });
+
+  for (const inst of candidates) {
+    const recipients = parseOutreachEmails(inst.outreachEmail);
+    if (recipients.length === 0) continue;
+
+    const email = inviteOutreachEmail({
+      institution: inst,
+      siteOrigin: env.clientOrigin,
+      proOfferMonths: settings.outreachProOfferMonths,
+      proPriceInr: settings.proPlanPriceInr,
+      contact: { phone: settings.outreachContactPhone, email: settings.outreachContactEmail },
+    });
+
+    try {
+      await sendEmail({
+        to: recipients.join(', '),
+        replyTo: settings.outreachContactEmail ?? undefined,
+        subject: email.subject,
+        text: email.text,
+        html: email.html,
+      });
+    } catch (err) {
+      logger.error({ err, institutionId: inst.id }, 'Invite outreach email failed');
+      result.failed++;
+      continue;
+    }
+
+    await prisma.institution.update({
+      where: { id: inst.id },
+      data: {
+        inviteOutreachAt: new Date(),
+        proOfferMonths: settings.outreachProOfferMonths > 0 ? settings.outreachProOfferMonths : null,
+      },
+    });
+    await prisma.auditLog.create({
+      data: { action: 'INVITE_OUTREACH_SENT', entityType: 'Institution', entityId: inst.id, metadata: { to: recipients, subject: email.subject } },
+    });
     result.sent++;
   }
 

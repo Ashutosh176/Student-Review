@@ -181,7 +181,22 @@ function emailDomain(website: string | null): string | null {
   }
 }
 
+export type InviteOutreachEmailInput = Omit<OutreachEmailInput, 'firstReview'>;
+
 export function firstReviewOutreachEmail(input: OutreachEmailInput): { subject: string; text: string; html: string } {
+  return outreachEmail(input, input.firstReview);
+}
+
+// "Be the first" variant for a college that has a profile but no review yet.
+export function inviteOutreachEmail(input: InviteOutreachEmailInput): { subject: string; text: string; html: string } {
+  return outreachEmail(input, null);
+}
+
+// Both outreach emails share one body; firstReview is null for the invitation.
+function outreachEmail(
+  input: InviteOutreachEmailInput,
+  firstReview: OutreachEmailInput['firstReview'] | null,
+): { subject: string; text: string; html: string } {
   const { institution: inst, siteOrigin } = input;
   const noun = institutionNoun(inst.type);
   const plural = noun === 'university' ? 'universities' : `${noun}s`;
@@ -195,9 +210,14 @@ export function firstReviewOutreachEmail(input: OutreachEmailInput): { subject: 
   const offer = months === 12 ? 'one year' : `${months} months`;
   const price = `₹${input.proPriceInr.toLocaleString('en-IN')}`;
 
-  const subject = hasOffer
-    ? `${inst.name} on StudentReview.in: ${offer} of Pro free, and a QR poster for your students`
-    : `${inst.name} on StudentReview.in: a QR poster for your students`;
+  const subject = firstReview
+    ? hasOffer
+      ? `${inst.name} on StudentReview.in: ${offer} of Pro free, and a QR poster for your students`
+      : `${inst.name} on StudentReview.in: a QR poster for your students`
+    : hasOffer
+      ? `Invite your students to review ${inst.name}, with ${offer} of Pro free`
+      : `Invite your students to review ${inst.name} on StudentReview.in`;
+  const proFor = months === 12 ? 'year' : `${months} months`;
 
   const contactLines = [
     input.contact.phone ? `Phone / WhatsApp: ${input.contact.phone}` : null,
@@ -211,7 +231,9 @@ export function firstReviewOutreachEmail(input: OutreachEmailInput): { subject: 
     "I'm Ashutosh Sharma, founder of StudentReview.in, an independent platform where students review Indian colleges anonymously so that applicants and parents can choose with first-hand information.",
     `${inst.name} already has a profile on the platform:`,
     { link: pageUrl },
-    `It has just received its first review, from ${reviewerPhrase(input.firstReview, noun)}. We'd like to invite the ${noun} to help more of its students share their experience, and to claim its official profile ${hasOffer ? `with our Pro plan free for the first ${months === 12 ? 'year' : `${months} months`}` : 'at no cost'}.`,
+    firstReview
+      ? `It has just received its first review, from ${reviewerPhrase(firstReview, noun)}. We'd like to invite the ${noun} to help more of its students share their experience, and to claim its official profile ${hasOffer ? `with our Pro plan free for the first ${proFor}` : 'at no cost'}.`
+      : `It doesn't have any student reviews yet, so applicants visiting the page have nothing first-hand to go on. We'd like to invite the ${noun} to be among the first to share its students' experience, and to claim its official profile ${hasOffer ? `with our Pro plan free for the first ${proFor}` : 'at no cost'}.`,
     { h: '1. Share the review link with your students' },
     `Here is a ready-to-print A4 poster with a QR code that opens ${inst.name}'s review form directly (open it and choose "Download PDF"). It works well on notice boards, in hostels and libraries, in student WhatsApp groups, or in an email to the student body:`,
     { link: posterUrl },
@@ -222,7 +244,7 @@ export function firstReviewOutreachEmail(input: OutreachEmailInput): { subject: 
     { h: hasOffer ? `2. Claim your official profile, with ${offer} of Pro free` : '2. Claim your official profile for free' },
     ...(hasOffer
       ? [
-          `Claiming the profile is always free. As one of the first ${plural} to receive a review, we'd also like to give ${inst.name} our Pro plan (normally ${price} a month) free for ${months} months from the date your claim is approved. There's no payment, card or commitment involved, and afterwards you can simply continue on the Free plan.`,
+          `Claiming the profile is always free. As one of the first ${plural} ${firstReview ? 'to receive a review' : 'to join'}, we'd also like to give ${inst.name} our Pro plan (normally ${price} a month) free for ${months} months from the date your claim is approved. There's no payment, card or commitment involved, and afterwards you can simply continue on the Free plan.`,
         ]
       : []),
     `With a claimed profile, the ${noun} can:`,
@@ -262,8 +284,10 @@ export function firstReviewOutreachEmail(input: OutreachEmailInput): { subject: 
     .join('\n\n');
 
   const html = shell({
-    previewText: `${inst.name} has its first student review on StudentReview.in`,
-    heading: escapeHtml(`${inst.name} has its first review`),
+    previewText: firstReview
+      ? `${inst.name} has its first student review on StudentReview.in`
+      : `A QR poster so ${inst.name}'s students can review it on StudentReview.in`,
+    heading: escapeHtml(firstReview ? `${inst.name} has its first review` : `Invite your students to review ${inst.name}`),
     bodyHtml: blocks
       .map((b) => {
         if (typeof b === 'string') return `<p style="margin:0 0 12px;white-space:pre-line;">${escapeHtml(b)}</p>`;
@@ -274,7 +298,9 @@ export function firstReviewOutreachEmail(input: OutreachEmailInput): { subject: 
       .join(''),
     ctaLabel: 'Open your QR poster',
     ctaUrl: posterUrl,
-    footerNote: `You're receiving this because ${escapeHtml(inst.name)} has a public profile on StudentReview.in and has just received its first student review. This is a one-time email.`,
+    footerNote: firstReview
+      ? `You're receiving this because ${escapeHtml(inst.name)} has a public profile on StudentReview.in and has just received its first student review. This is a one-time email.`
+      : `You're receiving this because ${escapeHtml(inst.name)} has a public profile on StudentReview.in. This is a one-time invitation: we'll only write again if a student reviews the ${noun}. Reply "unsubscribe" and we won't email you again.`,
   });
 
   return { subject, text, html };

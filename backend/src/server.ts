@@ -5,7 +5,7 @@ import { prisma } from './config/prisma.js';
 import { verifySmtpConnection } from './services/email.service.js';
 import { ensureAdminAccount } from './services/adminBootstrap.service.js';
 import { recomputeAllRankings } from './modules/ranking/ranking.service.js';
-import { expireComplimentarySubscriptions, runFirstReviewOutreach } from './services/outreach.service.js';
+import { expireComplimentarySubscriptions, runFirstReviewOutreach, runInviteOutreach } from './services/outreach.service.js';
 
 const app = createApp();
 
@@ -38,8 +38,11 @@ async function recomputeRankingsInBackground() {
 async function outreachInBackground() {
   try {
     const outreach = await runFirstReviewOutreach();
+    const invites = await runInviteOutreach();
     const expired = await expireComplimentarySubscriptions();
-    if (outreach.sent || outreach.needsContact || outreach.failed || expired) logger.info({ outreach, expired }, 'Outreach run');
+    if (outreach.sent || outreach.needsContact || outreach.failed || invites.sent || invites.failed || expired) {
+      logger.info({ outreach, invites, expired }, 'Outreach run');
+    }
   } catch (err) {
     logger.error({ err }, 'Scheduled outreach run failed');
   }

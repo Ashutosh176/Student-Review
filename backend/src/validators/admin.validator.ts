@@ -119,6 +119,7 @@ export const updatePlatformSettingsSchema = z.object({
   outreachContactPhone: z.string().trim().max(40).nullable().optional().transform((v) => v || null),
   outreachContactEmail: z.string().trim().email().nullable().optional().or(z.literal('').transform(() => null)),
   outreachProOfferMonths: z.coerce.number().int().min(0).max(36).optional(),
+  outreachInviteEnabled: z.boolean().optional(),
 });
 
 export const revokeSchema = z.object({

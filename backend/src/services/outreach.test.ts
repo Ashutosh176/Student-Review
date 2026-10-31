@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { firstReviewOutreachEmail, type OutreachEmailInput } from './emailTemplates.js';
-import { parseOutreachEmails } from './outreach.service.js';
+import { firstReviewOutreachEmail, inviteOutreachEmail, type OutreachEmailInput } from './emailTemplates.js';
+import { isInviteSendingWindow, parseOutreachEmails } from './outreach.service.js';
 
 const base: OutreachEmailInput = {
   institution: { name: 'Quantum University', slug: 'quantum-university', type: 'PRIVATE_UNIVERSITY', website: 'https://www.quantumuniversity.edu.in/', verified: false },
@@ -60,5 +60,33 @@ describe('parseOutreachEmails', () => {
   it('splits, lowercases and drops invalid entries', () => {
     expect(parseOutreachEmails(' Info@X.edu, admissions@x.edu ; bad, ')).toEqual(['info@x.edu', 'admissions@x.edu']);
     expect(parseOutreachEmails(null)).toEqual([]);
+  });
+});
+
+describe('inviteOutreachEmail', () => {
+  it('invites a college with no reviews, without mentioning a first review', () => {
+    const { subject, text, html } = inviteOutreachEmail(base);
+    expect(subject).toBe('Invite your students to review Quantum University, with one year of Pro free');
+    expect(text).toContain("doesn't have any student reviews yet");
+    expect(text).toContain('As one of the first universities to join');
+    expect(text).toContain('https://studentreview.in/poster/quantum-university');
+    expect(text).not.toContain('first review');
+    expect(html).toContain('Reply "unsubscribe"');
+  });
+
+  it('drops the Pro offer when months is 0', () => {
+    const { subject, text } = inviteOutreachEmail({ ...base, proOfferMonths: 0 });
+    expect(subject).toBe('Invite your students to review Quantum University on StudentReview.in');
+    expect(text).not.toContain('Pro');
+  });
+});
+
+describe('isInviteSendingWindow', () => {
+  it('only allows Mon–Sat, 10:00–17:00 IST', () => {
+    expect(isInviteSendingWindow(new Date('2026-11-02T04:30:00Z'))).toBe(true); // Mon 10:00 IST
+    expect(isInviteSendingWindow(new Date('2026-11-02T04:29:00Z'))).toBe(false); // Mon 09:59 IST
+    expect(isInviteSendingWindow(new Date('2026-11-02T11:30:00Z'))).toBe(false); // Mon 17:00 IST
+    expect(isInviteSendingWindow(new Date('2026-11-01T06:00:00Z'))).toBe(false); // Sun 11:30 IST
+    expect(isInviteSendingWindow(new Date('2026-10-31T18:45:00Z'))).toBe(false); // Sun 00:15 IST (Sat in UTC)
   });
 });
