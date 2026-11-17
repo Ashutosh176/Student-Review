@@ -148,7 +148,32 @@ function overviewDescription(inst: InstitutionDetail, reviewCount: string, overa
   return `${head} Placements, faculty, hostel and campus life from real students.`;
 }
 
-function collegeSeoMeta(inst: InstitutionDetail, tab: CollegeTab): { title: string; description: string; path: string } {
+// A sub-tab with nothing on it yet (no reviews, courses, cutoffs or
+// questions) is a near-empty page. Its canonical points at the college's
+// main page so search engines fold it in there instead of crawling hundreds
+// of thin pages. backend/src/routes/sitemap.routes.ts applies the same rule.
+function collegeTabHasContent(inst: InstitutionDetail, tab: CollegeTab, questionCount?: number): boolean {
+  switch (tab) {
+    case 'reviews':
+    case 'placements':
+      return inst.summary.reviewCount > 0;
+    case 'courses':
+      return inst.courses.length > 0;
+    case 'admissions':
+      return inst.admissionCutoffs.length > 0 || Boolean(inst.admissionProcess);
+    case 'questions':
+      return (questionCount ?? 0) > 0;
+    default:
+      return true;
+  }
+}
+
+function collegeSeoMeta(inst: InstitutionDetail, tab: CollegeTab, questionCount?: number): { title: string; description: string; path: string } {
+  const meta = tabSeoMeta(inst, tab);
+  return collegeTabHasContent(inst, tab, questionCount) ? meta : { ...meta, path: `/college/${inst.slug}` };
+}
+
+function tabSeoMeta(inst: InstitutionDetail, tab: CollegeTab): { title: string; description: string; path: string } {
   const overall = overallRating(inst);
   const reviewCount = inst.summary.reviewCount.toLocaleString('en-IN');
   const base = `/college/${inst.slug}`;
@@ -437,7 +462,12 @@ async function handleCollege(request: Request, origin: string, slug: string, tab
   const inst = ((await instRes.json()) as { data: InstitutionDetail }).data;
   const reviews = reviewsRes.ok ? (((await reviewsRes.json()) as { data: PublicReview[] }).data ?? []) : [];
 
-  const seo = collegeSeoMeta(inst, tab);
+  let questionCount: number | undefined;
+  if (tab === 'questions') {
+    const qRes = await fetch(`${API_BASE}/institutions/${slug}/questions`);
+    questionCount = qRes.ok ? ((((await qRes.json()) as { data: unknown[] }).data ?? []).length) : 0;
+  }
+  const seo = collegeSeoMeta(inst, tab, questionCount);
   const html = injectHead(await fetchIndexHtml(request), {
     title: seo.title,
     description: seo.description,

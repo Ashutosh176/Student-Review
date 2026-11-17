@@ -29,7 +29,7 @@ export function CollegeQuestionsPage() {
     },
   });
 
-  const seo = collegeSeoMeta(inst, 'questions');
+  const seo = collegeSeoMeta(inst, 'questions', query.data?.length);
 
   return (
     <div>

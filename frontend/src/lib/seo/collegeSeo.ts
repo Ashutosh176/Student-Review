@@ -76,7 +76,32 @@ function overviewDescription(inst: InstitutionDetail, reviewCount: string, overa
   return `${head} Placements, faculty, hostel and campus life from real students.`;
 }
 
-export function collegeSeoMeta(inst: InstitutionDetail, tab: CollegeTab): CollegeSeoMeta {
+// A sub-tab with nothing on it yet (no reviews, courses, cutoffs or
+// questions) is a near-empty page. Its canonical points at the college's
+// main page so search engines fold it in there instead of crawling hundreds
+// of thin pages. backend/src/routes/sitemap.routes.ts applies the same rule.
+export function collegeTabHasContent(inst: InstitutionDetail, tab: CollegeTab, questionCount?: number): boolean {
+  switch (tab) {
+    case 'reviews':
+    case 'placements':
+      return inst.summary.reviewCount > 0;
+    case 'courses':
+      return inst.courses.length > 0;
+    case 'admissions':
+      return inst.admissionCutoffs.length > 0 || Boolean(inst.admissionProcess);
+    case 'questions':
+      return (questionCount ?? 0) > 0;
+    default:
+      return true;
+  }
+}
+
+export function collegeSeoMeta(inst: InstitutionDetail, tab: CollegeTab, questionCount?: number): CollegeSeoMeta {
+  const meta = tabSeoMeta(inst, tab);
+  return collegeTabHasContent(inst, tab, questionCount) ? meta : { ...meta, path: `/college/${inst.slug}` };
+}
+
+function tabSeoMeta(inst: InstitutionDetail, tab: CollegeTab): CollegeSeoMeta {
   const overall = overallRating(inst);
   const reviewCount = inst.summary.reviewCount.toLocaleString('en-IN');
   const base = `/college/${inst.slug}`;
