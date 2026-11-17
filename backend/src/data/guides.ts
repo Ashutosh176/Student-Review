@@ -191,10 +191,10 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: 'iit-vs-nit-vs-iiit',
-    title: "IIT vs NIT vs IIIT: What's Actually Different",
+    title: 'IIT vs NIT vs IIIT: Differences, and Which Is Better for You',
     description:
-      'How IITs, NITs and IIITs differ in admission, how they are run, and what to compare when choosing between a college and a branch.',
-    updatedAt: '2026-09-26',
+      'How IITs, NITs and IIITs differ in admission and governance, what an IIIT actually is, and whether an IIIT or an NIT is the better choice for you.',
+    updatedAt: '2026-11-17',
     relatedColleges: [
       'indian-institute-of-technology-bombay',
       'indian-institute-of-technology-madras',
@@ -221,6 +221,44 @@ export const GUIDES: Guide[] = [
       {
         type: 'p',
         text: 'IITs and NITs are Institutions of National Importance set up under Acts of Parliament. IIITs are a mix: some are central institutions, some are run as public-private partnerships, and others are state or deemed universities. That affects fees, governance and how much each campus has grown, so it is worth checking for the specific IIIT you are considering.',
+      },
+      { type: 'h2', text: 'What is an IIIT, exactly?' },
+      {
+        type: 'p',
+        text: '"IIIT" (Indian or International Institute of Information Technology) is a name shared by institutes that are set up and run in quite different ways. They broadly fall into four groups:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Centrally funded IIITs, such as IIIT Allahabad and ABV-IIITM Gwalior, run by the central government.',
+          'Public-private partnership (PPP) IIITs, set up jointly by the central government, a state government and industry partners. Several of these are relatively new.',
+          'State IIITs, such as IIIT-Delhi, set up by a state government.',
+          'Deemed universities, such as IIIT Hyderabad and IIIT Bangalore, which run their own admissions.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Most IIITs concentrate on computer science, electronics and related fields, while NITs and IITs offer a much wider range of engineering branches.',
+      },
+      { type: 'h2', text: 'Is an IIIT better than an NIT?' },
+      {
+        type: 'p',
+        text: 'Neither is better across the board. The established IIITs have strong reputations in computer science, and some are among the most sought-after options for that branch. Some newer IIITs are still building their campuses, faculty and placement networks. NITs are older and larger, offer many branches, and have long-standing recruiter relationships. Compare the specific institute and program:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'If you want computer science, compare the CSE program at the IIIT with the CSE program at the NIT: curriculum, electives, faculty and the branch-wise placement report.',
+          'If you are unsure about your branch, an NIT gives more room to switch or add a minor in a different field.',
+          'For a newer IIIT, check whether it runs from its own permanent campus, and how many batches have graduated.',
+          'Check the full fees. PPP and state IIITs can cost noticeably more than NITs.',
+          'Ask current students how the teaching, hostels and administration actually work day to day.',
+        ],
+      },
+      { type: 'h2', text: 'IIT vs NIT' },
+      {
+        type: 'p',
+        text: 'IITs admit through JEE Advanced and are generally the hardest to get into, with large research programs and alumni networks. NITs admit through JEE Main and are spread across almost every state. The older NITs are highly regarded, and a sought-after branch at a top NIT can be a better fit than a branch you do not want at an IIT. The questions below apply to that choice too.',
       },
       { type: 'h2', text: 'College or branch? The real trade-off' },
       {
@@ -483,6 +521,125 @@ export const GUIDES: Guide[] = [
           'A campus visit on a working day, outside the admission office.',
           'The questions section on the college\'s page here, where current students and alumni answer applicants anonymously.',
           'Student reviews, which cover many of these questions already. Read several and look for patterns.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'how-to-choose-an-engineering-branch',
+    title: 'How to Choose an Engineering Branch: CSE, ECE, Mechanical and More',
+    description:
+      'What the main engineering branches involve, how to choose between them, and when the branch should matter more than the college.',
+    updatedAt: '2026-11-17',
+    relatedColleges: [],
+    blocks: [
+      {
+        type: 'p',
+        text: 'Your branch decides what you study for four years and shapes your first job. Many students pick it from cutoff ranks and what relatives say is in demand. A little time spent on what each branch actually involves makes the choice easier and much less likely to be regretted.',
+      },
+      { type: 'h2', text: 'What the main branches involve' },
+      {
+        type: 'ul',
+        items: [
+          'Computer Science (CSE): programming, algorithms, systems and software. Most of the work happens at a computer.',
+          'Electronics and Communication (ECE): circuits, signals, communication systems and embedded hardware, with a fair amount of programming too.',
+          'Electrical (EE): power systems, machines, control and electronics.',
+          'Mechanical: design, manufacturing, thermodynamics and machines. A broad branch that connects to many industries.',
+          'Civil: structures, construction, transport and water. Closely linked to infrastructure and government projects.',
+          'Chemical: processes that turn raw materials into products, used in industries such as energy, pharmaceuticals and materials.',
+          'Newer programs, such as AI and Data Science, are often specialised versions of computer science. Check how much of the curriculum overlaps with core CSE.',
+        ],
+      },
+      { type: 'h2', text: 'Questions that help you decide' },
+      {
+        type: 'ol',
+        items: [
+          'Which school subjects did you enjoy, rather than just score well in? Physics-heavy branches feel very different from programming-heavy ones.',
+          'Do you like building physical things, working with circuits, or writing code? Try a free introductory course in each before deciding.',
+          'What kind of work do you picture yourself doing? Talk to two or three people working in that field.',
+          'How easy is it to switch? Many students in other branches move into software through minors, electives or self-study, while moving into core engineering roles from CSE is less common.',
+        ],
+      },
+      { type: 'h2', text: 'Branch or college?' },
+      {
+        type: 'p',
+        text: 'The usual dilemma is a branch you want at a less famous college, against a branch you are unsure about at a better-known one. If you are confident about your interest, the branch usually matters more. If you are not, a stronger college with flexible branch-change and minor policies keeps more doors open. Check those policies for the specific college before you decide.',
+      },
+      { type: 'h2', text: 'Check the program, not just the branch name' },
+      {
+        type: 'ul',
+        items: [
+          'The curriculum and electives of that branch at that college',
+          'The branch-wise placement report, including the median and the kinds of roles offered',
+          'Labs, project work and internship opportunities',
+          'What current students of that branch say in reviews',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'nirf-ranking-explained',
+    title: 'NIRF Ranking Explained: How to Use It When Choosing a College',
+    description:
+      "What India's NIRF ranking measures, its limits, and how to use the data colleges submit to NIRF, not just the rank, when choosing a college.",
+    updatedAt: '2026-11-17',
+    relatedColleges: [],
+    blocks: [
+      {
+        type: 'p',
+        text: "The National Institutional Ranking Framework (NIRF) is the Ministry of Education's annual ranking of Indian higher education institutions. It is the most widely quoted ranking in India, and also one of the most misunderstood.",
+      },
+      { type: 'h2', text: 'What NIRF measures' },
+      {
+        type: 'p',
+        text: 'NIRF scores participating institutions on five broad parameters:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Teaching, learning and resources, including faculty strength and student numbers',
+          'Research and professional practice, including publications and patents',
+          'Graduation outcomes, including placements, higher studies and median salary',
+          'Outreach and inclusivity, including regional and gender diversity',
+          'Perception, based on surveys of employers, academics and others',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Rankings are published separately by category, such as overall, university, engineering, management, medical and law.',
+      },
+      { type: 'h2', text: 'What the rank does not tell you' },
+      {
+        type: 'ul',
+        items: [
+          'Participation is voluntary, so many colleges, including some good ones, do not appear at all.',
+          'Research carries a lot of weight. A research-heavy institute can outrank a college that is better at teaching undergraduates.',
+          'The rank covers the whole institution, not the branch or program you will join.',
+          'It says little about daily life: hostels, safety, the administration or how students are treated.',
+        ],
+      },
+      { type: 'h2', text: 'Use the data, not just the rank' },
+      {
+        type: 'p',
+        text: "Every participating institution's submitted data is published alongside the rankings. It is often more useful than the rank itself:",
+      },
+      {
+        type: 'ol',
+        items: [
+          'Open the data sheet for each college you are considering.',
+          'Compare the number of graduates placed or going to higher studies, and the median salary, for the program level you are applying to.',
+          'Look at faculty numbers relative to student numbers.',
+          "Cross-check these figures with the college's own placement claims. Large gaps are worth asking about.",
+        ],
+      },
+      { type: 'h2', text: 'What to combine NIRF with' },
+      {
+        type: 'ul',
+        items: [
+          'Approval of the exact program by the relevant regulator',
+          'The branch-wise placement report from the college',
+          'NAAC accreditation and its validity date',
+          'What current students say about teaching, hostels and the administration',
         ],
       },
     ],
