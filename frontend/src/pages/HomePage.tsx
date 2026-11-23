@@ -77,8 +77,6 @@ export function HomePage() {
         <SearchBar variant="hero" />
       </section>
 
-      <CollegesThatListenBand />
-
       <section className="px-4 py-9 sm:px-7">
         <h3 className="mb-4 text-lg">Trending this week</h3>
         {trendingQuery.isLoading && <CardSkeletonGrid />}
@@ -129,6 +127,8 @@ export function HomePage() {
       </section>
 
       <HowItWorks institutionCount={statsQuery.data?.institutionCount} />
+
+      <CollegesThatListenBand />
 
       <section className="px-4 py-12 text-center sm:px-7">
         <h3 className="mb-2 text-lg">For Colleges</h3>
