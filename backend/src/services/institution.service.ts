@@ -292,6 +292,37 @@ async function reviewSortScores(sort: 'rating' | 'reviews' | 'trending'): Promis
   return scores;
 }
 
+// "Colleges that listen to their students": colleges that have claimed their
+// official profile (so they can answer reviews publicly but never edit or
+// remove them). Most official replies first, then longest-standing claim.
+export async function listListeningInstitutions() {
+  const institutions = await prisma.institution.findMany({
+    where: { status: 'APPROVED', claimed: true, hideFromListening: false },
+    include: { locations: { where: { isPrimary: true }, take: 1 }, category: true, organizationProfile: { select: { createdAt: true } } },
+  });
+  const ids = institutions.map((i) => i.id);
+  const responses = ids.length
+    ? await prisma.reviewResponse.findMany({
+        where: { review: { institutionId: { in: ids }, ...publicReviewWhere() } },
+        select: { review: { select: { institutionId: true } } },
+      })
+    : [];
+  const responseCounts = new Map<string, number>();
+  for (const r of responses) responseCounts.set(r.review.institutionId, (responseCounts.get(r.review.institutionId) ?? 0) + 1);
+
+  const summaries = await ratingSummariesFor(ids);
+  return institutions
+    .map((inst) => ({
+      ...serializePublicInstitution(inst),
+      summary: summaries.get(inst.id)!,
+      listening: {
+        responseCount: responseCounts.get(inst.id) ?? 0,
+        claimedAt: (inst.organizationProfile?.createdAt ?? inst.updatedAt).toISOString(),
+      },
+    }))
+    .sort((a, b) => b.listening.responseCount - a.listening.responseCount || a.listening.claimedAt.localeCompare(b.listening.claimedAt));
+}
+
 export async function searchInstitutions(q: string, limit: number) {
   const institutions = await prisma.institution.findMany({
     where: {

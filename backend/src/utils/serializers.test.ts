@@ -46,6 +46,14 @@ describe('anonymity boundary', () => {
     expect(out.name).toBe('X');
   });
 
+  it('strips outreach bookkeeping from public institutions', () => {
+    const out = serializePublicInstitution({
+      id: 'i', name: 'X', outreachEmail: 'info@college.edu', firstReviewOutreachStatus: 'SENT', firstReviewOutreachAt: at,
+      inviteOutreachAt: at, proOfferMonths: 6, hideFromListening: false,
+    });
+    expect(Object.keys(out).sort()).toEqual(['id', 'name']);
+  });
+
   it('strips author and reporter ids from admin rows', () => {
     const out = stripIdentity({ id: 'x', userId: USER_ID, reporterUserId: USER_ID, body: 'b' });
     expect(out).toEqual({ id: 'x', body: 'b' });

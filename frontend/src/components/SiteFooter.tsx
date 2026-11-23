@@ -23,6 +23,9 @@ export function SiteFooter() {
           <Link to="/guides" className="mb-1.5 block text-[#4B4F5E]">
             Guides
           </Link>
+          <Link to="/colleges-that-listen" className="mb-1.5 block text-[#4B4F5E]">
+            Colleges that listen
+          </Link>
           <Link to="/pricing" className="mb-1.5 block text-[#4B4F5E]">
             Pricing
           </Link>

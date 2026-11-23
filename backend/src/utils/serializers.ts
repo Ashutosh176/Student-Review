@@ -131,7 +131,21 @@ export function serializeReportForAdmin(report: ReviewReport) {
 // proposed the college), rejectionReason and the org's contactEmail — none of
 // which belong in an unauthenticated response.
 export function serializePublicInstitution<T extends Record<string, any>>(inst: T) {
-  const { submittedByUserId: _s, submittedBy: _sb, rejectionReason: _r, organizationProfile, ...rest } = inst;
+  // Outreach bookkeeping (who we emailed, what Pro we offered) and listing
+  // flags are internal; only the admin API returns them.
+  const {
+    submittedByUserId: _s,
+    submittedBy: _sb,
+    rejectionReason: _r,
+    outreachEmail: _oe,
+    firstReviewOutreachStatus: _fs,
+    firstReviewOutreachAt: _fa,
+    inviteOutreachAt: _ia,
+    proOfferMonths: _pm,
+    hideFromListening: _hl,
+    organizationProfile,
+    ...rest
+  } = inst;
   if (!organizationProfile) return rest;
   const { contactEmail: _c, ...safeProfile } = organizationProfile;
   return { ...rest, organizationProfile: safeProfile };

@@ -49,6 +49,11 @@ export interface InstitutionSummary {
   summary: { reviewCount: number; verifiedCount: number; ratings: RatingSummaryItem[] };
 }
 
+// A claimed college on /colleges-that-listen (GET /institutions/listening).
+export interface ListeningInstitution extends InstitutionSummary {
+  listening: { responseCount: number; claimedAt: string };
+}
+
 export interface CourseDetail {
   id: string;
   name: string;

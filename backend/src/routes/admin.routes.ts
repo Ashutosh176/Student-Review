@@ -19,6 +19,7 @@ import {
   revokeSchema,
   setEntranceExamsSchema,
   setFeaturedSchema,
+  setHideFromListeningSchema,
   setVerifiedSchema,
   setJobStatusSchema,
   setUserRoleSchema,
@@ -94,6 +95,12 @@ router.patch(
   authorize('ADMIN'),
   validate({ params: idParamSchema, body: setFeaturedSchema }),
   adminController.setInstitutionFeatured,
+);
+router.patch(
+  '/institutions/:id/hide-from-listening',
+  authorize('ADMIN'),
+  validate({ params: idParamSchema, body: setHideFromListeningSchema }),
+  adminController.setInstitutionHideFromListening,
 );
 router.post('/institutions/:id/logo', authorize('ADMIN'), uploadLogo, validate({ params: idParamSchema }), adminController.setInstitutionLogo);
 router.delete('/institutions/:id/logo', authorize('ADMIN'), validate({ params: idParamSchema }), adminController.removeInstitutionLogo);

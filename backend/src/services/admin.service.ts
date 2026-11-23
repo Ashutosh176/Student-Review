@@ -385,6 +385,10 @@ export async function listInstitutionsAdmin(page = 1, pageSize = 20, status?: 'P
   return { total, page, pageSize, items };
 }
 
+export async function setInstitutionHideFromListening(institutionId: string, hideFromListening: boolean) {
+  return prisma.institution.update({ where: { id: institutionId }, data: { hideFromListening } });
+}
+
 export async function setInstitutionFeatured(institutionId: string, featured: boolean) {
   return prisma.institution.update({ where: { id: institutionId }, data: { featured } });
 }

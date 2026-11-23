@@ -20,6 +20,7 @@ const router = Router();
 router.get('/', validate({ query: listInstitutionsQuerySchema }), institutionController.list);
 router.post('/', authenticate, validate({ body: createInstitutionSchema }), institutionController.submit);
 router.get('/stats', institutionController.stats);
+router.get('/listening', institutionController.listening);
 router.get('/filters', institutionController.filters);
 router.get('/search', validate({ query: searchQuerySchema }), institutionController.search);
 router.get('/compare', validate({ query: compareQuerySchema }), institutionController.compare);

@@ -431,6 +431,10 @@ export function AdminCollegesPage() {
     mutationFn: ({ id, featured }: { id: string; featured: boolean }) => adminApi.setFeatured(id, featured),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
   });
+  const listeningMutation = useMutation({
+    mutationFn: ({ id, hide }: { id: string; hide: boolean }) => adminApi.setHideFromListening(id, hide),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
+  });
   const verifyMutation = useMutation({
     mutationFn: ({ id, verified }: { id: string; verified: boolean }) => adminApi.setVerified(id, verified),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'institutions'] }),
@@ -607,6 +611,18 @@ export function AdminCollegesPage() {
                         <button onClick={() => featureMutation.mutate({ id: inst.id, featured: !inst.featured })} className="text-brand hover:underline">
                           {inst.featured ? 'Unfeature' : 'Feature'}
                         </button>{' '}
+                        {inst.claimed && (
+                          <>
+                            <button
+                              disabled={listeningMutation.isPending}
+                              onClick={() => listeningMutation.mutate({ id: inst.id, hide: !inst.hideFromListening })}
+                              className="text-brand hover:underline"
+                              title="Show or hide this claimed college on /colleges-that-listen"
+                            >
+                              {inst.hideFromListening ? 'Show in "listen"' : 'Hide from "listen"'}
+                            </button>{' '}
+                          </>
+                        )}
                         {inst.status === 'APPROVED' && (
                           <>
                             <button

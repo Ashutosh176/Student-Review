@@ -166,6 +166,8 @@ export interface AdminInstitutionRow {
   type: string;
   verified: boolean;
   featured: boolean;
+  claimed?: boolean;
+  hideFromListening?: boolean;
   logoUrl?: string | null;
   outreachEmail?: string | null;
   firstReviewOutreachStatus?: 'SENT' | 'SKIPPED' | 'NEEDS_CONTACT' | null;
@@ -348,6 +350,8 @@ export const adminApi = {
     const res = await api.get<ApiSuccess<AdminInstitutionRow[]>>('/admin/institutions', { params });
     return { items: res.data.data, total: res.data.meta?.total ?? 0 };
   },
+  setHideFromListening: (id: string, hideFromListening: boolean) =>
+    unwrap(api.patch(`/admin/institutions/${id}/hide-from-listening`, { hideFromListening })),
   setFeatured: (id: string, featured: boolean) => unwrap(api.patch(`/admin/institutions/${id}/featured`, { featured })),
   setVerified: (id: string, verified: boolean) => unwrap(api.patch(`/admin/institutions/${id}/verified`, { verified })),
   uploadLogo: (id: string, file: File) => {

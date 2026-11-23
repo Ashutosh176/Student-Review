@@ -18,6 +18,10 @@ export const filters = asyncHandler(async (req, res) => {
   ok(res, result);
 });
 
+export const listening = asyncHandler(async (_req, res) => {
+  ok(res, await institutionService.listListeningInstitutions());
+});
+
 export const list = asyncHandler(async (req, res) => {
   const result = await institutionService.listInstitutions(req.query as never);
   ok(res, result.items, 200, { total: result.total, page: result.page, pageSize: result.pageSize });

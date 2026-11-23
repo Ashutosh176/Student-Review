@@ -55,6 +55,12 @@ export function rankingSeo(label: string) {
 
 // ---- guides (mirrored in middleware.ts — keep the two in sync) ----
 
+export const collegesThatListenSeo = {
+  title: 'Colleges That Listen to Their Students — StudentReview',
+  description:
+    'Indian colleges that have claimed their official StudentReview profile to hear from their students and respond to reviews in public.',
+};
+
 export const guidesIndexSeo = {
   title: 'College Admission Guides for Indian Students — StudentReview',
   description:

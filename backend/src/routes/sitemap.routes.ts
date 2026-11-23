@@ -31,7 +31,7 @@ router.get('/sitemap.xml', async (req, res, next) => {
       },
     });
 
-    const staticPaths = ['/', '/search', '/colleges', '/compare', '/rankings', '/guides', '/about', '/contact', '/privacy', '/terms', '/community-guidelines', '/trust'];
+    const staticPaths = ['/', '/search', '/colleges', '/compare', '/rankings', '/guides', '/colleges-that-listen', '/about', '/contact', '/privacy', '/terms', '/community-guidelines', '/trust'];
 
     // A college's sub-tabs are listed only once they have something on them.
     // Empty tabs were ~500 near-blank URLs that Google left "Discovered –

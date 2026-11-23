@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { InstitutionDetail, InstitutionSummary, JobListing, PublicReview, QuestionSummary, ReviewKind } from '@/types';
+import type { InstitutionDetail, InstitutionSummary, ListeningInstitution, JobListing, PublicReview, QuestionSummary, ReviewKind } from '@/types';
 import type { ApiSuccess } from './client';
 import type { CreateInstitutionInput } from './admin.api';
 
@@ -29,6 +29,10 @@ export const institutionsApi = {
   },
   filters: async (state?: string) => {
     const res = await api.get<ApiSuccess<SearchFilterOptions>>('/institutions/filters', { params: state ? { state } : undefined });
+    return res.data.data;
+  },
+  listening: async () => {
+    const res = await api.get<ApiSuccess<ListeningInstitution[]>>('/institutions/listening');
     return res.data.data;
   },
   list: async (params: ListInstitutionsParams) => {

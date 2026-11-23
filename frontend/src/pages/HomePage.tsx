@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { institutionsApi } from '@/api/institutions.api';
 import { reviewsApi } from '@/api/reviews.api';
 import { CollegeCard } from '@/components/CollegeCard';
+import { ListeningCollegeCard } from '@/components/ListeningCollegeCard';
 import { ReviewCard } from '@/components/ReviewCard';
 import { HowItWorks } from '@/components/HowItWorks';
 import { SearchBar } from '@/components/SearchBar';
@@ -25,6 +26,7 @@ export function HomePage() {
     queryKey: ['institutions', 'top-rated'],
     queryFn: () => institutionsApi.list({ sort: 'rating', pageSize: 4 }),
   });
+  const listeningQuery = useQuery({ queryKey: ['institutions', 'listening'], queryFn: institutionsApi.listening, staleTime: 5 * 60 * 1000 });
   const latestReviewsQuery = useQuery({ queryKey: ['reviews', 'latest'], queryFn: () => reviewsApi.latest(3) });
 
   // The header's nav/search transition tracks this continuously (0 = hero
@@ -113,6 +115,22 @@ export function HomePage() {
           </div>
         )}
 
+        {listeningQuery.data && listeningQuery.data.length > 0 && (
+          <>
+            <div className="mb-4 mt-9 flex items-baseline justify-between gap-3">
+              <h3 className="text-lg">Colleges that listen to their students</h3>
+              <Link to="/colleges-that-listen" className="shrink-0 text-sm text-brand hover:underline">
+                See all
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+              {listeningQuery.data.slice(0, 4).map((inst) => (
+                <ListeningCollegeCard key={inst.id} institution={inst} />
+              ))}
+            </div>
+          </>
+        )}
+
         {latestReviewsQuery.data && latestReviewsQuery.data.length > 0 && (
           <>
             <h3 className="mb-4 mt-9 text-lg">Latest student reviews</h3>
@@ -129,7 +147,13 @@ export function HomePage() {
 
       <section className="px-4 py-12 text-center sm:px-7">
         <h3 className="mb-2 text-lg">For Colleges</h3>
-        <p className="mx-auto mb-5 max-w-md text-sm text-sub">Claim your official profile to respond to reviews and access reputation analytics.</p>
+        <p className="mx-auto mb-5 max-w-md text-sm text-sub">
+          Claim your official profile to respond to reviews and access reputation analytics. Claimed colleges are featured among{' '}
+          <Link to="/colleges-that-listen" className="text-brand hover:underline">
+            colleges that listen to their students
+          </Link>
+          .
+        </p>
         <Link to="/colleges" className="btn btn-primary">
           Claim Your Profile
         </Link>

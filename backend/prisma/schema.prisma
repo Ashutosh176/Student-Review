@@ -406,6 +406,9 @@ model Institution {
   verified           Boolean           @default(false)
   claimed            Boolean           @default(false)
   featured           Boolean           @default(false)
+  // Claimed colleges appear on /colleges-that-listen unless an admin hides
+  // them (institution.service listListeningInstitutions).
+  hideFromListening  Boolean           @default(false)
   status             InstitutionStatus @default(APPROVED)
   submittedByUserId  String?
   rejectionReason    String?

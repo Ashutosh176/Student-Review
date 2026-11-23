@@ -77,6 +77,7 @@ export const createCategorySchema = z.object({
 });
 
 export const setFeaturedSchema = z.object({ featured: z.boolean() });
+export const setHideFromListeningSchema = z.object({ hideFromListening: z.boolean() });
 
 export const setVerifiedSchema = z.object({ verified: z.boolean(), reason: z.string().max(500).optional() });
 

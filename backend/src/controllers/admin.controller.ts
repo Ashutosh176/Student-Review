@@ -217,6 +217,10 @@ export const decideInstitutionSubmission = asyncHandler(async (req, res) => {
   ok(res, institution);
 });
 
+export const setInstitutionHideFromListening = asyncHandler(async (req, res) => {
+  ok(res, await adminService.setInstitutionHideFromListening(req.params.id, req.body.hideFromListening));
+});
+
 export const setInstitutionFeatured = asyncHandler(async (req, res) => {
   const institution = await adminService.setInstitutionFeatured(req.params.id, req.body.featured);
   ok(res, institution);
