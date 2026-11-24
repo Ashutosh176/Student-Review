@@ -240,6 +240,11 @@ export const GUIDES: Guide[] = [
         type: 'p',
         text: 'Most IIITs concentrate on computer science, electronics and related fields, while NITs and IITs offer a much wider range of engineering branches.',
       },
+      { type: 'h2', text: 'IIIT kya hota hai? (in short)' },
+      {
+        type: 'p',
+        text: 'IIIT ka matlab hai Indian (ya International) Institute of Information Technology. Ye mainly computer science, electronics aur IT se jude courses padhate hain. Kuch IIIT central government ke hain, kuch public-private partnership (PPP) mein chalte hain, kuch state ke hain, aur kuch deemed universities hain. Zyada tar IIIT mein admission JEE Main aur JoSAA se hota hai, lekin IIIT Hyderabad aur IIIT-Delhi jaise kuch institute apna alag admission process chalate hain. Kaunsa IIIT accha hai, ye uske program, faculty, campus aur placements dekh kar tay karein, sirf naam se nahi.',
+      },
       { type: 'h2', text: 'Is an IIIT better than an NIT?' },
       {
         type: 'p',
@@ -579,10 +584,10 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: 'nirf-ranking-explained',
-    title: 'NIRF Ranking Explained: How to Use It When Choosing a College',
+    title: 'NIRF Ranking Meaning: What It Measures and How to Use It',
     description:
-      "What India's NIRF ranking measures, its limits, and how to use the data colleges submit to NIRF, not just the rank, when choosing a college.",
-    updatedAt: '2026-11-17',
+      "What NIRF ranking means, what India's national ranking measures, its limits, and how to use the data colleges submit to NIRF when choosing a college.",
+    updatedAt: '2026-11-24',
     relatedColleges: [],
     blocks: [
       {
