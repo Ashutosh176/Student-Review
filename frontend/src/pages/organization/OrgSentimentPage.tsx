@@ -3,9 +3,10 @@ import { Helmet } from 'react-helmet-async';
 import { organizationApi } from '@/api/organization.api';
 import { DashboardTopbar } from '@/layouts/DashboardLayout';
 import { EmptyState } from '@/components/LoadingSkeleton';
+import { PRO_FEATURES, UpgradePrompt, isPlanRequiredError } from '@/components/UpgradePrompt';
 
 export function OrgSentimentPage() {
-  const query = useQuery({ queryKey: ['organization', 'sentiment'], queryFn: organizationApi.sentiment });
+  const query = useQuery({ queryKey: ['organization', 'sentiment'], queryFn: organizationApi.sentiment, retry: (n, err) => !isPlanRequiredError(err) && n < 2 });
 
   return (
     <div>
@@ -17,6 +18,9 @@ export function OrgSentimentPage() {
         Reviews are automatically tagged by topic (Placement, Faculty, Hostel, Fees, Infrastructure, Administration, Campus
         Life) based on their text, then classified positive/neutral/negative. Topics with no mentions yet aren't shown.
       </p>
+      {isPlanRequiredError(query.error) && (
+        <UpgradePrompt plan="Pro" title="See what students say about each part of college life" features={PRO_FEATURES} />
+      )}
       {query.data && query.data.length === 0 && (
         <EmptyState icon="😊" title="Not enough topic-specific feedback yet" description="This fills in as more reviews mention specific topics." />
       )}

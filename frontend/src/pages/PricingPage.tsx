@@ -9,18 +9,18 @@ export function PricingPage() {
   const prices = useQuery({ queryKey: ['public-plan-prices'], queryFn: organizationApi.publicPlanPrices, staleTime: 5 * 60 * 1000 });
 
   const plans = [
-    { name: 'Free', price: '₹0', period: 'forever', features: ['Claim your official profile', 'Basic profile management', 'Publish official responses to reviews'] },
+    { name: 'Free', price: '₹0', period: 'forever', features: ['Claim your official profile', 'Keep its details up to date', 'Reply publicly to reviews', 'Answer applicants\' questions', 'Basic dashboard: reviews, rating, unanswered reviews'] },
     {
       name: 'Pro',
       price: prices.data ? inr(prices.data.pro) : '…',
       period: 'per 30 days',
-      features: ['Everything in Free', 'Advanced analytics', 'Sentiment analysis by topic', 'Competitor comparison'],
+      features: ['Everything in Free', 'Response rate and verified-review share', 'Rating trend, month by month', 'Sentiment analysis, overall and by topic'],
     },
     {
       name: 'Business',
       price: prices.data ? inr(prices.data.business) : '…',
       period: 'per 30 days',
-      features: ['Everything in Pro', 'Job & internship listings', 'Featured placement in search'],
+      features: ['Everything in Pro', 'Job & internship listings', 'Listed first in the default college listing'],
     },
   ];
 

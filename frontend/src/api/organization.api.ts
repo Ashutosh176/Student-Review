@@ -8,13 +8,16 @@ interface OrgMembership {
   institution: InstitutionDetail;
 }
 
+// Free plans get only totalReviews/unansweredCount, with locked: true; the
+// rest is Pro (backend organization.controller analytics).
 interface OrgAnalytics {
+  locked: boolean;
   totalReviews: number;
-  verifiedReviews: number;
-  responseRate: number;
   unansweredCount: number;
-  sentimentBreakdown: { positive: number; neutral: number; negative: number };
-  ratingTrend: { month: string; average: number }[];
+  verifiedReviews?: number;
+  responseRate?: number;
+  sentimentBreakdown?: { positive: number; neutral: number; negative: number };
+  ratingTrend?: { month: string; average: number }[];
 }
 
 interface TopicSentiment {

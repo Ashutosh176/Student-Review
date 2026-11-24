@@ -6,9 +6,12 @@ import { organizationApi } from '@/api/organization.api';
 import { DashboardTopbar } from '@/layouts/DashboardLayout';
 import { Badge } from '@/components/Badge';
 import { EmptyState } from '@/components/LoadingSkeleton';
+import { BUSINESS_FEATURES, UpgradePrompt } from '@/components/UpgradePrompt';
+import { useOrgContext } from './OrgLayout';
 
 export function OrgJobsPage() {
   const qc = useQueryClient();
+  const canPost = useOrgContext().organization.plan === 'BUSINESS';
   const isInternshipsRoute = useLocation().pathname.endsWith('/internships');
   const defaultType = isInternshipsRoute ? 'INTERNSHIP' : 'JOB';
   const [showForm, setShowForm] = useState(false);
@@ -44,11 +47,19 @@ export function OrgJobsPage() {
         crumb="Organization"
         title={isInternshipsRoute ? 'Internships' : 'Jobs'}
         right={
-          <button className="btn btn-primary btn-sm" onClick={() => setShowForm((v) => !v)}>
-            + Post {isInternshipsRoute ? 'an internship' : 'a job'}
-          </button>
+          canPost ? (
+            <button className="btn btn-primary btn-sm" onClick={() => setShowForm((v) => !v)}>
+              + Post {isInternshipsRoute ? 'an internship' : 'a job'}
+            </button>
+          ) : undefined
         }
       />
+
+      {!canPost && (
+        <div className="mb-4">
+          <UpgradePrompt plan="Business" title="Post jobs and internships for your students and graduates" features={BUSINESS_FEATURES} />
+        </div>
+      )}
 
       {showForm && (
         <form

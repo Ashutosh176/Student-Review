@@ -5,6 +5,7 @@ import * as orgService from '../services/organization.service.js';
 import * as jobService from '../services/job.service.js';
 import * as paymentService from '../services/payment.service.js';
 import { ratingSummaryFor } from '../services/institution.service.js';
+import { effectivePlan, planAtLeast, requirePlan } from '../services/plan.service.js';
 import { storeUploadedDocument } from '../middlewares/upload.js';
 
 // inviteTokenHash/inviteTokenExpiresAt are internal — never let them reach a client response.
@@ -23,10 +24,15 @@ export const submitClaim = asyncHandler(async (req, res) => {
 
 export const myOrganization = asyncHandler(async (req, res) => {
   const membership = await orgService.getOrgMembershipForUser(req.user!.id);
-  const summary = await ratingSummaryFor(membership.organizationProfile.institutionId);
+  const [summary, plan] = await Promise.all([
+    ratingSummaryFor(membership.organizationProfile.institutionId),
+    effectivePlan(membership.organizationProfileId),
+  ]);
   ok(res, {
     role: membership.role,
-    organization: membership.organizationProfile,
+    // The plan they can actually use right now (see plan.service), which is
+    // what the dashboard should show, not the stored column.
+    organization: { ...membership.organizationProfile, plan },
     institution: { ...membership.organizationProfile.institution, summary },
   });
 });
@@ -96,14 +102,24 @@ export const verifyCheckout = asyncHandler(async (req, res) => {
   ok(res, result);
 });
 
+// Free plans get the dashboard basics (review count, unanswered reviews);
+// the rest of the analytics is Pro.
 export const analytics = asyncHandler(async (req, res) => {
   const membership = await orgService.getOrgMembershipForUser(req.user!.id);
-  const data = await orgService.getOrgAnalytics(membership.organizationProfile.institutionId);
-  ok(res, data);
+  const [data, plan] = await Promise.all([
+    orgService.getOrgAnalytics(membership.organizationProfile.institutionId),
+    effectivePlan(membership.organizationProfileId),
+  ]);
+  if (!planAtLeast(plan, 'PRO')) {
+    ok(res, { locked: true, totalReviews: data.totalReviews, unansweredCount: data.unansweredCount });
+    return;
+  }
+  ok(res, { locked: false, ...data });
 });
 
 export const sentiment = asyncHandler(async (req, res) => {
   const membership = await orgService.getOrgMembershipForUser(req.user!.id);
+  await requirePlan(membership.organizationProfileId, 'PRO', 'Sentiment by topic');
   const data = await orgService.getSentimentByTopic(membership.organizationProfile.institutionId);
   ok(res, data);
 });
@@ -116,12 +132,14 @@ export const listJobs = asyncHandler(async (req, res) => {
 
 export const createJob = asyncHandler(async (req, res) => {
   const membership = await orgService.getOrgMembershipForUser(req.user!.id);
+  await requirePlan(membership.organizationProfileId, 'BUSINESS', 'Job and internship listings');
   const job = await jobService.createJob(membership.organizationProfileId, membership.organizationProfile.institutionId, req.body);
   ok(res, job, 201);
 });
 
 export const publishJob = asyncHandler(async (req, res) => {
   const membership = await orgService.getOrgMembershipForUser(req.user!.id);
+  await requirePlan(membership.organizationProfileId, 'BUSINESS', 'Job and internship listings');
   const job = await jobService.publishJob(membership.organizationProfileId, req.params.jobId);
   ok(res, job);
 });

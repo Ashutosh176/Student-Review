@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError.js';
 import { toSlug } from '../utils/slug.js';
 import { publicReviewWhere } from '../utils/publishing.js';
 import { serializePublicInstitution } from '../utils/serializers.js';
+import { businessInstitutionIds } from './plan.service.js';
 import { bayesianAverage } from '../modules/ranking/ranking.service.js';
 import type { InstitutionType, RatingCategory } from '@prisma/client';
 
@@ -203,7 +204,19 @@ export async function listInstitutions(params: {
   let total: number;
   let institutions: Awaited<ReturnType<typeof prisma.institution.findMany<{ where: typeof where; include: typeof include }>>>;
 
-  if (params.sort === 'rating' || params.sort === 'reviews' || params.sort === 'trending') {
+  // Business plan: listed first in the default ("relevant") order only. The
+  // review-driven sorts are never for sale.
+  const businessIds = params.sort === 'relevant' ? await businessInstitutionIds() : new Set<string>();
+
+  if (businessIds.size > 0) {
+    const candidates = await prisma.institution.findMany({ where, select: { id: true }, orderBy: fallbackOrder });
+    const ordered = [...candidates.filter((c) => businessIds.has(c.id)), ...candidates.filter((c) => !businessIds.has(c.id))];
+    total = ordered.length;
+    const pageIds = ordered.slice(skip, skip + params.pageSize).map((o) => o.id);
+    const rows = await prisma.institution.findMany({ where: { id: { in: pageIds } }, include });
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    institutions = pageIds.map((id) => byId.get(id)).filter((r): r is NonNullable<typeof r> => Boolean(r));
+  } else if (params.sort === 'rating' || params.sort === 'reviews' || params.sort === 'trending') {
     // Review-driven sorts must rank across the WHOLE result set, then page.
     // (Sorting only the fetched page made "Top rated" on the homepage just
     // the first 4 colleges alphabetically, re-ordered among themselves.)

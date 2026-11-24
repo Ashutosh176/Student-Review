@@ -16,18 +16,18 @@ import { loadRazorpayScript } from '@/utils/razorpay';
 // matches what Razorpay actually charges at checkout.
 function plansFor(prices?: { pro: number; business: number }) {
   return [
-    { id: 'FREE' as const, name: 'Free', price: '₹0', features: 'Claim profile · Basic management · Official responses' },
+    { id: 'FREE' as const, name: 'Free', price: '₹0', features: 'Profile · Replies to reviews · Q&A · Basic dashboard' },
     {
       id: 'PRO' as const,
       name: 'Pro',
       price: prices ? `₹${prices.pro.toLocaleString('en-IN')}/mo` : '…',
-      features: '+ Advanced analytics · Sentiment analysis · Competitor comparison',
+      features: '+ Analytics · Rating trend · Sentiment by topic',
     },
     {
       id: 'BUSINESS' as const,
       name: 'Business',
       price: prices ? `₹${prices.business.toLocaleString('en-IN')}/mo` : '…',
-      features: '+ Job & internship listings · Featured placement',
+      features: '+ Job & internship listings · Listed first in college listings',
     },
   ];
 }

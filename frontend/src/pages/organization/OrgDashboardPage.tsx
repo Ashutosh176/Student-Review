@@ -21,7 +21,11 @@ export function OrgDashboardPage() {
       <div className="mb-4.5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <KpiCard label="Total Reviews" value={analyticsQuery.data?.totalReviews ?? '—'} />
         <KpiCard label="Average Rating" value={(overall?.average ?? 0).toFixed(1)} />
-        <KpiCard label="Response Rate" value={`${analyticsQuery.data?.responseRate ?? 0}%`} />
+        {analyticsQuery.data?.locked ? (
+          <KpiCard label="Response Rate" value="🔒 Pro" trend="Upgrade to see" trendKind="warn" />
+        ) : (
+          <KpiCard label="Response Rate" value={`${analyticsQuery.data?.responseRate ?? 0}%`} />
+        )}
         <KpiCard
           label="Unanswered Reviews"
           value={analyticsQuery.data?.unansweredCount ?? '—'}
