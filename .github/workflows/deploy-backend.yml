@@ -1,0 +1,29 @@
+name: Deploy backend
+
+# Render's "auto-deploy on commit" is enabled but GitHub never notifies it
+# (every backend deploy so far was manual), so this calls the service's
+# Render deploy hook on each push that touches the backend instead. The hook
+# URL lives in the RENDER_DEPLOY_HOOK repository secret (Render → service →
+# Settings → Deploy Hook); without it the job just skips.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'backend/**'
+      - 'render.yaml'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK secret not set; skipping."
+            exit 0
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK" > /dev/null
+          echo "Render deploy triggered."
