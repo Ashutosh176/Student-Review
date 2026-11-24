@@ -141,11 +141,16 @@ function collegeSearchName(inst: { name: string; slug: string }): string {
 function overviewDescription(inst: InstitutionDetail, reviewCount: string, overall: ReturnType<typeof overallRating>): string {
   const short = collegeShortName(inst);
   const who = short ? `${inst.name} (${short})` : inst.name;
-  const head =
-    inst.summary.reviewCount > 0
-      ? `${reviewCount} student reviews of ${who}${overall ? ` — rated ${overall.average.toFixed(1)}/5` : ''}.`
-      : `Student reviews, ratings and admission details for ${who}.`;
-  return `${head} Placements, faculty, hostel and campus life from real students.`;
+  if (inst.summary.reviewCount > 0) {
+    return `${reviewCount} student reviews of ${who}${overall ? ` — rated ${overall.average.toFixed(1)}/5` : ''}. Placements, faculty, hostel and campus life from real students.`;
+  }
+  // No reviews yet: lead with what the page does have, so people searching
+  // the college's name have a reason to click (Search Console: "miranda
+  // house" got 836 impressions and 0 clicks with the reviews-first snippet).
+  const city = inst.locations[0]?.city;
+  const exams = inst.entranceExams.slice(0, 3);
+  const courses = inst.courses.length > 0 ? `${inst.courses.length} courses` : 'courses';
+  return `${who}${city ? `, ${city}` : ''}: ${courses}, admission process${exams.length ? ` and entrance exams (${exams.join(', ')})` : ''}. Read anonymous student reviews, or be the first to review it.`;
 }
 
 // A sub-tab with nothing on it yet (no reviews, courses, cutoffs or
@@ -220,7 +225,10 @@ function tabSeoMeta(inst: InstitutionDetail, tab: CollegeTab): { title: string; 
     case 'overview':
     default:
       return {
-        title: `${collegeSearchName(inst)} Student Reviews, Ratings & Placements — StudentReview`,
+        title:
+          inst.summary.reviewCount > 0
+            ? `${collegeSearchName(inst)} Student Reviews, Ratings & Placements — StudentReview`
+            : `${collegeSearchName(inst)}: Courses, Admission & Student Reviews — StudentReview`,
         description: overviewDescription(inst, reviewCount, overall),
         path: base,
       };
