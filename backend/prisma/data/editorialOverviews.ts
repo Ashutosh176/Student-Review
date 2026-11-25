@@ -140,4 +140,54 @@ export const EDITORIAL_OVERVIEWS: Record<string, string> = {
     'Visva-Bharati was founded by Rabindranath Tagore in Santiniketan, West Bengal, in 1921, and became a central university in 1951. It is known for its emphasis on the arts, music, languages and an open-air style of teaching inspired by Tagore\'s ideas, alongside programmes in the sciences and humanities. The campus and its traditions, including festivals such as Poush Mela, are central to student life.',
   'Shri Ram College of Commerce':
     'Shri Ram College of Commerce (SRCC), founded in 1926, is a college of the University of Delhi on its North Campus. It specialises in commerce and economics and is one of the most sought-after colleges for these subjects. As a Delhi University college, undergraduate admission is through CUET (UG) and the university\'s common seat allocation process.',
+  // Added 2026-11-25: the next colleges by Search Console impressions, plus
+  // colleges invited to claim their profile on 24 Nov. Same rules as above.
+  'Indian Institute of Foreign Trade':
+    'The Indian Institute of Foreign Trade (IIFT) was set up by the Government of India in 1963 to train professionals in international business and trade, and became a deemed university in 2002. Its flagship programme is an MBA in International Business, run from its Delhi and Kolkata campuses. The admission route has changed over the years, so check the current year\'s process on its official website.',
+  "King George's Medical University":
+    "King George's Medical University in Lucknow is one of India's oldest medical institutions. It began as King George's Medical College, which admitted its first students in 1911, and became a university in 2002. It offers undergraduate, postgraduate and super-speciality programmes and runs a large teaching hospital. MBBS admission is through NEET (UG) counselling.",
+  'Lady Hardinge Medical College':
+    "Lady Hardinge Medical College in New Delhi was founded in 1916 as a medical college for women, and is affiliated to the University of Delhi. Its associated hospitals give students extensive clinical exposure in central Delhi. MBBS admission is for women only, through NEET (UG) counselling.",
+  'West Bengal National University of Juridical Sciences':
+    'The West Bengal National University of Juridical Sciences (WBNUJS), set up in Kolkata in 1999, is one of the National Law Universities. It offers the five-year integrated BA LLB (Hons) programme, along with LLM and research degrees. Admission to its main programmes is through the Common Law Admission Test (CLAT).',
+  'Dr. B. R. Ambedkar National Institute of Technology Jalandhar':
+    'Dr. B. R. Ambedkar National Institute of Technology Jalandhar began in 1987 as the Regional Engineering College, Jalandhar, and became a National Institute of Technology in 2002. It offers undergraduate, postgraduate and doctoral programmes in engineering and the sciences. Undergraduate admission is through JEE Main and JoSAA, with half the seats reserved for students from Punjab under the NIT home-state quota.',
+  'Indian Institute of Technology (ISM) Dhanbad':
+    'IIT (ISM) Dhanbad was founded in 1926 as the Indian School of Mines and became an IIT in 2016. It is especially known for mining, petroleum, geology and other earth-science-related engineering, alongside the mainstream engineering branches it now offers. Undergraduate admission is through JEE Advanced and JoSAA.',
+  'Indian Institute of Management Raipur':
+    'IIM Raipur was established in 2010 and has its permanent campus in Nava Raipur, Chhattisgarh. Its flagship programme is a two-year MBA, alongside executive and doctoral programmes. Admission to the MBA is through CAT scores followed by the institute\'s own selection process.',
+  'Hindu College':
+    "Hindu College, founded in 1899, is a college of the University of Delhi on its North Campus. It offers undergraduate and postgraduate programmes in the arts, commerce and sciences, and is known for its active student societies and debating culture. Undergraduate admission is through CUET (UG) and the university's common seat allocation process.",
+  'Loyola College, Chennai':
+    "Loyola College in Chennai was founded by the Jesuits in 1925 and is an autonomous college affiliated to the University of Madras. Its campus in Nungambakkam offers undergraduate and postgraduate programmes across the arts, sciences and commerce. It is known for its strong sense of community and active student clubs.",
+  'Madras Christian College':
+    'Madras Christian College traces its history to 1837, making it one of the oldest colleges in India. It is an autonomous college affiliated to the University of Madras, and its large, green campus at Tambaram on the outskirts of Chennai includes a protected scrub forest. It offers programmes in the arts, sciences and commerce, and campus life is organised around its residential halls.',
+  'Lady Shri Ram College for Women':
+    "Lady Shri Ram College for Women (LSR), founded in 1956, is a women's college of the University of Delhi in Lajpat Nagar, South Delhi. It is known for its programmes in the humanities, social sciences and commerce, and for its active student societies. Undergraduate admission is through CUET (UG) and the university's common seat allocation process.",
+  "St. Stephen's College":
+    "St. Stephen's College, founded in 1881, is one of the oldest colleges of the University of Delhi and is located on its North Campus. It offers programmes in the humanities and sciences and is known for its residential culture and long-standing traditions. As a minority institution, its undergraduate admission involves CUET (UG) along with the college's own process for some seats, so check its admissions page for the current year.",
+  'Jadavpur University':
+    'Jadavpur University in Kolkata was established as a university in 1955, with roots in the National Council of Education set up in 1906 during the Swadeshi movement. It is a state university with well-regarded faculties of engineering, science and the arts. Admission to its undergraduate engineering programmes is through the West Bengal Joint Entrance Examination (WBJEE).',
+  'Delhi Technological University':
+    'Delhi Technological University (DTU) began in 1941 as the Delhi Polytechnic, later became the Delhi College of Engineering, and was made a university in 2009. Its campus is on Bawana Road in North-West Delhi. It offers engineering, management and other programmes, and undergraduate engineering admission is through JEE Main and the Joint Admission Counselling (JAC) Delhi process.',
+  'Netaji Subhas University of Technology':
+    'Netaji Subhas University of Technology (NSUT) in Dwarka, New Delhi, began in 1983 as the Delhi Institute of Technology, later became the Netaji Subhas Institute of Technology, and was made a university in 2018. It offers engineering and related programmes, and undergraduate admission is through JEE Main and the Joint Admission Counselling (JAC) Delhi process.',
+  'Panjab University':
+    'Panjab University was established in 1882 in Lahore and was re-established in India after Partition, with its main campus now in Sector 14, Chandigarh. It offers a wide range of programmes in the arts, sciences, law, engineering, pharmacy and management, and has a large number of affiliated colleges in Punjab and Chandigarh.',
+  'Lovely Professional University':
+    'Lovely Professional University (LPU) is a private university in Phagwara, Punjab, established in 2005. It has a large residential campus on the Jalandhar–Delhi GT Road and offers a very wide range of programmes, including engineering, management, design, agriculture, sciences, law and the arts. Admission is mainly through its own entrance and scholarship test, LPUNEST, along with national exams for some programmes.',
+  'Thapar Institute of Engineering and Technology':
+    'Thapar Institute of Engineering and Technology in Patiala, Punjab, was founded in 1956 and is a deemed university. It is best known for engineering, and also offers sciences, management, and liberal arts programmes. Undergraduate engineering admission is mainly based on JEE Main scores, through the institute\'s own process.',
+  'Chandigarh University':
+    'Chandigarh University is a private university at Gharuan, near Mohali in Punjab, established in 2012. It offers a wide range of programmes, including engineering, management, law, pharmacy, sciences and the arts, on a large residential campus on the Chandigarh–Ludhiana highway. Admission is through its own entrance and scholarship test (CUCET) as well as other qualifying scores for some programmes.',
+  'Quantum University':
+    'Quantum University is a private university in Roorkee, Uttarakhand, established by state legislation in 2017. Its campus on the Dehradun–Roorkee highway offers programmes in engineering, computer applications, management, agriculture, paramedical sciences, hospitality and more. Admission is mainly through the university\'s own process.',
+  'Kalinga Institute of Industrial Technology':
+    'Kalinga Institute of Industrial Technology (KIIT) in Bhubaneswar, Odisha, began as an industrial training institute in 1992 and became a deemed university in 2004. It offers engineering, medicine, law, management, sciences and other programmes across several campuses in the city. Admission to most programmes is through its own entrance test, KIITEE, and national exams such as NEET for medicine.',
+  "SVKM's Narsee Monjee Institute of Management Studies":
+    "SVKM's Narsee Monjee Institute of Management Studies (NMIMS) in Mumbai began as a management institute in 1981 and became a deemed university in 2003. It is best known for its MBA programmes, and also offers engineering, commerce, law, pharmacy and other programmes across campuses in several cities. MBA admission is through NMAT, while other programmes use the university's own tests.",
+  'Management Development Institute Gurgaon':
+    'The Management Development Institute (MDI), Gurgaon, was established in 1973 and is a standalone business school. Its flagship two-year PGDM programmes are offered alongside executive programmes, with a campus in Gurugram close to a large concentration of corporate offices. Admission to the PGDM is through CAT scores followed by the institute\'s own selection process.',
+  'Symbiosis International University':
+    'Symbiosis International (Deemed University), based in Pune, grew out of the Symbiosis society founded in 1971 and became a deemed university in 2002. It runs institutes across management, law, engineering, media, health sciences and more, with campuses in Pune and several other cities. Admission is through its own tests, such as SNAP for MBA programmes and SET for many undergraduate programmes.',
 };
