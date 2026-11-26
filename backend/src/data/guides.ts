@@ -191,10 +191,10 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: 'iit-vs-nit-vs-iiit',
-    title: 'IIT vs NIT vs IIIT: Differences, and Which Is Better for You',
+    title: 'IIT vs NIT vs IIIT: Which Is Better? Quick Comparison',
     description:
-      'How IITs, NITs and IIITs differ in admission and governance, what an IIIT actually is, and whether an IIIT or an NIT is the better choice for you.',
-    updatedAt: '2026-11-17',
+      'IIT vs IIIT vs NIT at a glance: admission exam, branches, fees and who runs them, plus a straight answer on which is better for CSE and how to decide.',
+    updatedAt: '2026-11-26',
     relatedColleges: [
       'indian-institute-of-technology-bombay',
       'indian-institute-of-technology-madras',
@@ -207,6 +207,31 @@ export const GUIDES: Guide[] = [
       {
         type: 'p',
         text: 'All three are respected routes into engineering, but they differ in how you get in and how they are run, and the right choice often comes down to the specific program rather than the three letters in the name.',
+      },
+      { type: 'h2', text: 'IIT vs NIT vs IIIT at a glance' },
+      {
+        type: 'ul',
+        items: [
+          'Entrance exam: IITs admit through JEE Advanced; NITs through JEE Main; most IIITs through JEE Main, while a few run their own admissions.',
+          'Branches: IITs and NITs offer a wide range of engineering branches; most IIITs focus on computer science, electronics and IT.',
+          'Who runs them: IITs and NITs are Institutions of National Importance; IIITs may be central, public-private partnership (PPP), state or deemed institutes.',
+          'Home-state quota: NITs reserve half their seats for students from their home state; IITs have no home-state quota.',
+          'Fees: IIT and NIT fees are set centrally; PPP, state and deemed IIITs set their own and can cost noticeably more.',
+          'Best for: IITs for the widest choice and research; NITs for many branches across every state; established IIITs for computer science.',
+        ],
+      },
+      { type: 'h2', text: 'IIT vs IIIT: which is better?' },
+      {
+        type: 'p',
+        text: 'Overall, IITs are harder to get into and offer more: more branches, more research, larger alumni networks and a wider mix of recruiters. But for computer science specifically, the established IIITs, such as IIIT Hyderabad, IIIT-Delhi, IIIT Bangalore and IIIT Allahabad, are strong options, and CSE at one of them can be a better fit than a branch you do not want at an IIT. Newer IIITs are a different case: many are still building campuses, faculty and placement records, so judge each one on its own.',
+      },
+      {
+        type: 'ul',
+        items: [
+          'Choose the IIT if you want a non-CS branch, research, or the flexibility to change direction later.',
+          'Consider an established IIIT if you are sure about computer science and its CSE program, faculty and placement report hold up against the IIT branch you can get.',
+          'Is an IIIT a tier 1 college? The established ones are often treated as tier 1 for CSE; most newer IIITs are not yet. "Tier" is informal, so compare data, not labels.',
+        ],
       },
       { type: 'h2', text: 'How you get in' },
       {
@@ -584,15 +609,30 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: 'nirf-ranking-explained',
-    title: 'NIRF Ranking Meaning: What It Measures and How to Use It',
+    title: 'NIRF Ranking Meaning: Full Form, Parameters & How to Use It',
     description:
-      "What NIRF ranking means, what India's national ranking measures, its limits, and how to use the data colleges submit to NIRF when choosing a college.",
-    updatedAt: '2026-11-24',
+      'NIRF ranking meaning in simple words: full form, the five parameters it scores, what the rank does not tell you, and how to use NIRF data to pick a college.',
+    updatedAt: '2026-11-26',
     relatedColleges: [],
     blocks: [
       {
         type: 'p',
         text: "The National Institutional Ranking Framework (NIRF) is the Ministry of Education's annual ranking of Indian higher education institutions. It is the most widely quoted ranking in India, and also one of the most misunderstood.",
+      },
+      { type: 'h2', text: 'NIRF full form and meaning, in short' },
+      {
+        type: 'ul',
+        items: [
+          'Full form: National Institutional Ranking Framework.',
+          "Run by: the Ministry of Education, Government of India, which publishes the rankings every year.",
+          'What a rank means: how an institution scored on five parameters compared with other institutions that chose to take part, in that category (such as engineering or management).',
+          'What it does not mean: that a college outside the list is poor, or that every program at a top-ranked institution is strong.',
+        ],
+      },
+      { type: 'h2', text: 'NIRF ranking kya hai? (in short)' },
+      {
+        type: 'p',
+        text: 'NIRF (National Institutional Ranking Framework) Ministry of Education ki saalana ranking hai. Isme colleges ko teaching, research, graduation outcomes (placement aur higher studies), outreach aur perception par score kiya jata hai. Rank poore institution ki hoti hai, aapke branch ki nahi, aur participation voluntary hai, isliye kai acche colleges list mein nahi hote. College chunte waqt sirf rank nahi, NIRF par publish hua data aur current students ke reviews bhi dekhein.',
       },
       { type: 'h2', text: 'What NIRF measures' },
       {
