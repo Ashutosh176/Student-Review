@@ -123,7 +123,15 @@ export function MyReviewsPage() {
                     </td>
                     <td className="px-3 py-2.5">{new Date(r.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</td>
                     <td className="px-3 py-2.5">
-                      {r.clarificationRequest ? <Badge kind="pending">Needs your input</Badge> : <Badge kind={statusInfo.kind}>{statusInfo.label}</Badge>}
+                      {r.awaitingVerification ? (
+                        <Link to={`/write-review?college=${r.institution.slug}&verify=1`} title="Verify that you study here to publish this review">
+                          <Badge kind="pending">Verify to publish</Badge>
+                        </Link>
+                      ) : r.clarificationRequest ? (
+                        <Badge kind="pending">Needs your input</Badge>
+                      ) : (
+                        <Badge kind={statusInfo.kind}>{statusInfo.label}</Badge>
+                      )}
                     </td>
                     <td className="px-3 py-2.5">
                       <button

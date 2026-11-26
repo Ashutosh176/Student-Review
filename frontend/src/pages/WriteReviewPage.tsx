@@ -113,6 +113,12 @@ export function WriteReviewPage() {
   const [recommend, setRecommend] = useState<boolean | null>(null);
   const [body, setBody] = useState('');
   const [guidelinesAccepted, setGuidelinesAccepted] = useState(false);
+  // Write first, verify to publish: an unverified student's experience review
+  // is held server-side until they verify, which they do on the done screen.
+  const [heldForVerification, setHeldForVerification] = useState(false);
+  const [verifiedAfterWriting, setVerifiedAfterWriting] = useState(false);
+  // ?verify=1 (from "Verify to publish" on My reviews): skip to verification.
+  const verifyOnly = params.get('verify') === '1';
 
   const preselectedSlug = params.get('college');
 
@@ -177,6 +183,7 @@ export function WriteReviewPage() {
         ratings: kind === 'EXPERIENCE' ? RATING_CATEGORIES.filter((c) => ratings[c] > 0).map((c) => ({ category: c, value: ratings[c] })) : [],
         guidelinesAccepted: true,
       }),
+    onSuccess: () => setHeldForVerification(kind === 'EXPERIENCE' && !isVerifiedForSelectedInstitution),
   });
 
   function next() {
@@ -186,16 +193,44 @@ export function WriteReviewPage() {
     setStep((s) => Math.max(1, s - 1));
   }
 
+  if (verifyOnly && institutionId && institutionName && !submitMutation.isSuccess) {
+    return (
+      <WizardShell step={1} total={1} label="Verify to publish">
+        <Helmet>
+          <title>Verify to publish your review — StudentReview</title>
+        </Helmet>
+        <h2 className="mb-2 text-xl">Verify to publish your review</h2>
+        <p className="mb-5 text-[13.5px] text-sub">
+          Your review of {institutionName} is saved. Confirm that you study (or studied) there and it goes live after a quick check.
+        </p>
+        <VerificationGate institutionId={institutionId} institutionName={institutionName} onVerified={() => setVerifiedAfterWriting(true)} />
+        {verifiedAfterWriting && <p className="mt-4 text-[13px] font-medium text-success">Thanks! Your review is now being published.</p>}
+        <InviteBatchmates slug={institutionSlug} name={institutionName} />
+      </WizardShell>
+    );
+  }
+
   if (submitMutation.isSuccess) {
+    const waitingOnVerification = heldForVerification && !verifiedAfterWriting;
     return (
       <WizardShell step={steps.length} total={steps.length} label="Done">
         <div className="text-center">
           <div className="mx-auto mb-4.5 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-success-bg text-2xl text-success">✓</div>
-          <h2 className="mb-2 text-xl">Review submitted</h2>
-          <p className="mx-auto max-w-xs text-[13.5px] text-sub">
-            Thanks for helping other students. Your review is in the moderation queue and will publish shortly.
+          <h2 className="mb-2 text-xl">{waitingOnVerification ? 'Saved! One last step' : 'Review submitted'}</h2>
+          <p className="mx-auto max-w-sm text-[13.5px] text-sub">
+            {waitingOnVerification
+              ? `Confirm that you study (or studied) at ${institutionName} and your review goes live. It takes a minute with your college email, or upload your college ID.`
+              : 'Thanks for helping other students. Your review is in the moderation queue and will publish shortly.'}
           </p>
-          <button className="btn btn-primary mt-5" onClick={() => navigate(institutionSlug ? `/college/${institutionSlug}` : '/')}>
+        </div>
+        {heldForVerification && institutionId && institutionName && (
+          <div className="mt-5 text-left">
+            <VerificationGate institutionId={institutionId} institutionName={institutionName} onVerified={() => setVerifiedAfterWriting(true)} />
+          </div>
+        )}
+        <InviteBatchmates slug={institutionSlug} name={institutionName} />
+        <div className="text-center">
+          <button className="btn btn-ghost mt-5" onClick={() => navigate(institutionSlug ? `/college/${institutionSlug}` : '/')}>
             Back to college profile
           </button>
         </div>
@@ -255,7 +290,12 @@ export function WriteReviewPage() {
               <OptionCard selected onClick={() => {}}>
                 {institutionName}
               </OptionCard>
-              {kind === 'EXPERIENCE' && <VerificationGate institutionId={institutionId} institutionName={institutionName} />}
+              {kind === 'EXPERIENCE' && !isVerifiedForSelectedInstitution && (
+                <p className="mt-3 rounded-md bg-surface px-3 py-2.5 text-[12.5px] text-sub">
+                  Write your review first. At the end you'll confirm you study here with your college email or ID, and it's published only after that.
+                  Your name is never shown.
+                </p>
+              )}
             </>
           ) : (
             <>
@@ -289,7 +329,7 @@ export function WriteReviewPage() {
                 Back
               </button>
               <button
-                disabled={!institutionId || (kind === 'EXPERIENCE' && !isVerifiedForSelectedInstitution)}
+                disabled={!institutionId}
                 onClick={next}
                 className="btn btn-primary"
               >
@@ -534,5 +574,27 @@ export function WriteReviewPage() {
         </div>
       )}
     </WizardShell>
+  );
+}
+
+// After reviewing, the best moment to ask: students share in their batch and
+// class WhatsApp groups. The link opens the review form for this college.
+function InviteBatchmates({ slug, name }: { slug: string | null; name: string | null }) {
+  if (!slug || !name) return null;
+  const link = `${window.location.origin}/write-review?college=${encodeURIComponent(slug)}`;
+  const text = `I just reviewed ${name} on StudentReview.in, anonymously. Juniors choosing colleges read these. Add yours, it takes 5 minutes: ${link}`;
+  return (
+    <div className="mt-6 rounded-lg border border-line p-4 text-center">
+      <p className="text-sm font-semibold">Know batchmates at {name}?</p>
+      <p className="mb-3 mt-1 text-[12.5px] text-sub">More honest reviews make the page useful for juniors. Ask your class group to add theirs.</p>
+      <a
+        className="btn btn-primary"
+        href={`https://wa.me/?text=${encodeURIComponent(text)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Share on WhatsApp
+      </a>
+    </div>
   );
 }

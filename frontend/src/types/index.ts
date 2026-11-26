@@ -117,6 +117,8 @@ export interface PublicReview {
   officialResponse?: { body: string; createdAt: string } | null;
   createdAt: string;
   editedAt?: string | null;
+  // Only on the author's own reviews: written before they verified.
+  awaitingVerification?: boolean;
 }
 
 export type ContentStatus = 'PENDING' | 'APPROVED' | 'FLAGGED' | 'REJECTED' | 'REMOVED';

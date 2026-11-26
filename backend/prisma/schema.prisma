@@ -388,35 +388,35 @@ model InstitutionCategory {
 }
 
 model Institution {
-  id                 String            @id @default(uuid())
-  slug               String            @unique
-  name               String
-  type               InstitutionType
-  categoryId         String?
-  establishedYear    Int?
-  website            String?
-  description        String?
+  id                        String            @id @default(uuid())
+  slug                      String            @unique
+  name                      String
+  type                      InstitutionType
+  categoryId                String?
+  establishedYear           Int?
+  website                   String?
+  description               String?
   // Free-text, admin/seed-curated walkthrough of how admission works here
   // (entrance exam, counselling/selection process, key dates) — shown on
   // the Admissions tab above the structured exam/fee/cutoff data. Distinct
   // from entranceExams (a tag list) and admissionCutoffs (per-course rank
   // data); this is the narrative that ties them together for a reader.
-  admissionProcess   String?
-  logoUrl            String?
-  verified           Boolean           @default(false)
-  claimed            Boolean           @default(false)
-  featured           Boolean           @default(false)
+  admissionProcess          String?
+  logoUrl                   String?
+  verified                  Boolean           @default(false)
+  claimed                   Boolean           @default(false)
+  featured                  Boolean           @default(false)
   // Claimed colleges appear on /colleges-that-listen unless an admin hides
   // them (institution.service listListeningInstitutions).
-  hideFromListening  Boolean           @default(false)
-  status             InstitutionStatus @default(APPROVED)
-  submittedByUserId  String?
-  rejectionReason    String?
+  hideFromListening         Boolean           @default(false)
+  status                    InstitutionStatus @default(APPROVED)
+  submittedByUserId         String?
+  rejectionReason           String?
   // Admissions §: entrance exams this institution accepts for admission
   // (e.g. "JEE Main", "CAT"). A plain tag list, admin-curated — cutoffs
   // below are the structured per-course/category/year data; this is just
   // "which exams", shown even before any cutoff rows exist for one.
-  entranceExams      String[]          @default([])
+  entranceExams             String[]          @default([])
   // AI-generated 2-4 sentence summary of recent approved reviews (see
   // aiSummary.service.ts) — a supplementary reading aid, never a
   // substitute for or counted as a review itself. Null until enough
@@ -424,9 +424,9 @@ model Institution {
   // Editor-written overview compiled from public information (programs,
   // campus, admissions) — clearly labelled on the page, never shown as or
   // counted toward reviews, ratings, or rankings. Admin-editable.
-  editorialOverview  String?
-  aiSummary          String?
-  aiSummaryUpdatedAt DateTime?
+  editorialOverview         String?
+  aiSummary                 String?
+  aiSummaryUpdatedAt        DateTime?
   // First-review outreach (services/outreach.service.ts): once a college's
   // first review is publicly visible, its contact address gets one invitation
   // email (QR poster link + free Pro offer). outreachEmail is admin-entered and
@@ -443,8 +443,8 @@ model Institution {
   // Independent of firstReviewOutreachStatus: an invited college still gets
   // the first-review email once a review goes live.
   inviteOutreachAt          DateTime?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
 
   category             InstitutionCategory?      @relation(fields: [categoryId], references: [id])
   submittedBy          User?                     @relation("InstitutionSubmitter", fields: [submittedByUserId], references: [id])
@@ -536,27 +536,31 @@ model AdmissionCutoff {
 // ───────────────────────── Reviews ─────────────────────────
 
 model Review {
-  id               String            @id @default(uuid())
-  userId           String
-  institutionId    String
-  courseId         String?
-  type             ReviewType        @default(EXPERIENCE)
-  relationship     RelationshipType
-  admissionOutcome AdmissionOutcome?
-  batchYear        Int
-  title            String?
-  body             String
-  recommend        Boolean
-  verifiedStudent  Boolean           @default(false)
-  status           ReviewStatus      @default(PENDING)
-  moderationNotes  String?
-  riskScore        Int               @default(0)
-  sentiment        Sentiment?
-  sentimentTopics  String[]          @default([])
-  helpfulCount     Int               @default(0)
-  editedAt         DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  id                   String            @id @default(uuid())
+  userId               String
+  institutionId        String
+  courseId             String?
+  type                 ReviewType        @default(EXPERIENCE)
+  relationship         RelationshipType
+  admissionOutcome     AdmissionOutcome?
+  batchYear            Int
+  title                String?
+  body                 String
+  recommend            Boolean
+  verifiedStudent      Boolean           @default(false)
+  // Written before the author verified as a student of this college: held
+  // back (never public, not in the moderation queue) until they verify, then
+  // released into normal moderation. See releaseReviewsAwaitingVerification.
+  awaitingVerification Boolean           @default(false)
+  status               ReviewStatus      @default(PENDING)
+  moderationNotes      String?
+  riskScore            Int               @default(0)
+  sentiment            Sentiment?
+  sentimentTopics      String[]          @default([])
+  helpfulCount         Int               @default(0)
+  editedAt             DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   user        User            @relation(fields: [userId], references: [id])
   institution Institution     @relation(fields: [institutionId], references: [id])

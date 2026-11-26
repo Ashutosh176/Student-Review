@@ -9,6 +9,19 @@ import { collegeOtpEmail } from './emailTemplates.js';
 import { notify, notifyWithEmail } from './notification.service.js';
 import type { RelationshipType } from '@prisma/client';
 
+// Publishes reviews the student wrote before verifying (see
+// review.service createReview). Imported lazily: review.service imports this
+// module. A failure here must not undo or fail the verification itself.
+async function releaseHeldReviews(userId: string, institutionId: string): Promise<number> {
+  try {
+    const { releaseReviewsAwaitingVerification } = await import('./review.service.js');
+    return await releaseReviewsAwaitingVerification(userId, institutionId);
+  } catch (err) {
+    logger.error({ err, userId, institutionId }, 'Failed to release reviews awaiting verification');
+    return 0;
+  }
+}
+
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
@@ -182,6 +195,7 @@ export async function verifyOtp(userId: string, institutionId: string, code: str
       data: { status: 'VERIFIED', verifiedAt: new Date(), universityEmail: verification.universityEmail ? emailKey(verification.universityEmail) : null },
     }),
   ]);
+  await releaseHeldReviews(updated.userId, updated.institutionId);
   return updated;
 }
 
@@ -270,7 +284,17 @@ export async function decideDocumentVerification(
   });
 
   const collegeName = verification.institution.name;
-  if (decision === 'APPROVED') {
+  const released = decision === 'APPROVED' ? await releaseHeldReviews(verification.userId, verification.institutionId) : 0;
+  if (decision === 'APPROVED' && released > 0) {
+    // They already wrote their review; moderateAndPublish tells them when it is live.
+    await notify(
+      verification.userId,
+      'VERIFICATION_APPROVED',
+      'Your university verification was approved',
+      `You're verified at ${collegeName}. Your review has been submitted for publishing.`,
+      `/college/${verification.institution.slug}/reviews`,
+    );
+  } else if (decision === 'APPROVED') {
     await notifyWithEmail({
       userId: verification.userId,
       type: 'VERIFICATION_APPROVED',
