@@ -224,4 +224,7 @@ export const EDITORIAL_OVERVIEWS: Record<string, string> = {
     'Great Lakes Institute of Management in Chennai was founded in 2004 and is a standalone business school. It is known for its one-year Post Graduate Programme in Management (PGPM) for candidates with work experience, alongside a two-year PGDM. Its residential campus is on the outskirts of Chennai. Admission is through national management tests followed by the institute\'s own selection process.',
   'S. P. Jain Institute of Management and Research':
     'S. P. Jain Institute of Management and Research (SPJIMR) in Mumbai was established in 1981 by the Bharatiya Vidya Bhavan, and is a standalone business school on its Andheri campus. Its flagship two-year PGDM is complemented by programmes for working executives and family businesses. Admission to the PGDM is through CAT, XAT or GMAT scores followed by the institute\'s own selection process.',
+  // Added 2026-11-27: high-impression page in Search Console without one.
+  'Sri Ramachandra Institute of Higher Education and Research':
+    'Sri Ramachandra Institute of Higher Education and Research in Porur, Chennai, is a deemed university that grew out of Sri Ramachandra Medical College, founded in 1985. It is best known for medicine and health sciences, with a large teaching hospital on campus, and also offers programmes in pharmacy, allied health, biomedical sciences, engineering and management. MBBS admission is through NEET (UG) counselling, while other programmes follow the university\x27s own process.',
 };
