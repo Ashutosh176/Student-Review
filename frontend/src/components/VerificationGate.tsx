@@ -117,7 +117,7 @@ export function VerificationGate({
       <div className="card bg-surface">
         <Badge kind="pending">Pending admin review</Badge>
         <p className="mt-2 text-[12.5px] text-sub">
-          Your document is being reviewed by an admin. You'll be notified once it's approved, and any review you've written for this college will then go live after a quick check.
+          Your document is being reviewed by an admin. You'll be notified once it's approved — come back here to write your review then.
         </p>
         {cancelMutation.isError && <p className="mt-2 text-xs text-danger">{apiErrorMessage(cancelMutation.error)}</p>}
         <button type="button" className="mt-2 text-[12px] text-sub hover:underline" disabled={cancelMutation.isPending} onClick={() => cancelMutation.mutate()}>
@@ -171,7 +171,7 @@ export function VerificationGate({
   return (
     <div className="card bg-surface">
       <h4 className="mb-1 text-sm font-semibold">Verify your student identity</h4>
-      <p className="mb-3 text-[12.5px] text-sub">Only verified students and alumni of {institutionName} can publish reviews. Your college email or ID is never shown with your review.</p>
+      <p className="mb-3 text-[12.5px] text-sub">Only verified students or alumni can write a review for {institutionName}.</p>
       {current?.status === 'REJECTED' && current.rejectionReason && (
         <p className="mb-3 rounded-md bg-danger/10 p-2 text-[12px] text-danger">Your last submission was rejected: {current.rejectionReason}</p>
       )}

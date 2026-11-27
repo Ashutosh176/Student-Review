@@ -35,17 +35,12 @@ export async function createReview(userId: string, input: CreateReviewInput) {
   // Applicant" (serializers.ts publicReviewAuthor), never "Verified Student",
   // so this never blurs the verified-review trust story for EXPERIENCE
   // reviews, which keep the exact same gate as before.
-  //
-  // An EXPERIENCE review from someone not yet verified at this college is
-  // still accepted, so students can write first and verify after (asking for
-  // verification up front lost most of them). It is held with
-  // awaitingVerification=true: never public, not in the moderation queue,
-  // until releaseReviewsAwaitingVerification runs when they verify.
   let verifiedStudent = false;
-  let awaitingVerification = false;
   if (type === 'EXPERIENCE') {
-    verifiedStudent = await isVerified(userId, input.institutionId);
-    awaitingVerification = !verifiedStudent;
+    if (!(await isVerified(userId, input.institutionId))) {
+      throw AppError.forbidden('You need to verify your student identity for this institution before you can submit a review.');
+    }
+    verifiedStudent = true;
   }
 
   // One live review per person per college per type. Editing (PATCH) is the
@@ -72,7 +67,6 @@ export async function createReview(userId: string, input: CreateReviewInput) {
       body: input.body,
       recommend: input.recommend,
       verifiedStudent,
-      awaitingVerification,
       status: 'PENDING',
       sentiment,
       sentimentTopics: topics,
@@ -81,20 +75,9 @@ export async function createReview(userId: string, input: CreateReviewInput) {
     include: { ratings: true },
   });
 
-  if (awaitingVerification) return review;
-  return moderateAndPublish(review.id);
-}
-
-// Runs automatic moderation on a newly submitted (or just-released) review,
-// sets its status and tells the author. Shared by createReview and
-// releaseReviewsAwaitingVerification.
-async function moderateAndPublish(reviewId: string) {
-  const review = await prisma.review.findUniqueOrThrow({ where: { id: reviewId } });
-  const { userId } = review;
-  const institution = await prisma.institution.findUniqueOrThrow({ where: { id: review.institutionId } });
   const settings = await getPlatformSettings();
   const moderation = await moderateReview(
-    { userId, institutionId: review.institutionId, body: review.body },
+    { userId, institutionId: input.institutionId, body: input.body },
     { rapidSubmissionWindowMinutes: settings.rapidSubmissionWindowMinutes, rapidSubmissionCount: settings.rapidSubmissionCount },
   );
   const status: ReviewStatus = moderation.decision === 'APPROVE' ? 'APPROVED' : moderation.decision === 'FLAG' ? 'FLAGGED' : 'REJECTED';
@@ -145,22 +128,6 @@ async function moderateAndPublish(reviewId: string) {
   }
 
   return updated;
-}
-
-// Called when a student becomes verified at a college (email OTP or an
-// approved document). Their reviews of that college written before verifying
-// go through normal moderation now, carrying the Verified Student badge.
-// Returns how many were released.
-export async function releaseReviewsAwaitingVerification(userId: string, institutionId: string) {
-  const held = await prisma.review.findMany({
-    where: { userId, institutionId, awaitingVerification: true },
-    select: { id: true },
-  });
-  for (const { id } of held) {
-    await prisma.review.update({ where: { id }, data: { awaitingVerification: false, verifiedStudent: true } });
-    await moderateAndPublish(id);
-  }
-  return held.length;
 }
 
 export async function getReviewById(id: string) {
@@ -235,8 +202,7 @@ export async function updateOwnReview(
     );
   }
 
-  // A held review stays held when edited; it is moderated once they verify.
-  if (input.body !== undefined && !review.awaitingVerification) {
+  if (input.body !== undefined) {
     const moderation = await moderateReview({ userId, institutionId: review.institutionId, body: input.body });
     const clarificationAsked = clarificationRequestOf(review);
     // An edit answering a moderator's clarification request goes back to that

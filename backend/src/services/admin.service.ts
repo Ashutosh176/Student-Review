@@ -14,7 +14,7 @@ export async function dashboardStats() {
   const [totalUsers, totalReviews, pendingModeration, pendingInstitutions, reportsLast24h, topInstitutions] = await Promise.all([
     prisma.user.count(),
     prisma.review.count(),
-    prisma.review.count({ where: { status: { in: ['PENDING', 'FLAGGED', 'REJECTED'] }, awaitingVerification: false } }),
+    prisma.review.count({ where: { status: { in: ['PENDING', 'FLAGGED', 'REJECTED'] } } }),
     prisma.institution.count({ where: { status: 'PENDING' } }),
     prisma.reviewReport.count({ where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } }),
     prisma.review.groupBy({ by: ['institutionId'], where: { status: 'APPROVED' }, _count: { _all: true }, orderBy: { _count: { institutionId: 'desc' } }, take: 5 }),
@@ -81,8 +81,7 @@ export async function setUserStatus(adminUserId: string, targetUserId: string, s
 export async function moderationQueue(page = 1, pageSize = 20) {
   // REJECTED here means auto-rejected by moderation (admin removals use REMOVED),
   // so surface those too — otherwise a wrongly auto-rejected review is unrecoverable.
-  // Reviews held for their author to verify are not ready to moderate yet.
-  const where = { status: { in: ['PENDING', 'FLAGGED', 'REJECTED'] as ReviewStatus[] }, awaitingVerification: false };
+  const where = { status: { in: ['PENDING', 'FLAGGED', 'REJECTED'] as ReviewStatus[] } };
   const [total, items] = await Promise.all([
     prisma.review.count({ where }),
     prisma.review.findMany({

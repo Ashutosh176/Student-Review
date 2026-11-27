@@ -548,9 +548,8 @@ model Review {
   body                 String
   recommend            Boolean
   verifiedStudent      Boolean           @default(false)
-  // Written before the author verified as a student of this college: held
-  // back (never public, not in the moderation queue) until they verify, then
-  // released into normal moderation. See releaseReviewsAwaitingVerification.
+  // Unused: left from the reverted "write first, verify to publish" flow
+  // (26 Nov 2026). Kept so the schema matches the database column.
   awaitingVerification Boolean           @default(false)
   status               ReviewStatus      @default(PENDING)
   moderationNotes      String?
