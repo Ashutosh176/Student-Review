@@ -689,6 +689,91 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: 'iiits-in-india',
+    title: 'IIITs in India: Types, List and How to Choose One',
+    description:
+      'What an IIIT is, the main types (central, PPP, state, deemed) with examples, how admission works for each, and how to judge a specific IIIT before you join.',
+    updatedAt: '2026-11-27',
+    relatedColleges: [
+      'international-institute-of-information-technology-hyderabad',
+      'indraprastha-institute-of-information-technology-delhi',
+      'international-institute-of-information-technology-bangalore',
+      'indian-institute-of-information-technology-allahabad',
+      'abv-indian-institute-of-information-technology-and-management-gwalior',
+      'indian-institute-of-information-technology-guwahati',
+    ],
+    blocks: [
+      {
+        type: 'p',
+        text: 'IIIT stands for Indian Institute of Information Technology (some use "International"). The name is shared by institutes that are funded, governed and admitted to in quite different ways, so two IIITs can be very different places. This guide explains the types, how you get into each, and what to check before choosing one.',
+      },
+      { type: 'h2', text: 'IIIT in short' },
+      {
+        type: 'ul',
+        items: [
+          'Full form: Indian (or International) Institute of Information Technology.',
+          'Focus: mainly computer science, electronics and communication, and related fields such as data science and AI.',
+          'Admission: most IIITs admit B.Tech students through JEE Main and JoSAA; a few run their own admissions.',
+          'Types: centrally funded, public-private partnership (PPP), state, and deemed universities.',
+        ],
+      },
+      { type: 'h2', text: 'IIIT kya hota hai? (in short)' },
+      {
+        type: 'p',
+        text: 'IIIT ka full form Indian (ya International) Institute of Information Technology hai. Ye mainly computer science, electronics aur IT ke courses padhate hain. Kuch IIIT central government ke hain, zyada tar public-private partnership (PPP) mein chalte hain, aur kuch state ya deemed universities hain. Zyada tar IIIT mein admission JEE Main aur JoSAA se hota hai, lekin IIIT Hyderabad, IIIT-Delhi aur IIIT Bangalore jaise institute apna alag process chalate hain. Har IIIT alag hai, isliye naam se nahi, program, faculty, campus aur placement report dekh kar chunein.',
+      },
+      { type: 'h2', text: 'Centrally funded IIITs' },
+      {
+        type: 'p',
+        text: 'These are set up and fully funded by the Ministry of Education and are Institutions of National Importance. They are among the older and better-established IIITs. Examples include IIIT Allahabad (Prayagraj), ABV-IIITM Gwalior, and the IIITDMs (Institutes of Information Technology, Design and Manufacturing) at Jabalpur, Kancheepuram and Kurnool. Admission is through JEE Main and JoSAA.',
+      },
+      { type: 'h2', text: 'PPP IIITs' },
+      {
+        type: 'p',
+        text: 'Most IIITs belong to this group. Each was set up jointly by the central government, a state government and industry partners, and they are also Institutions of National Importance. There are about twenty, including IIIT Guwahati, Vadodara, Kota, Tiruchirappalli, Lucknow, Dharwad, Kottayam, Pune, Nagpur, Sri City, Kalyani, Sonepat, Una, Ranchi and Bhopal. Admission is through JEE Main and JoSAA. Many are relatively new, so some still operate from temporary campuses or have only a few graduating batches, and fees are usually higher than at NITs.',
+      },
+      { type: 'h2', text: 'State and deemed IIITs' },
+      {
+        type: 'p',
+        text: 'Some IIITs were set up by state governments or are deemed universities, and several of these are among the most sought-after for computer science:',
+      },
+      {
+        type: 'ul',
+        items: [
+          'IIIT Hyderabad, a deemed university with a strong research focus, which runs its own admission routes.',
+          'IIIT-Delhi (Indraprastha Institute of Information Technology), a state university of the Delhi government, which admits through JEE Main scores via the Delhi counselling process.',
+          'IIIT Bangalore, a deemed university best known for its integrated and postgraduate programmes, with its own admission process.',
+          'Other state IIITs, such as IIIT Bhubaneswar, admit through their state or their own processes.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Because the routes change from year to year, always check the admission page of the exact IIIT you are considering.',
+      },
+      { type: 'h2', text: 'Is an IIIT good?' },
+      {
+        type: 'p',
+        text: 'It depends on which one. The established IIITs have strong reputations in computer science and good recruiter relationships. A newer PPP IIIT may still be building its campus, faculty and placement network, and that is fine for some students and a risk for others. Judge each IIIT on its own record rather than the name.',
+      },
+      { type: 'h2', text: 'How to judge a specific IIIT' },
+      {
+        type: 'ol',
+        items: [
+          'Check whether it runs from its own permanent campus, and how many batches have graduated.',
+          'Look at the faculty: how many permanent faculty members there are for your branch, and where they studied.',
+          'Read the branch-wise placement report, including the median package and how many students were placed, not just the highest package.',
+          'Work out the full cost: tuition, hostel and mess for all four years. PPP and state IIITs can cost noticeably more than NITs.',
+          'Ask current students about teaching, hostels, internships and the administration. Reviews from verified students are the quickest way to hear this.',
+        ],
+      },
+      { type: 'h2', text: 'IIIT vs NIT vs IIT' },
+      {
+        type: 'p',
+        text: 'If you are deciding between an IIIT and an NIT or IIT, our IIT vs NIT vs IIIT guide compares admission, branches, fees and who each type suits, with a direct answer on which is better for computer science.',
+      },
+    ],
+  },
 ];
 
 export function guideSummaries() {
