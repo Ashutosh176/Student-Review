@@ -195,7 +195,10 @@ export function WriteReviewPage() {
           <p className="mx-auto max-w-xs text-[13.5px] text-sub">
             Thanks for helping other students. Your review is in the moderation queue and will publish shortly.
           </p>
-          <button className="btn btn-primary mt-5" onClick={() => navigate(institutionSlug ? `/college/${institutionSlug}` : '/')}>
+        </div>
+        <InviteBatchmates slug={institutionSlug} name={institutionName} />
+        <div className="text-center">
+          <button className="btn btn-ghost mt-5" onClick={() => navigate(institutionSlug ? `/college/${institutionSlug}` : '/')}>
             Back to college profile
           </button>
         </div>
@@ -534,5 +537,22 @@ export function WriteReviewPage() {
         </div>
       )}
     </WizardShell>
+  );
+}
+
+// After reviewing is the best moment to ask: students share in their batch and
+// class WhatsApp groups. The link opens the review form for this college.
+function InviteBatchmates({ slug, name }: { slug: string | null; name: string | null }) {
+  if (!slug || !name) return null;
+  const link = `${window.location.origin}/write-review?college=${encodeURIComponent(slug)}`;
+  const text = `I just reviewed ${name} on StudentReview.in, anonymously. Juniors choosing colleges read these. Add yours, it takes 5 minutes: ${link}`;
+  return (
+    <div className="mt-6 rounded-lg border border-line p-4 text-center">
+      <p className="text-sm font-semibold">Know batchmates at {name}?</p>
+      <p className="mb-3 mt-1 text-[12.5px] text-sub">More honest reviews make the page useful for juniors. Ask your class group to add theirs.</p>
+      <a className="btn btn-primary" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer">
+        Share on WhatsApp
+      </a>
+    </div>
   );
 }
